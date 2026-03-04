@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Sparkles, TrendingUp, Target, Shield, Brain, X } from 'lucide-react';
+import { Sparkles, TrendingUp, Target, Shield, Brain, X, Zap, Loader2 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { runMasterScan, MarketContext } from '../services/masterIntelligence';
+import { saveMarketReport } from '../services/supabaseService';
 
 interface IntelligenceQuery {
   id: string;
@@ -13,7 +15,32 @@ interface IntelligenceQuery {
 export function AICopilot() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState<IntelligenceQuery | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [masterAnalysis, setMasterAnalysis] = useState<string | null>(null);
+  const [marketContext, setMarketContext] = useState<MarketContext | null>(null);
   const { currentRegime, uiTheme } = useAdaptiveTheme();
+
+  // Master scan handler
+  const handleMasterScan = async () => {
+    setIsScanning(true);
+    setMasterAnalysis(null);
+    try {
+      const { context, analysis } = await runMasterScan();
+      setMarketContext(context);
+      setMasterAnalysis(analysis);
+      
+      // Archive report to Supabase
+      const isSaved = await saveMarketReport(context, analysis);
+      if (isSaved) {
+        console.log('Report archived in Supabase.');
+      }
+    } catch (error) {
+      console.error('Master scan failed:', error);
+      setMasterAnalysis('Error: Unable to complete market scan. Please try again.');
+    } finally {
+      setIsScanning(false);
+    }
+  };
   
   // Regime-driven intelligent queries
   const queries: IntelligenceQuery[] = [
@@ -146,6 +173,70 @@ export function AICopilot() {
       
       {/* Content */}
       <div className="p-4 max-h-[500px] overflow-y-auto">
+        {/* Master Scan Button */}
+        <button
+          onClick={handleMasterScan}
+          disabled={isScanning}
+          className={`w-full mb-4 p-4 rounded-xl border-2 transition-all flex items-center justify-center gap-3 ${
+            isDark 
+              ? 'border-amber-600 bg-amber-600/10 hover:bg-amber-600/20 text-amber-400' 
+              : isHybrid
+              ? 'border-amber-500 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400'
+              : 'border-amber-500 bg-amber-50 hover:bg-amber-100 text-amber-700'
+          } ${isScanning ? 'opacity-70 cursor-not-allowed' : ''}`}
+        >
+          {isScanning ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="font-semibold">Scanning Markets...</span>
+            </>
+          ) : (
+            <>
+              <Zap className="w-5 h-5" />
+              <span className="font-semibold">Master Black Swan Scan</span>
+            </>
+          )}
+        </button>
+
+        {/* Master Analysis Result */}
+        {masterAnalysis && (
+          <div className={`mb-4 p-4 rounded-xl ${
+            isDark ? 'bg-gray-900 border border-amber-600/50' : isHybrid ? 'bg-gray-800 border border-amber-500/50' : 'bg-amber-50 border border-amber-200'
+          }`}>
+            <div className="flex items-center gap-2 mb-3">
+              <Zap className={`w-5 h-5 ${isDark || isHybrid ? 'text-amber-400' : 'text-amber-600'}`} />
+              <h4 className={`font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                Master Intelligence Report
+              </h4>
+            </div>
+            
+            {marketContext && (
+              <div className={`mb-3 p-3 rounded-lg text-xs grid grid-cols-2 gap-2 ${
+                isDark ? 'bg-gray-800' : isHybrid ? 'bg-gray-700' : 'bg-white'
+              }`}>
+                <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+                  BTC: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>${marketContext.btcPrice.toLocaleString()}</span>
+                </div>
+                <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+                  Fear/Greed: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>{marketContext.fearGreedValue}</span>
+                </div>
+                <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+                  Yield Curve: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>{marketContext.yieldCurve}</span>
+                </div>
+                <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+                  BTC Dom: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>{marketContext.btcDominance.toFixed(1)}%</span>
+                </div>
+              </div>
+            )}
+            
+            <div className={`text-sm leading-relaxed whitespace-pre-line ${
+              isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              {masterAnalysis}
+            </div>
+          </div>
+        )}
+
         {selectedQuery ? (
           <div className="space-y-4">
             <button
@@ -179,7 +270,7 @@ export function AICopilot() {
             <div className={`p-3 rounded-lg text-xs ${
               isDark ? 'bg-blue-900/30 text-blue-200' : isHybrid ? 'bg-blue-900/20 text-blue-200' : 'bg-blue-50 text-blue-700'
             }`}>
-              💡 This analysis is generated in real-time based on current market regime and your portfolio parameters.
+              This analysis is generated in real-time based on current market regime and your portfolio parameters.
             </div>
           </div>
         ) : (
