@@ -1,0 +1,28 @@
+@import './fonts.css';
+@import './tailwind.css';
+@import './theme.css';
+
+/* Print Styles for Dossier */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    background: #020502;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .dossier-page {
+    page-break-after: always;
+    page-break-inside: avoid;
+    margin: 0;
+    width: 794px;
+    height: 1123px;
+  }
+
+  .dossier-page:last-child {
+    page-break-after: auto;
+  }
+}
