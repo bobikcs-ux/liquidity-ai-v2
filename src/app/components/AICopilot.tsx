@@ -3,6 +3,7 @@ import { Sparkles, TrendingUp, Target, Shield, Brain, X, Zap, Loader2 } from 'lu
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { runMasterScan, MarketContext } from '../services/masterIntelligence';
 import { saveMarketReport } from '../services/supabaseService';
+import HistoryPanel from './HistoryPanel';
 
 interface IntelligenceQuery {
   id: string;
@@ -234,6 +235,9 @@ export function AICopilot() {
             }`}>
               {masterAnalysis}
             </div>
+            
+            {/* Historical Records */}
+            <HistoryPanel />
           </div>
         )}
 
