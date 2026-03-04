@@ -1,6 +1,9 @@
 import React from 'react';
 import { GitBranch, Target, BarChart3, Network, Droplets, Gauge } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { IntelligenceCopilot } from '../components/IntelligenceCopilot';
+import { MarketCharts } from '../components/MarketCharts';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 export function Intelligence() {
   const { uiTheme } = useAdaptiveTheme();
@@ -20,6 +23,11 @@ export function Intelligence() {
           Deep analytics layer
         </p>
       </div>
+
+      {/* Market Charts with Error Boundary */}
+      <ErrorBoundary componentName="MarketCharts">
+        <MarketCharts className="mb-6" />
+      </ErrorBoundary>
 
       {/* Analytics Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -272,6 +280,10 @@ export function Intelligence() {
           </div>
         </div>
       </div>
+      {/* AI Intelligence Copilot */}
+      <ErrorBoundary componentName="IntelligenceCopilot">
+        <IntelligenceCopilot />
+      </ErrorBoundary>
     </div>
   );
 }
