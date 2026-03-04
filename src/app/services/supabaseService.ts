@@ -24,6 +24,7 @@ export async function saveMarketReport(
     const { error } = await supabase.from('market_reports').insert({
       btc_price: context.btcPrice,
       fear_greed_value: context.fearGreedValue,
+      fear_greed_label: context.fearGreedLabel,
       yield_curve: context.yieldCurve,
       btc_dominance: context.btcDominance,
       analysis: analysis,

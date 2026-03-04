@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, TrendingUp, Target, Shield, Brain, X, Zap, Loader2 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { runMasterScan, MarketContext } from '../services/masterIntelligence';
+import { saveMarketReport } from '../services/supabaseService';
 
 interface IntelligenceQuery {
   id: string;
@@ -27,6 +28,12 @@ export function AICopilot() {
       const { context, analysis } = await runMasterScan();
       setMarketContext(context);
       setMasterAnalysis(analysis);
+      
+      // Archive report to Supabase
+      const isSaved = await saveMarketReport(context, analysis);
+      if (isSaved) {
+        console.log('Report archived in Supabase.');
+      }
     } catch (error) {
       console.error('Master scan failed:', error);
       setMasterAnalysis('Error: Unable to complete market scan. Please try again.');
