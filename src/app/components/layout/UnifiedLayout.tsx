@@ -360,12 +360,14 @@ export function UnifiedLayout() {
                 </div>
               </div>
               
-              {/* Center - Share Terminal QR */}
-              <div className="hidden md:flex flex-col items-center gap-1">
-                <QRCode url={typeof window !== 'undefined' ? window.location.origin : 'https://bobikcs.terminal'} size={48} darkMode={isDark || isHybrid} />
-                <span className={`text-[9px] ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'}`}>
-                  Share Terminal
-                </span>
+              {/* Center - Share Terminal QR - Institutional Style */}
+              <div className="hidden md:block">
+                <QRCode 
+                  url={typeof window !== 'undefined' ? window.location.href : 'https://bobikcs.terminal'} 
+                  size={44} 
+                  color={isDark || isHybrid ? '#34d399' : '#059669'}
+                  label="[ ENCRYPTED NODE LINK ]"
+                />
               </div>
               
               <div className={`text-sm font-medium text-center md:text-right ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'}`}>

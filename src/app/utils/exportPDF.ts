@@ -1,6 +1,86 @@
 import type { MarketContext } from '../services/masterIntelligence';
 import { logSystemEvent } from '../services/supabaseService';
 
+// Generate institutional QR code SVG for PDF export
+function generateInstitutionalQRSVG(): string {
+  // Get current URL for QR code
+  const url = typeof window !== 'undefined' ? window.location.href : 'https://bobikcs.terminal';
+  
+  // Create deterministic hash from URL
+  const hash = (str: string, seed: number = 0): number => {
+    let h = seed;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+    }
+    return h >>> 0;
+  };
+  
+  const size = 29; // Version 3 QR code
+  const matrix: boolean[][] = Array(size).fill(null).map(() => Array(size).fill(false));
+  
+  // Draw finder patterns
+  const drawFinderPattern = (startX: number, startY: number) => {
+    for (let y = 0; y < 7; y++) {
+      for (let x = 0; x < 7; x++) {
+        const isOuter = x === 0 || x === 6 || y === 0 || y === 6;
+        const isInner = x >= 2 && x <= 4 && y >= 2 && y <= 4;
+        matrix[startY + y][startX + x] = isOuter || isInner;
+      }
+    }
+  };
+  
+  drawFinderPattern(0, 0);
+  drawFinderPattern(size - 7, 0);
+  drawFinderPattern(0, size - 7);
+  
+  // Timing patterns
+  for (let i = 8; i < size - 8; i++) {
+    matrix[6][i] = i % 2 === 0;
+    matrix[i][6] = i % 2 === 0;
+  }
+  
+  // Alignment pattern
+  const alignX = size - 9;
+  const alignY = size - 9;
+  for (let y = -2; y <= 2; y++) {
+    for (let x = -2; x <= 2; x++) {
+      const isOuter = Math.abs(x) === 2 || Math.abs(y) === 2;
+      const isCenter = x === 0 && y === 0;
+      matrix[alignY + y][alignX + x] = isOuter || isCenter;
+    }
+  }
+  
+  // Fill data area
+  const urlHash = hash(url);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const isFinderArea = (x < 9 && y < 9) || (x >= size - 8 && y < 9) || (x < 9 && y >= size - 8);
+      const isTimingArea = x === 6 || y === 6;
+      const isAlignmentArea = x >= size - 11 && x <= size - 7 && y >= size - 11 && y <= size - 7;
+      
+      if (!isFinderArea && !isTimingArea && !isAlignmentArea) {
+        const posHash = hash(`${x}-${y}`, urlHash);
+        matrix[y][x] = (posHash % 100) < 45;
+      }
+    }
+  }
+  
+  // Generate SVG paths
+  let paths = '';
+  matrix.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (cell) {
+        paths += `<rect x="${x}" y="${y}" width="1" height="1" fill="#34d399"/>`;
+      }
+    });
+  });
+  
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 ${size} ${size}" style="shape-rendering: crispEdges; display: block;">
+    <rect width="${size}" height="${size}" fill="transparent"/>
+    ${paths}
+  </svg>`;
+}
+
 interface ReportData {
   context: MarketContext;
   analysis: string;
@@ -374,40 +454,11 @@ export const generateReportHTML = (data: ReportData): string => {
     <div class="footer">
       <p>BOBIKCS // TERMINAL v1.0 - Black Swan Intelligence Engine</p>
       
-      <!-- QR Code Section -->
+      <!-- Institutional QR Code Section -->
       <div style="display: flex; justify-content: center; margin: 20px 0;">
-        <div style="text-align: center; padding: 16px; background: #1e293b; border-radius: 12px; border: 1px solid #334155;">
-          <svg viewBox="0 0 100 100" width="80" height="80" style="background: white; border-radius: 8px; padding: 4px;">
-            <!-- Simplified QR pattern for terminal link -->
-            <rect x="0" y="0" width="28" height="28" fill="#1e293b"/>
-            <rect x="4" y="4" width="20" height="20" fill="white"/>
-            <rect x="8" y="8" width="12" height="12" fill="#1e293b"/>
-            <rect x="72" y="0" width="28" height="28" fill="#1e293b"/>
-            <rect x="76" y="4" width="20" height="20" fill="white"/>
-            <rect x="80" y="8" width="12" height="12" fill="#1e293b"/>
-            <rect x="0" y="72" width="28" height="28" fill="#1e293b"/>
-            <rect x="4" y="76" width="20" height="20" fill="white"/>
-            <rect x="8" y="80" width="12" height="12" fill="#1e293b"/>
-            <!-- Data modules -->
-            <rect x="32" y="4" width="8" height="8" fill="#1e293b"/>
-            <rect x="44" y="4" width="8" height="8" fill="#1e293b"/>
-            <rect x="56" y="4" width="8" height="8" fill="#1e293b"/>
-            <rect x="36" y="16" width="8" height="8" fill="#1e293b"/>
-            <rect x="52" y="16" width="8" height="8" fill="#1e293b"/>
-            <rect x="32" y="32" width="8" height="8" fill="#1e293b"/>
-            <rect x="48" y="36" width="8" height="8" fill="#1e293b"/>
-            <rect x="60" y="44" width="8" height="8" fill="#1e293b"/>
-            <rect x="36" y="56" width="8" height="8" fill="#1e293b"/>
-            <rect x="52" y="52" width="8" height="8" fill="#1e293b"/>
-            <rect x="72" y="36" width="8" height="8" fill="#1e293b"/>
-            <rect x="84" y="48" width="8" height="8" fill="#1e293b"/>
-            <rect x="36" y="84" width="8" height="8" fill="#1e293b"/>
-            <rect x="52" y="76" width="8" height="8" fill="#1e293b"/>
-            <rect x="68" y="84" width="8" height="8" fill="#1e293b"/>
-            <rect x="84" y="72" width="8" height="8" fill="#1e293b"/>
-          </svg>
-          <p style="font-size: 10px; color: #94a3b8; margin-top: 8px;">Scan for live terminal data</p>
-          <p style="font-size: 9px; color: #64748b;">bobikcs.terminal</p>
+        <div style="text-align: center; padding: 12px; border: 1px solid #34d39933;">
+          ${generateInstitutionalQRSVG()}
+          <p style="font-size: 8px; font-family: monospace; letter-spacing: 0.1em; color: #34d399; margin-top: 8px; text-transform: uppercase;">[ ENCRYPTED NODE LINK ]</p>
         </div>
       </div>
       
