@@ -16,9 +16,9 @@ const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
 export const PRODUCTION_URL = 'https://liquidity.bobikcs.com/';
 
 // =============================================================================
-// INSTITUTIONAL QR CODE COMPONENT
-// Uses qrcode.react with Level H (30%) error correction
-// Industrial/terminal aesthetic with emerald on black
+// INSTITUTIONAL QR CODE COMPONENT - PRODUCTION SPEC
+// Level H error correction (30%), Black on White, Square modules, 220x220
+// Pure SVG - NEVER use canvas or html2canvas
 // =============================================================================
 
 interface InstitutionalQRProps {
@@ -30,30 +30,32 @@ interface InstitutionalQRProps {
   className?: string;
 }
 
-// Production-grade QR code component using qrcode.react
+// Production-grade QR code component using qrcode.react (SVG only)
 export function InstitutionalQR({ 
   value = PRODUCTION_URL,
-  size = 80,
-  fgColor = '#10b981', // emerald-500
-  bgColor = '#000000', // black background for contrast
+  size = 220, // Production spec: 220x220
+  fgColor = '#000000', // Black foreground (production spec)
+  bgColor = '#ffffff', // White background (production spec)
   label = '[ NODE: LIQUIDITY.BOBIKCS.COM ]',
   className = ''
 }: InstitutionalQRProps) {
   return (
     <div className={`flex flex-col items-center gap-3 ${className}`}>
-      {/* QR Code with industrial wrapper */}
+      {/* QR Code - Pure SVG, NEVER rasterize */}
       <div 
         style={{
-          padding: '12px',
+          padding: '16px',
           background: bgColor,
           display: 'inline-block',
+          border: '1px solid #e5e7eb',
         }}
       >
         <QRCodeSVG
           value={value}
           size={size}
-          level="H" // High error correction (30%)
+          level="H" // High error correction (30%) - dense, professional
           includeMargin={true}
+          marginSize={4} // margin: 4 as per spec
           bgColor={bgColor}
           fgColor={fgColor}
         />
@@ -64,10 +66,9 @@ export function InstitutionalQR({
         <div
           style={{
             fontFamily: 'monospace',
-            fontSize: '11px',
-            letterSpacing: '0.25em',
-            color: fgColor,
-            opacity: 0.85,
+            fontSize: '8px',
+            letterSpacing: '2px',
+            color: '#000000',
           }}
         >
           {label}

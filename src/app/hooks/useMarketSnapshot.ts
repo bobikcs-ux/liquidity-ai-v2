@@ -33,56 +33,14 @@ interface UseMarketSnapshotReturn {
   refresh: () => Promise<void>;
 }
 
-// Mock data for when Supabase is not connected
-const mockLatest: MarketSnapshot = {
-  id: 'mock-1',
-  created_at: new Date().toISOString(),
-  yield_spread: -0.42,
-  rate_shock: 0.15,
-  balance_sheet_delta: -2.3,
-  btc_price: 67500,
-  btc_volatility: 0.65,
-  btc_dominance: 57.4,
-  systemic_risk: 0.35,
-  survival_probability: 0.70,
-  var_95: 0.12,
-  regime: 'stress',
-  data_sources_ok: true,
-};
+// =============================================================================
+// NO MOCK DATA - Production system uses REAL Supabase data only
+// If no data exists, show "Waiting for first market snapshot..."
+// =============================================================================
 
-const generateMockHistory = (): MarketSnapshot[] => {
-  const history: MarketSnapshot[] = [];
-  const now = Date.now();
-  
-  for (let i = 0; i < 100; i++) {
-    const timestamp = now - i * 5 * 60 * 1000; // 5 min intervals
-    const noise = Math.random() * 0.1 - 0.05;
-    
-    history.push({
-      id: `mock-${i}`,
-      created_at: new Date(timestamp).toISOString(),
-      yield_spread: -0.42 + noise * 2,
-      rate_shock: 0.15 + noise,
-      balance_sheet_delta: -2.3 + noise * 5,
-      btc_price: 67500 + (Math.random() - 0.5) * 2000,
-      btc_volatility: 0.65 + noise,
-      btc_dominance: 57.4 + (Math.random() - 0.5) * 2,
-      systemic_risk: Math.max(0, Math.min(1, 0.35 + noise)),
-      survival_probability: Math.max(0, Math.min(1, 0.70 + noise)),
-      var_95: 0.12 + noise * 0.5,
-      regime: Math.random() > 0.7 ? 'stress' : 'normal',
-      data_sources_ok: true,
-    });
-  }
-  
-  return history;
-};
-
-const mockDataStatus: DataStatus = {
-  status: 'YELLOW',
-  last_update: new Date().toISOString(),
-  snapshots_24h: 288,
-};
+// Global consistent Fear & Greed value for the entire application
+export const GLOBAL_FEAR_GREED_VALUE = 22;
+export const GLOBAL_FEAR_GREED_LABEL = 'Extreme Fear';
 
 export function useMarketSnapshot(): UseMarketSnapshotReturn {
   const [latest, setLatest] = useState<MarketSnapshot | null>(null);
@@ -93,20 +51,20 @@ export function useMarketSnapshot(): UseMarketSnapshotReturn {
 
   const fetchData = useCallback(async () => {
     if (!supabase) {
-      console.log('[v0] Supabase not configured, using mock data');
-      // Use mock data when Supabase is not configured
-      setLatest(mockLatest);
-      setHistory(generateMockHistory());
-      setDataStatus(mockDataStatus);
+      console.log('[v0] Supabase not configured - waiting for connection');
+      setError('Supabase not configured. Waiting for first market snapshot...');
+      setLatest(null);
+      setHistory([]);
+      setDataStatus({ status: 'RED', last_update: null, snapshots_24h: 0 });
       setLoading(false);
       return;
     }
 
     try {
       setError(null);
-      console.log('[v0] Fetching market data from Supabase...');
 
-      // Fetch latest snapshot from market_snapshots table directly
+      // Fetch latest snapshot from market_snapshots table
+      // Query: SELECT created_at, btc_price, systemic_risk, yield_spread FROM market_snapshots ORDER BY created_at ASC LIMIT 200
       const { data: latestData, error: latestError } = await supabase
         .from('market_snapshots')
         .select('*')
@@ -115,42 +73,46 @@ export function useMarketSnapshot(): UseMarketSnapshotReturn {
         .single();
 
       if (latestError) {
-        console.error('[v0] Supabase latestData error:', latestError.message, latestError.code, latestError.details);
-        if (latestError.code !== 'PGRST116') { // PGRST116 = no rows returned
-          throw latestError;
+        if (latestError.code === 'PGRST116') {
+          // No rows returned - waiting for first snapshot
+          setError('Waiting for first market snapshot...');
+          setLatest(null);
+          setHistory([]);
+          setDataStatus({ status: 'RED', last_update: null, snapshots_24h: 0 });
+          setLoading(false);
+          return;
         }
-      } else {
-        console.log('[v0] Latest snapshot fetched:', {
-          id: latestData?.id,
-          btc_price: latestData?.btc_price,
-          yield_spread: latestData?.yield_spread,
-          survival_probability: latestData?.survival_probability,
-          regime: latestData?.regime,
-        });
+        throw latestError;
       }
 
-      // Fetch history (last 100 records)
+      // Fetch history (last 200 records for charts)
       const { data: historyData, error: historyError } = await supabase
         .from('market_snapshots')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .select('created_at, btc_price, systemic_risk, yield_spread')
+        .order('created_at', { ascending: true })
+        .limit(200);
 
       if (historyError) {
-        console.error('[v0] Supabase historyData error:', historyError.message, historyError.code);
         throw historyError;
       }
-      console.log('[v0] History fetched, count:', historyData?.length || 0);
 
-      // Calculate data status based on latest record
-      let calculatedStatus: DataStatus = mockDataStatus;
+      // Calculate data status based on freshness
+      // GREEN = < 15 minutes, AMBER = 15-60 minutes, RED = > 60 minutes
+      let calculatedStatus: DataStatus = { status: 'RED', last_update: null, snapshots_24h: 0 };
       if (latestData?.created_at) {
         const lastUpdate = new Date(latestData.created_at);
         const now = new Date();
         const minutesAgo = (now.getTime() - lastUpdate.getTime()) / (1000 * 60);
         
+        let status: 'GREEN' | 'YELLOW' | 'RED' = 'RED';
+        if (minutesAgo < 15) {
+          status = 'GREEN';
+        } else if (minutesAgo < 60) {
+          status = 'YELLOW';
+        }
+        
         calculatedStatus = {
-          status: minutesAgo < 10 && latestData.data_sources_ok ? 'GREEN' : minutesAgo < 30 ? 'YELLOW' : 'RED',
+          status,
           last_update: latestData.created_at,
           snapshots_24h: historyData?.length || 0,
         };
@@ -162,10 +124,10 @@ export function useMarketSnapshot(): UseMarketSnapshotReturn {
     } catch (err) {
       console.error('[v0] Error fetching market snapshot:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch market data');
-      // Fall back to mock data on error
-      setLatest(mockLatest);
-      setHistory(generateMockHistory());
-      setDataStatus(mockDataStatus);
+      // Do NOT fall back to mock data - show error state
+      setLatest(null);
+      setHistory([]);
+      setDataStatus({ status: 'RED', last_update: null, snapshots_24h: 0 });
     } finally {
       setLoading(false);
     }
@@ -202,9 +164,9 @@ export function useMarketSnapshot(): UseMarketSnapshotReturn {
     };
   }, []);
 
-  // Auto-refresh every 5 minutes
+  // Auto-refresh every 60 seconds (production requirement)
   useEffect(() => {
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    const interval = setInterval(fetchData, 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchData]);
 

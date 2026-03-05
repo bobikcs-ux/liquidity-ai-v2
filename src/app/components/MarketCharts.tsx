@@ -12,9 +12,10 @@ import {
   Legend,
   ReferenceLine,
 } from 'recharts';
-import { RefreshCw, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { RefreshCw, TrendingUp, TrendingDown, Activity, AlertCircle } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { supabase } from '../lib/supabase';
+import { GLOBAL_FEAR_GREED_VALUE } from '../hooks/useMarketSnapshot';
 
 interface YieldCurveData {
   date: string;
@@ -41,102 +42,64 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
   const isDark = uiTheme === 'dark';
   const isHybrid = uiTheme === 'hybrid';
 
-  // Fetch historical data from Supabase
+  // Fetch historical data from Supabase - NO MOCK DATA
+  // Query: SELECT created_at, btc_price, systemic_risk, yield_spread FROM market_snapshots ORDER BY created_at ASC LIMIT 200
   const fetchHistoricalData = useCallback(async () => {
     setIsLoading(true);
     
     try {
-      if (supabase) {
-        // First try market_snapshots table (primary source)
-        const { data: snapshotData, error: snapshotError } = await supabase
-          .from('market_snapshots')
-          .select('created_at, btc_price, yield_spread, systemic_risk')
-          .order('created_at', { ascending: true })
-          .limit(100);
-
-        if (!snapshotError && snapshotData && snapshotData.length > 0) {
-          // Transform for yield curve chart
-          const yieldData: YieldCurveData[] = snapshotData.map(row => ({
-            date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            value: row.yield_spread || 0,
-          }));
-          setYieldCurveData(yieldData);
-
-          // Transform for price chart (use systemic_risk as fear_greed proxy)
-          const priceHistory: PriceData[] = snapshotData.map(row => ({
-            date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            price: row.btc_price || 0,
-            fearGreed: row.systemic_risk != null 
-              ? Math.round((1 - (row.systemic_risk > 1 ? row.systemic_risk / 100 : row.systemic_risk)) * 100)
-              : 50,
-          }));
-          setPriceData(priceHistory);
-        } else {
-          // Fallback to market_reports table
-          const { data, error } = await supabase
-            .from('market_reports')
-            .select('created_at, btc_price, fear_greed_value, yield_curve')
-            .order('created_at', { ascending: true })
-            .limit(30);
-
-          if (!error && data && data.length > 0) {
-            const yieldData: YieldCurveData[] = data.map(row => ({
-              date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-              value: parseFloat(row.yield_curve) || 0,
-            }));
-            setYieldCurveData(yieldData);
-
-            const priceHistory: PriceData[] = data.map(row => ({
-              date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-              price: row.btc_price || 0,
-              fearGreed: row.fear_greed_value || 50,
-            }));
-            setPriceData(priceHistory);
-          } else {
-            generateMockData();
-          }
-        }
-      } else {
-        generateMockData();
+      if (!supabase) {
+        // No Supabase - show waiting state
+        setYieldCurveData([]);
+        setPriceData([]);
+        setIsLoading(false);
+        return;
       }
+      
+      // Fetch from market_snapshots table (primary source)
+      const { data: snapshotData, error: snapshotError } = await supabase
+        .from('market_snapshots')
+        .select('created_at, btc_price, yield_spread, systemic_risk')
+        .order('created_at', { ascending: true })
+        .limit(200);
+
+      if (snapshotError) {
+        console.error('Failed to fetch market data:', snapshotError);
+        setYieldCurveData([]);
+        setPriceData([]);
+        return;
+      }
+      
+      if (!snapshotData || snapshotData.length === 0) {
+        // No data yet - show waiting state, DO NOT generate mock data
+        setYieldCurveData([]);
+        setPriceData([]);
+        return;
+      }
+
+      // Transform for yield curve chart
+      const yieldData: YieldCurveData[] = snapshotData.map(row => ({
+        date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value: row.yield_spread || 0,
+      }));
+      setYieldCurveData(yieldData);
+
+      // Transform for price chart - use GLOBAL Fear & Greed value (22 = Extreme Fear)
+      const priceHistory: PriceData[] = snapshotData.map(row => ({
+        date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        price: row.btc_price || 0,
+        fearGreed: GLOBAL_FEAR_GREED_VALUE, // Consistent Fear & Greed = 22
+      }));
+      setPriceData(priceHistory);
     } catch (error) {
       console.error('Failed to fetch historical data:', error);
-      generateMockData();
+      // Do NOT fall back to mock data - show error state
+      setYieldCurveData([]);
+      setPriceData([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
-
-  // Generate mock data for demonstration
-  const generateMockData = () => {
-    const now = new Date();
-    const mockYield: YieldCurveData[] = [];
-    const mockPrice: PriceData[] = [];
-
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-      // Simulated yield curve with some volatility
-      const baseYield = -0.3 + Math.sin(i / 5) * 0.2;
-      mockYield.push({
-        date: dateStr,
-        value: parseFloat((baseYield + (Math.random() - 0.5) * 0.1).toFixed(3)),
-      });
-
-      // Simulated BTC price with trend
-      const basePrice = 67000 + (29 - i) * 100;
-      mockPrice.push({
-        date: dateStr,
-        price: Math.round(basePrice + (Math.random() - 0.5) * 2000),
-        fearGreed: Math.round(45 + Math.sin(i / 3) * 20 + (Math.random() - 0.5) * 10),
-      });
-    }
-
-    setYieldCurveData(mockYield);
-    setPriceData(mockPrice);
-  };
 
   useEffect(() => {
     fetchHistoricalData();
@@ -275,6 +238,12 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
         {isLoading ? (
           <div className={`h-full flex items-center justify-center ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'}`}>
             <RefreshCw className="w-8 h-8 animate-spin" />
+          </div>
+        ) : (yieldCurveData.length === 0 && priceData.length === 0) ? (
+          <div className={`h-full flex flex-col items-center justify-center gap-3 ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>
+            <AlertCircle className="w-10 h-10 text-amber-500" />
+            <p className="text-sm font-medium">Waiting for first market snapshot...</p>
+            <p className="text-xs opacity-60">Charts will populate when data is available from Supabase</p>
           </div>
         ) : activeChart === 'yield' ? (
           <ResponsiveContainer width="100%" height="100%">

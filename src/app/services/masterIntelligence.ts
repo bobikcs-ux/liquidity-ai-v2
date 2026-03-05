@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { GLOBAL_FEAR_GREED_VALUE, GLOBAL_FEAR_GREED_LABEL } from '../hooks/useMarketSnapshot';
 
 // 1. Interface for market data
 export interface MarketContext {
@@ -28,21 +29,12 @@ export const fetchAllMarketData = async (): Promise<MarketContext> => {
         .single();
 
       if (!error && latestSnapshot) {
-        // Also fetch Fear & Greed from external API (not stored in DB)
-        let fearGreedValue = '50';
-        let fearGreedLabel = 'Neutral';
-        try {
-          const fngRes = await fetch('https://api.alternative.me/fng/').then(r => r.json());
-          fearGreedValue = fngRes.data?.[0]?.value || '50';
-          fearGreedLabel = fngRes.data?.[0]?.value_classification || 'Neutral';
-        } catch {
-          // Use defaults
-        }
-
+        // Use GLOBAL Fear & Greed value (22 = Extreme Fear) for consistency
+        // This ensures Dashboard, Reports, Analytics, and PDF export all show the same value
         return {
           yieldCurve: latestSnapshot.yield_spread?.toFixed(2) || 'N/A',
-          fearGreedValue,
-          fearGreedLabel,
+          fearGreedValue: String(GLOBAL_FEAR_GREED_VALUE),
+          fearGreedLabel: GLOBAL_FEAR_GREED_LABEL,
           btcPrice: latestSnapshot.btc_price || 0,
           btcChange: 0, // Not stored in DB, would need historical comparison
           btcDominance: latestSnapshot.btc_dominance || 0,

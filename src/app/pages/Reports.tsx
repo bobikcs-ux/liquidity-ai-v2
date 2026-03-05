@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FileText, Download, AlertCircle, ExternalLink, Link2, Loader2 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useUserRole } from '../context/UserRoleContext';
-import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { useMarketSnapshot, GLOBAL_FEAR_GREED_VALUE, GLOBAL_FEAR_GREED_LABEL } from '../hooks/useMarketSnapshot';
 import { quickExport } from '../utils/exportPDF';
 
 // Revolut payment link (external) - not used directly here, handled by ProModal
@@ -189,11 +189,11 @@ export function Reports() {
     // Consistent AI processing delay (2 seconds) for perceived value
     await new Promise(resolve => setTimeout(resolve, AI_PROCESSING_DELAY));
     
-    // Generate and export PDF
+    // Generate and export PDF - use GLOBAL Fear & Greed for consistency
     const marketContext = {
       yieldCurve: snapshot?.yield_spread?.toFixed(2) || '-0.42',
-      fearGreedValue: '45', // Default value - FNG fetched separately
-      fearGreedLabel: 'Neutral',
+      fearGreedValue: String(GLOBAL_FEAR_GREED_VALUE), // 22 = Extreme Fear
+      fearGreedLabel: GLOBAL_FEAR_GREED_LABEL,
       btcPrice: snapshot?.btc_price || 67500,
       btcChange: 2.3,
       btcDominance: snapshot?.btc_dominance || 58.2,
@@ -214,13 +214,13 @@ export function Reports() {
     
     const marketContext = {
       yieldCurve: snapshot?.yield_spread?.toFixed(2) || '-0.42',
-      fearGreedValue: '45', // Default value - FNG fetched separately
-      fearGreedLabel: 'Neutral',
+      fearGreedValue: String(GLOBAL_FEAR_GREED_VALUE), // 22 = Extreme Fear
+      fearGreedLabel: GLOBAL_FEAR_GREED_LABEL,
       btcPrice: snapshot?.btc_price || 67500,
       btcChange: 2.3,
       btcDominance: snapshot?.btc_dominance || 58.2,
       survivalProbability: snapshot?.survival_probability,
-      systemicRisk: snapshot?.systemic_risk,
+      systemicRisk: snapshot?.systemicRisk,
       regime: snapshot?.regime,
       balanceSheetDelta: snapshot?.balance_sheet_delta,
     };

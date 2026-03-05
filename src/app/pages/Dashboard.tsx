@@ -1,13 +1,14 @@
 import React from 'react';
 import { TrendingUp, AlertTriangle, Activity, DollarSign, ShieldAlert, Cpu } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
-import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { useMarketSnapshot, GLOBAL_FEAR_GREED_VALUE, GLOBAL_FEAR_GREED_LABEL } from '../hooks/useMarketSnapshot';
 import { AICopilot } from '../components/AICopilot';
 import { RiskDefenseAI } from '../components/RiskDefenseAI';
 import { ResourceShockEngine } from '../components/ResourceShockEngine';
 import { ConflictTransmissionModel } from '../components/ConflictTransmissionModel';
 import { EmploymentDisruptionLayer } from '../components/EmploymentDisruptionLayer';
 import { NarrativeShockModel } from '../components/NarrativeShockModel';
+import { DataSourceStatus } from '../components/DataSourceStatus';
 
 export function Dashboard() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
@@ -54,15 +55,21 @@ export function Dashboard() {
           </p>
         </div>
 
-        {/* AI STATUS HUD */}
-        <div className="flex items-center gap-5 bg-blue-950/20 px-5 py-3 rounded-2xl border border-blue-500/20 backdrop-blur-sm">
-          <div className="flex flex-col items-end">
-            <span className="text-[10px] text-blue-400 font-mono uppercase leading-none mb-1">Neural Uplink</span>
-            <span className="text-sm font-bold text-white tracking-tight uppercase">Copilot Online</span>
-          </div>
-          <div className="relative flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full border border-blue-500/30 animate-spin-slow absolute"></div>
-            <Cpu className="w-5 h-5 text-blue-400" />
+        {/* AI STATUS HUD + Data Source Status */}
+        <div className="flex items-center gap-4">
+          {/* Data Source Status Indicator */}
+          <DataSourceStatus />
+          
+          {/* AI Status */}
+          <div className="flex items-center gap-5 bg-blue-950/20 px-5 py-3 rounded-2xl border border-blue-500/20 backdrop-blur-sm">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-blue-400 font-mono uppercase leading-none mb-1">Neural Uplink</span>
+              <span className="text-sm font-bold text-white tracking-tight uppercase">Copilot Online</span>
+            </div>
+            <div className="relative flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full border border-blue-500/30 animate-spin-slow absolute"></div>
+              <Cpu className="w-5 h-5 text-blue-400" />
+            </div>
           </div>
         </div>
       </div>

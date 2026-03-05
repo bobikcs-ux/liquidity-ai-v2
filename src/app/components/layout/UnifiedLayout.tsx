@@ -21,6 +21,7 @@ import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 import { useUserRole } from '../../context/UserRoleContext';
 import { InstitutionalQR } from '../ProModal';
+import { DataSourceStatusCompact } from '../DataSourceStatus';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
@@ -360,12 +361,13 @@ export function UnifiedLayout() {
                 </div>
               </div>
               
-              {/* Center - Terminal QR - Industrial Style, Level H Error Correction */}
-              <div className="hidden md:block">
+              {/* Center - Terminal QR - Production Spec: Black on White, 220px, Level H */}
+              <div className="hidden md:flex items-center gap-4">
+                <DataSourceStatusCompact />
                 <InstitutionalQR 
                   size={64} 
-                  fgColor="#10b981"
-                  bgColor="#000000"
+                  fgColor="#000000"
+                  bgColor="#ffffff"
                   label="[ NODE: LIQUIDITY.BOBIKCS.COM ]"
                 />
               </div>
