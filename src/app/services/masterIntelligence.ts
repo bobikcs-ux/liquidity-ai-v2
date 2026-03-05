@@ -12,6 +12,7 @@ export interface MarketContext {
   systemicRisk?: number;
   regime?: string;
   balanceSheetDelta?: number;
+  dataSourcesOk?: boolean;
 }
 
 // 2. Main function to fetch all market data - tries Supabase first, then external APIs
@@ -49,6 +50,7 @@ export const fetchAllMarketData = async (): Promise<MarketContext> => {
           systemicRisk: latestSnapshot.systemic_risk,
           regime: latestSnapshot.regime,
           balanceSheetDelta: latestSnapshot.balance_sheet_delta,
+          dataSourcesOk: latestSnapshot.data_sources_ok,
         };
       }
     } catch (err) {
