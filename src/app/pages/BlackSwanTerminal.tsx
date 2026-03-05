@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Activity, TrendingUp, Zap, Target, Shield, Brain, Info } from 'lucide-react';
+import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 
 type RiskLevel = 'GREEN' | 'AMBER' | 'RED' | 'BLACK';
 
@@ -12,49 +13,63 @@ interface SystemicSignal {
 }
 
 export function BlackSwanTerminal() {
-  const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
-  
-  // Simulated Black Swan Risk Index (0-100)
-  const blackSwanIndex = 73;
-  
-  // Risk level determination
-  const getRiskLevel = (index: number): RiskLevel => {
-    if (index >= 80) return 'BLACK';
-    if (index >= 60) return 'RED';
-    if (index >= 40) return 'AMBER';
-    return 'GREEN';
-  };
-  
-  const riskLevel = getRiskLevel(blackSwanIndex);
-  
-  // Systemic stress probabilities
-  const stressProbabilities = {
-    '7d': 24,
-    '30d': 58,
-    '90d': 67,
-  };
-  
-  // Primary risk drivers
-  const riskDrivers = [
-    {
-      driver: 'Liquidity Depth Reduction',
-      impact: 94,
-      trend: 'accelerating',
-      description: 'Market depth declining across major asset classes',
-    },
-    {
-      driver: 'Cross-Asset Correlation Spike',
-      impact: 87,
-      trend: 'stable',
-      description: 'Equities and bonds moving in sync, hedge breakdown',
-    },
-    {
-      driver: 'Credit Spread Widening',
-      impact: 76,
-      trend: 'emerging',
-      description: 'BBB corporate spreads expanding above historical norms',
-    },
-  ];
+  const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
+  const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
+  
+  // Calculate Black Swan Risk Index from real data
+  const systemicRisk = snapshot?.systemic_risk != null 
+    ? (snapshot.systemic_risk > 1 ? snapshot.systemic_risk : Math.round(snapshot.systemic_risk * 100))
+    : 35;
+  const balanceSheetDelta = snapshot?.balance_sheet_delta ?? -2.3;
+  const rateShock = snapshot?.rate_shock != null 
+    ? (snapshot.rate_shock > 1 ? snapshot.rate_shock : Math.round(snapshot.rate_shock * 100))
+    : 15;
+  const btcVolatility = snapshot?.btc_volatility != null 
+    ? (snapshot.btc_volatility > 1 ? snapshot.btc_volatility : Math.round(snapshot.btc_volatility * 100))
+    : 65;
+  
+  // Calculate Black Swan Index from systemic risk components
+  const blackSwanIndex = Math.min(100, Math.round(systemicRisk * 1.5 + rateShock * 0.3 + btcVolatility * 0.2));
+  
+  // Risk level determination
+  const getRiskLevel = (index: number): RiskLevel => {
+    if (index >= 80) return 'BLACK';
+    if (index >= 60) return 'RED';
+    if (index >= 40) return 'AMBER';
+    return 'GREEN';
+  };
+  
+  const riskLevel = getRiskLevel(blackSwanIndex);
+  
+  // Systemic stress probabilities - derived from real data
+  const baseStress = systemicRisk;
+  const stressProbabilities = {
+    '7d': Math.min(95, Math.round(baseStress * 0.7)),
+    '30d': Math.min(95, Math.round(baseStress * 1.2)),
+    '90d': Math.min(95, Math.round(baseStress * 1.5)),
+  };
+  
+  // Primary risk drivers - mapped from real database metrics
+  const riskDrivers = [
+    {
+      driver: 'Balance Sheet Contraction (QT)',
+      impact: Math.min(100, Math.abs(balanceSheetDelta) * 10),
+      trend: balanceSheetDelta < -5 ? 'accelerating' : balanceSheetDelta < 0 ? 'stable' : 'easing',
+      description: `Fed balance sheet delta: ${balanceSheetDelta.toFixed(1)}% (${balanceSheetDelta < 0 ? 'QT' : 'QE'})`,
+    },
+    {
+      driver: 'Interest Rate Shock',
+      impact: rateShock,
+      trend: rateShock > 20 ? 'accelerating' : rateShock > 10 ? 'stable' : 'normalizing',
+      description: `Rate shock velocity: ${rateShock}% above historical norms`,
+    },
+    {
+      driver: 'Crypto Volatility Index',
+      impact: btcVolatility,
+      trend: btcVolatility > 70 ? 'accelerating' : btcVolatility > 50 ? 'elevated' : 'stable',
+      description: `BTC volatility at ${btcVolatility}% - ${btcVolatility > 60 ? 'high leverage risk' : 'moderate conditions'}`,
+    },
+  ];
   
   // Historical analog matches
   const historicalAnalogs = [
@@ -63,51 +78,51 @@ export function BlackSwanTerminal() {
     { event: '2022 Tightening Crisis', similarity: 71, year: '2022' },
   ];
   
-  // Signal layers
-  const signalLayers: SystemicSignal[] = [
-    {
-      category: 'Macro Layer',
-      metric: 'Interest Rate Shock Velocity',
-      value: 78,
-      threshold: 65,
-      severity: 'high',
-    },
-    {
-      category: 'Macro Layer',
-      metric: 'Central Bank Balance Sheet Change',
-      value: -12.3,
-      threshold: -10,
-      severity: 'medium',
-    },
-    {
-      category: 'Market Structure',
-      metric: 'Cross-Asset Correlation Spike',
-      value: 0.87,
-      threshold: 0.7,
-      severity: 'critical',
-    },
-    {
-      category: 'Market Structure',
-      metric: 'Liquidity Depth Reduction',
-      value: -34,
-      threshold: -20,
-      severity: 'critical',
-    },
-    {
-      category: 'Crypto Layer',
-      metric: 'Funding Rate Divergence',
-      value: 2.8,
-      threshold: 2.0,
-      severity: 'high',
-    },
-    {
-      category: 'Credit Layer',
-      metric: 'Corporate Spread Widening',
-      value: 245,
-      threshold: 180,
-      severity: 'high',
-    },
-  ];
+// Signal layers - mapped from real database metrics
+  const signalLayers: SystemicSignal[] = [
+    {
+      category: 'Macro Layer',
+      metric: 'Interest Rate Shock Velocity',
+      value: rateShock,
+      threshold: 20,
+      severity: rateShock > 30 ? 'critical' : rateShock > 20 ? 'high' : 'medium',
+    },
+    {
+      category: 'Macro Layer',
+      metric: 'Central Bank Balance Sheet Change',
+      value: balanceSheetDelta,
+      threshold: -5,
+      severity: balanceSheetDelta < -10 ? 'critical' : balanceSheetDelta < -5 ? 'high' : 'medium',
+    },
+    {
+      category: 'Market Structure',
+      metric: 'Systemic Risk Index',
+      value: systemicRisk,
+      threshold: 40,
+      severity: systemicRisk > 60 ? 'critical' : systemicRisk > 40 ? 'high' : 'medium',
+    },
+    {
+      category: 'Market Structure',
+      metric: 'Yield Spread (10Y-2Y)',
+      value: snapshot?.yield_spread ?? -0.42,
+      threshold: 0,
+      severity: (snapshot?.yield_spread ?? -0.42) < -0.5 ? 'critical' : (snapshot?.yield_spread ?? -0.42) < 0 ? 'high' : 'low',
+    },
+    {
+      category: 'Crypto Layer',
+      metric: 'BTC Volatility Index',
+      value: btcVolatility,
+      threshold: 50,
+      severity: btcVolatility > 70 ? 'critical' : btcVolatility > 50 ? 'high' : 'medium',
+    },
+    {
+      category: 'Credit Layer',
+      metric: 'VaR 95% Threshold',
+      value: (snapshot?.var_95 ?? 0.12) * 100,
+      threshold: 10,
+      severity: (snapshot?.var_95 ?? 0.12) > 0.15 ? 'critical' : (snapshot?.var_95 ?? 0.12) > 0.1 ? 'high' : 'medium',
+    },
+  ];
   
   const getRiskColor = (level: RiskLevel) => {
     switch (level) {

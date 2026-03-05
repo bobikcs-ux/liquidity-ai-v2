@@ -18,6 +18,7 @@ import {
   ChevronLeft
 } from 'lucide-react';
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
+import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
@@ -32,10 +33,23 @@ const navItems = [
 export function UnifiedLayout() {
   const location = useLocation();
   const { currentRegime, uiTheme, setManualOverride } = useAdaptiveTheme();
+  const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
   });
+  
+  // Format values from Supabase snapshot
+  const systemicRisk = snapshot?.systemic_risk != null 
+    ? (snapshot.systemic_risk > 1 ? snapshot.systemic_risk : Math.round(snapshot.systemic_risk * 100))
+    : 67.3;
+  const survivalProb = snapshot?.survival_probability != null 
+    ? (snapshot.survival_probability > 1 ? snapshot.survival_probability : Math.round(snapshot.survival_probability * 100))
+    : 78;
+  const yieldSpread = snapshot?.yield_spread?.toFixed(2) ?? '-0.23';
+  const btcVolatility = snapshot?.btc_volatility != null 
+    ? (snapshot.btc_volatility > 1 ? snapshot.btc_volatility.toFixed(2) : (snapshot.btc_volatility * 100).toFixed(1))
+    : '0.42';
 
   const toggleSidebar = () => {
     const newState = !sidebarCollapsed;
@@ -162,19 +176,29 @@ export function UnifiedLayout() {
             
             <div className="flex items-center gap-2">
               <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>SRI</span>
-              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>67.3</span>
-              <span className="text-green-600">+2.1%</span>
+              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                {snapshotLoading ? '...' : systemicRisk}
+              </span>
+              <span className={systemicRisk > 50 ? 'text-red-600' : 'text-green-600'}>
+                {systemicRisk > 50 ? 'HIGH' : 'OK'}
+              </span>
             </div>
             <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
             <div className="flex items-center gap-2">
-              <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>BTC Risk</span>
-              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>0.42</span>
-              <span className="text-red-600">-5.3%</span>
+              <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>Survival</span>
+              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                {snapshotLoading ? '...' : `${survivalProb}%`}
+              </span>
+              <span className={survivalProb >= 70 ? 'text-green-600' : survivalProb >= 50 ? 'text-amber-600' : 'text-red-600'}>
+                {survivalProb >= 70 ? 'SAFE' : survivalProb >= 50 ? 'CAUTION' : 'RISK'}
+              </span>
             </div>
             <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
             <div className="flex items-center gap-2">
               <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>Yield</span>
-              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>-0.23</span>
+              <span className={`font-medium ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-white'}`}>
+                {snapshotLoading ? '...' : `${yieldSpread}%`}
+              </span>
             </div>
             
             {/* Risk Level Indicator (shows in terminal/hybrid mode) */}

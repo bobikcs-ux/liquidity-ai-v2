@@ -9,6 +9,7 @@ export interface MarketSnapshot {
   balance_sheet_delta: number;
   btc_price: number;
   btc_volatility: number;
+  btc_dominance: number;
   systemic_risk: number;
   survival_probability: number;
   var_95: number;
@@ -41,8 +42,9 @@ const mockLatest: MarketSnapshot = {
   balance_sheet_delta: -2.3,
   btc_price: 67500,
   btc_volatility: 0.65,
+  btc_dominance: 57.4,
   systemic_risk: 0.35,
-  survival_probability: 0.78,
+  survival_probability: 0.70,
   var_95: 0.12,
   regime: 'stress',
   data_sources_ok: true,
@@ -64,8 +66,9 @@ const generateMockHistory = (): MarketSnapshot[] => {
       balance_sheet_delta: -2.3 + noise * 5,
       btc_price: 67500 + (Math.random() - 0.5) * 2000,
       btc_volatility: 0.65 + noise,
+      btc_dominance: 57.4 + (Math.random() - 0.5) * 2,
       systemic_risk: Math.max(0, Math.min(1, 0.35 + noise)),
-      survival_probability: Math.max(0, Math.min(1, 0.78 + noise)),
+      survival_probability: Math.max(0, Math.min(1, 0.70 + noise)),
       var_95: 0.12 + noise * 0.5,
       regime: Math.random() > 0.7 ? 'stress' : 'normal',
       data_sources_ok: true,

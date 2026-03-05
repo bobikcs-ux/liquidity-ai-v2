@@ -1,14 +1,35 @@
 import React from 'react';
 import { GitBranch, Target, BarChart3, Network, Droplets, Gauge } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { IntelligenceCopilot } from '../components/IntelligenceCopilot';
 import { MarketCharts } from '../components/MarketCharts';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 export function Intelligence() {
   const { uiTheme } = useAdaptiveTheme();
+  const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
+  
+  // Calculate real values from Supabase snapshot
+  const survivalProb = snapshot?.survival_probability != null 
+    ? (snapshot.survival_probability > 1 ? snapshot.survival_probability : Math.round(snapshot.survival_probability * 100))
+    : 78;
+  const systemicRisk = snapshot?.systemic_risk != null 
+    ? (snapshot.systemic_risk > 1 ? snapshot.systemic_risk : Math.round(snapshot.systemic_risk * 100))
+    : 35;
+  const btcVolatility = snapshot?.btc_volatility != null 
+    ? (snapshot.btc_volatility > 1 ? snapshot.btc_volatility : Math.round(snapshot.btc_volatility * 100))
+    : 65;
+  const regime = snapshot?.regime || 'normal';
+  
+  // Regime transition probabilities based on current regime
+  const regimeTransitions = regime === 'crisis' 
+    ? { toNeutral: 12, toStress: 15, maintain: 73 }
+    : regime === 'stress'
+    ? { toNeutral: 23, toStress: 8, maintain: 69 }
+    : { toNeutral: 45, toStress: 5, maintain: 50 };
   
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -43,31 +64,31 @@ export function Intelligence() {
           <div className="space-y-4">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Expansionary → Neutral</span>
-                <span className="text-sm font-semibold text-gray-900">23%</span>
+                <span className="text-sm text-gray-600">{regime.charAt(0).toUpperCase() + regime.slice(1)} → Neutral</span>
+                <span className="text-sm font-semibold text-gray-900">{regimeTransitions.toNeutral}%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-amber-500" style={{ width: '23%' }}></div>
+                <div className="h-full bg-amber-500" style={{ width: `${regimeTransitions.toNeutral}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-gray-600">Expansionary → Stress</span>
-                <span className="text-sm font-semibold text-gray-900">8%</span>
+                <span className="text-sm text-gray-600">{regime.charAt(0).toUpperCase() + regime.slice(1)} → Stress</span>
+                <span className="text-sm font-semibold text-gray-900">{regimeTransitions.toStress}%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-red-500" style={{ width: '8%' }}></div>
+                <div className="h-full bg-red-500" style={{ width: `${regimeTransitions.toStress}%` }}></div>
               </div>
             </div>
 
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Maintain Current</span>
-                <span className="text-sm font-semibold text-gray-900">69%</span>
+                <span className="text-sm font-semibold text-gray-900">{regimeTransitions.maintain}%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full bg-green-500" style={{ width: '69%' }}></div>
+                <div className="h-full bg-green-500" style={{ width: `${regimeTransitions.maintain}%` }}></div>
               </div>
             </div>
           </div>
@@ -126,22 +147,24 @@ export function Intelligence() {
           </div>
 
           <div className="text-center py-8">
-            <div className="text-5xl font-bold text-amber-600 mb-2">38%</div>
-            <p className="text-sm text-gray-600">Next 14 days</p>
+            <div className={`text-5xl font-bold mb-2 ${btcVolatility > 60 ? 'text-red-600' : btcVolatility > 40 ? 'text-amber-600' : 'text-green-600'}`}>
+              {snapshotLoading ? '...' : `${btcVolatility}%`}
+            </div>
+            <p className="text-sm text-gray-600">BTC Volatility Index</p>
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Current VIX</span>
-              <span className="font-semibold text-gray-900">15.7</span>
+              <span className="text-gray-600">Systemic Risk</span>
+              <span className="font-semibold text-gray-900">{systemicRisk}%</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Projected VIX</span>
-              <span className="font-semibold text-gray-900">22.3</span>
+              <span className="text-gray-600">Survival Prob</span>
+              <span className="font-semibold text-gray-900">{survivalProb}%</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Confidence</span>
-              <span className="font-semibold text-gray-900">71%</span>
+              <span className="text-gray-600">Regime</span>
+              <span className="font-semibold text-gray-900">{regime.toUpperCase()}</span>
             </div>
           </div>
         </div>

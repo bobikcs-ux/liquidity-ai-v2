@@ -46,32 +46,55 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
     setIsLoading(true);
     
     try {
-      // Fetch from market_reports table
       if (supabase) {
-        const { data, error } = await supabase
-          .from('market_reports')
-          .select('created_at, btc_price, fear_greed_value, yield_curve')
+        // First try market_snapshots table (primary source)
+        const { data: snapshotData, error: snapshotError } = await supabase
+          .from('market_snapshots')
+          .select('created_at, btc_price, yield_spread, systemic_risk')
           .order('created_at', { ascending: true })
-          .limit(30);
+          .limit(100);
 
-        if (!error && data && data.length > 0) {
+        if (!snapshotError && snapshotData && snapshotData.length > 0) {
           // Transform for yield curve chart
-          const yieldData: YieldCurveData[] = data.map(row => ({
+          const yieldData: YieldCurveData[] = snapshotData.map(row => ({
             date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            value: parseFloat(row.yield_curve) || 0,
+            value: row.yield_spread || 0,
           }));
           setYieldCurveData(yieldData);
 
-          // Transform for price chart
-          const priceHistory: PriceData[] = data.map(row => ({
+          // Transform for price chart (use systemic_risk as fear_greed proxy)
+          const priceHistory: PriceData[] = snapshotData.map(row => ({
             date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             price: row.btc_price || 0,
-            fearGreed: row.fear_greed_value || 50,
+            fearGreed: row.systemic_risk != null 
+              ? Math.round((1 - (row.systemic_risk > 1 ? row.systemic_risk / 100 : row.systemic_risk)) * 100)
+              : 50,
           }));
           setPriceData(priceHistory);
         } else {
-          // Generate mock data if no database records
-          generateMockData();
+          // Fallback to market_reports table
+          const { data, error } = await supabase
+            .from('market_reports')
+            .select('created_at, btc_price, fear_greed_value, yield_curve')
+            .order('created_at', { ascending: true })
+            .limit(30);
+
+          if (!error && data && data.length > 0) {
+            const yieldData: YieldCurveData[] = data.map(row => ({
+              date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              value: parseFloat(row.yield_curve) || 0,
+            }));
+            setYieldCurveData(yieldData);
+
+            const priceHistory: PriceData[] = data.map(row => ({
+              date: new Date(row.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              price: row.btc_price || 0,
+              fearGreed: row.fear_greed_value || 50,
+            }));
+            setPriceData(priceHistory);
+          } else {
+            generateMockData();
+          }
         }
       } else {
         generateMockData();

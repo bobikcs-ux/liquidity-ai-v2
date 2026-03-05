@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrendingUp, AlertTriangle, Activity, DollarSign, ShieldAlert, Cpu } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { AICopilot } from '../components/AICopilot';
 import { RiskDefenseAI } from '../components/RiskDefenseAI';
 import { ResourceShockEngine } from '../components/ResourceShockEngine';
@@ -10,8 +11,16 @@ import { NarrativeShockModel } from '../components/NarrativeShockModel';
 
 export function Dashboard() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
+  const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
+  
+  // Format values from Supabase snapshot
+  const survivalProb = snapshot?.survival_probability != null 
+    ? (snapshot.survival_probability > 1 ? snapshot.survival_probability : Math.round(snapshot.survival_probability * 100))
+    : 78;
+  const yieldSpread = snapshot?.yield_spread?.toFixed(2) ?? '-0.23';
+  const btcDominance = snapshot?.btc_dominance?.toFixed(1) ?? '57.4';
   
   const cardStyle = `rounded-xl shadow-sm border p-6 transition-all duration-500 ${
     isDark ? 'bg-[#0a0f1a] border-blue-900/40' : 
@@ -140,8 +149,10 @@ export function Dashboard() {
             </h2>
           </div>
           <div className="text-center py-4">
-            <div className="text-6xl font-black text-green-500 mb-2 font-mono">
-              {Math.round(94 - currentRegime.riskLevel * 0.3)}%
+            <div className={`text-6xl font-black mb-2 font-mono ${
+              survivalProb >= 70 ? 'text-green-500' : survivalProb >= 50 ? 'text-amber-500' : 'text-red-500'
+            }`}>
+              {snapshotLoading ? '...' : `${survivalProb}%`}
             </div>
             <p className="text-[9px] font-mono text-gray-500 uppercase">30-day horizon survival probability</p>
           </div>
@@ -162,9 +173,9 @@ export function Dashboard() {
           </div>
           <div className="space-y-3">
             {[
-              { label: 'Real Yield', val: '2.34%', trend: 'neutral' },
-              { label: 'M2 Momentum', val: '+3.2%', trend: 'up' },
-              { label: 'Yield Curve', val: '-0.23', trend: 'down' },
+              { label: 'BTC Dominance', val: snapshotLoading ? '...' : `${btcDominance}%`, trend: parseFloat(btcDominance) > 55 ? 'up' : 'neutral' },
+              { label: 'Survival Prob', val: snapshotLoading ? '...' : `${survivalProb}%`, trend: survivalProb >= 70 ? 'up' : survivalProb >= 50 ? 'neutral' : 'down' },
+              { label: 'Yield Curve', val: snapshotLoading ? '...' : `${yieldSpread}%`, trend: parseFloat(yieldSpread) < 0 ? 'down' : 'up' },
               { label: 'VIX Terminal', val: currentRegime.volatilityIndex, trend: 'neutral' },
             ].map((m, i) => (
               <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2">

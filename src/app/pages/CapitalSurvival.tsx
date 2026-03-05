@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Shield, Brain, Activity, TrendingUp, Zap, Target, AlertTriangle, Sparkles, ChevronRight, Lock, Unlock } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 
 interface DefenseStrategy {
   category: string;
@@ -19,29 +20,43 @@ interface SurvivalMetric {
 
 export function CapitalSurvival() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
+  const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const [optimizeMode, setOptimizeMode] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<'base' | 'stress' | 'crisis'>('base');
   
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   
-  // Capital Survival Probability Engine
+  // Calculate real values from Supabase snapshot
+  const survivalProb = snapshot?.survival_probability != null 
+    ? (snapshot.survival_probability > 1 ? snapshot.survival_probability : Math.round(snapshot.survival_probability * 100))
+    : 78;
+  const systemicRisk = snapshot?.systemic_risk != null 
+    ? (snapshot.systemic_risk > 1 ? snapshot.systemic_risk : Math.round(snapshot.systemic_risk * 100))
+    : 35;
+  const regime = snapshot?.regime || 'normal';
+  
+  // Capital Survival Probability Engine - use real data
   const survivalMetrics: SurvivalMetric[] = [
     {
       timeframe: 'Short Term (30d)',
-      probability: 87,
+      probability: survivalProb,
       confidence: 94,
-      keyFactors: ['Liquidity buffer adequate', 'Low leverage exposure', 'Diversified holdings'],
+      keyFactors: regime === 'crisis' 
+        ? ['High systemic risk detected', 'Liquidity conditions stressed', 'Defensive positioning needed']
+        : regime === 'stress'
+        ? ['Macro uncertainty elevated', 'Credit conditions tightening', 'Vol regime unstable']
+        : ['Liquidity buffer adequate', 'Low leverage exposure', 'Diversified holdings'],
     },
     {
       timeframe: 'Medium Term (90d)',
-      probability: 73,
+      probability: Math.max(survivalProb - 14, 40),
       confidence: 86,
       keyFactors: ['Macro uncertainty elevated', 'Credit conditions tightening', 'Vol regime unstable'],
     },
     {
       timeframe: 'Systemic Risk',
-      probability: 42,
+      probability: 100 - systemicRisk,
       confidence: 78,
       keyFactors: ['Contagion risk present', 'Network fragility detected', 'Correlation breakdown likely'],
     },
