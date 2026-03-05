@@ -468,12 +468,15 @@ export const generateReportHTML = (data: ReportData): string => {
     <div class="footer">
       <p>BOBIKCS // TERMINAL v1.0 - Black Swan Intelligence Engine</p>
       
-      <!-- Institutional QR Code Section - Optimized for PDF Scanning -->
+      <!-- QR Code Section - Links to Landing Page for Live Data & Upgrade -->
       <div style="display: flex; justify-content: center; margin: 24px 0;">
-        <div class="qr-container" style="text-align: center; padding: 16px; background: #FFFFFF; border: 2px solid #e5e7eb; border-radius: 8px;">
+        <div class="qr-container" style="text-align: center; padding: 20px; background: #FFFFFF; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+          <p style="font-size: 11px; font-family: 'Inter', sans-serif; color: #6b7280; margin-bottom: 12px; font-weight: 500;">
+            Visit our platform for live data
+          </p>
           ${generateInstitutionalQRSVG()}
-          <p style="font-size: 9px; font-family: 'Courier New', monospace; letter-spacing: 0.15em; color: #059669; margin-top: 12px; text-transform: uppercase; font-weight: 600;">
-            SCAN FOR LIVE DATA
+          <p style="font-size: 10px; font-family: 'Courier New', monospace; letter-spacing: 0.1em; color: #059669; margin-top: 12px; text-transform: uppercase; font-weight: 600;">
+            LIQUIDITY.BOBIKCS.COM
           </p>
         </div>
       </div>

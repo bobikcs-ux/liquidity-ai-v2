@@ -4,8 +4,8 @@ import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useUserRole } from '../context/UserRoleContext';
 import { sendStructuredEmail, EMAIL_REGEX } from '../components/ProModal';
 
-// Revolut payment link (external)
-const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
+// Revolut payment link (external) - Updated checkout link
+const REVOLUT_PAYMENT_URL = 'https://checkout.revolut.com/pay/d65728c7-7bee-48b1-9c48-ee51b51c9257';
 
 // Institutional Inquiry Modal
 function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -421,13 +421,39 @@ export function Profile() {
             </div>
           </div>
 
-          <button 
-            onClick={handleUpgrade}
-            className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+          {/* Revolut QR Code */}
+          <div className="flex flex-col items-center mb-6">
+            <p className={`text-sm font-medium mb-3 ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>
+              Scan to pay with Revolut App
+            </p>
+            <a 
+              href={REVOLUT_PAYMENT_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block p-5 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <img 
+                src="/revolut-qr.png" 
+                alt="Scan to pay with Revolut" 
+                width={140} 
+                height={140}
+                className="block"
+                style={{ imageRendering: 'crisp-edges' }}
+              />
+            </a>
+          </div>
+          
+          <a 
+            href={REVOLUT_PAYMENT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 text-center"
           >
-            <Crown className="w-5 h-5" />
-            Upgrade to PRO - $149
-          </button>
+            <span className="flex items-center justify-center gap-2">
+              <Crown className="w-5 h-5" />
+              Upgrade to PRO - $149
+            </span>
+          </a>
           
           {/* Payment Instructions */}
           <div className={`mt-4 p-3 rounded-xl ${isDark || isHybrid ? 'bg-gray-700/50' : 'bg-white'}`}>
