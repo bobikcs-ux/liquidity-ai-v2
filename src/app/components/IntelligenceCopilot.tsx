@@ -194,12 +194,29 @@ export function IntelligenceCopilot() {
         if (!marketContext || !masterAnalysis) {
           addResult('No analysis to export. Run /scan first.', 'warning');
         } else {
-          addResult('Generating PDF report...', 'info');
-          const exported = await quickExport(marketContext, masterAnalysis);
-          if (exported) {
-            addResult('PDF report generated. Check your print dialog.', 'success');
-          } else {
-            addResult('PDF export failed. Please allow popups and try again.', 'error');
+          setIsScanning(true);
+          addResult('Refreshing data and generating PDF report...', 'info');
+          try {
+            // Refetch latest data before export to ensure freshness
+            const freshContext = await fetchAllMarketData();
+            // Small delay to ensure UI updates
+            await new Promise(resolve => setTimeout(resolve, 100));
+            setMarketContext(freshContext);
+            
+            const exported = await quickExport(freshContext, masterAnalysis);
+            if (exported) {
+              addResult('PDF report generated with latest data. Check your print dialog.', 'success');
+            } else {
+              addResult('PDF export failed. Please allow popups and try again.', 'error');
+            }
+          } catch (error) {
+            addResult('Failed to refresh data for export. Using cached data.', 'warning');
+            const exported = await quickExport(marketContext, masterAnalysis);
+            if (exported) {
+              addResult('PDF report generated. Check your print dialog.', 'success');
+            }
+          } finally {
+            setIsScanning(false);
           }
         }
         break;
@@ -377,7 +394,9 @@ export function IntelligenceCopilot() {
               </div>
               <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
                 Yield Curve: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
-                  {marketContext.yieldCurve}
+                  {marketContext.yieldCurve && marketContext.yieldCurve !== 'N/A' 
+                    ? `${marketContext.yieldCurve}%` 
+                    : 'N/A'}
                 </span>
               </div>
               <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>

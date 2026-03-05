@@ -11,6 +11,7 @@ export interface MarketContext {
   survivalProbability?: number;
   systemicRisk?: number;
   regime?: string;
+  balanceSheetDelta?: number;
 }
 
 // 2. Main function to fetch all market data - tries Supabase first, then external APIs
@@ -47,6 +48,7 @@ export const fetchAllMarketData = async (): Promise<MarketContext> => {
           survivalProbability: latestSnapshot.survival_probability,
           systemicRisk: latestSnapshot.systemic_risk,
           regime: latestSnapshot.regime,
+          balanceSheetDelta: latestSnapshot.balance_sheet_delta,
         };
       }
     } catch (err) {
@@ -174,17 +176,25 @@ const generateMockAnalysis = (context: MarketContext): string => {
   const fearGreed = parseInt(context.fearGreedValue) || 50;
   const yieldValue = parseFloat(context.yieldCurve || '0');
   
-  // Use database values if available, otherwise calculate
-  let survivalProb = context.survivalProbability != null 
-    ? Math.round(context.survivalProbability * 100) 
-    : 78;
+  // Use database values if available - survival_probability is stored as 0-1 decimal
+  // Check if value is already a percentage (>1) or decimal (0-1)
+  let survivalProb = 78;
+  if (context.survivalProbability != null) {
+    // If value is > 1, it's already a percentage; if <= 1, multiply by 100
+    survivalProb = context.survivalProbability > 1 
+      ? Math.round(context.survivalProbability) 
+      : Math.round(context.survivalProbability * 100);
+  }
   
-  let riskLevel = context.regime?.toUpperCase() || 'MODERATE';
-  if (riskLevel === 'NORMAL') riskLevel = 'LOW';
-  if (riskLevel === 'CRISIS') riskLevel = 'ELEVATED';
-  
-  // Override with calculated values if no DB data
-  if (context.survivalProbability == null) {
+  // Determine risk level strictly from database regime
+  let riskLevel = 'MODERATE';
+  if (context.regime) {
+    const regime = context.regime.toLowerCase();
+    if (regime === 'crisis') riskLevel = 'ELEVATED';
+    else if (regime === 'stress') riskLevel = 'STRESS';
+    else if (regime === 'normal') riskLevel = 'LOW';
+  } else if (context.survivalProbability == null) {
+    // Fallback calculation only if no DB data
     if (fearGreed < 25 || yieldValue < -0.5) {
       riskLevel = 'ELEVATED';
       survivalProb = 62;
@@ -197,9 +207,13 @@ const generateMockAnalysis = (context: MarketContext): string => {
     }
   }
   
+  // Determine liquidity state from balance_sheet_delta or systemic_risk
   let liquidityState = 'Stable';
-  if (context.systemicRisk != null) {
-    liquidityState = context.systemicRisk > 0.5 ? 'Tightening' : 
+  if (context.balanceSheetDelta != null) {
+    liquidityState = context.balanceSheetDelta < -0.1 ? 'Tightening (QT)' : 
+                     context.balanceSheetDelta > 0.1 ? 'Easing (QE)' : 'Neutral';
+  } else if (context.systemicRisk != null) {
+    liquidityState = context.systemicRisk > 0.5 ? 'Tightening (QT)' : 
                      context.systemicRisk > 0.3 ? 'Cautious' : 'Healthy';
   } else if (fearGreed < 25 || yieldValue < -0.5) {
     liquidityState = 'Tightening';
@@ -207,22 +221,36 @@ const generateMockAnalysis = (context: MarketContext): string => {
     liquidityState = 'Overextended';
   }
 
+  // Systemic risk display - same decimal check
+  let systemicRiskDisplay = '';
+  if (context.systemicRisk != null) {
+    const sysRisk = context.systemicRisk > 1 
+      ? Math.round(context.systemicRisk) 
+      : Math.round(context.systemicRisk * 100);
+    systemicRiskDisplay = `• **Systemic Risk:** ${sysRisk}%`;
+  }
+
+  // Yield curve with % unit
+  const yieldDisplay = context.yieldCurve && context.yieldCurve !== 'N/A' 
+    ? `${context.yieldCurve}%` 
+    : 'N/A';
+
   return `
 **BLACK SWAN RISK ASSESSMENT**
 
 • **Risk Level:** ${riskLevel}
 • **Survival Probability:** ${survivalProb}%
 • **Liquidity State:** ${liquidityState}
-${context.systemicRisk != null ? `• **Systemic Risk:** ${Math.round(context.systemicRisk * 100)}%` : ''}
+${systemicRiskDisplay}
 
 **Market Conditions:**
-- Yield Curve: ${context.yieldCurve}${yieldValue < 0 ? ' (INVERTED - Recession Signal)' : ''}
+- Yield Curve (10Y-2Y): ${yieldDisplay}${yieldValue < 0 ? ' (INVERTED - Recession Signal)' : ''}
 - Sentiment: ${context.fearGreedLabel} (${context.fearGreedValue}/100)
 - BTC: $${context.btcPrice.toLocaleString()} (${context.btcChange >= 0 ? '+' : ''}${context.btcChange.toFixed(2)}%)
 - BTC Dominance: ${context.btcDominance.toFixed(1)}%
 
 **Final Warning:**
-${riskLevel === 'ELEVATED' || riskLevel === 'CRISIS'
+${riskLevel === 'ELEVATED' || riskLevel === 'CRISIS' || riskLevel === 'STRESS'
   ? 'Defensive positioning recommended. Reduce leverage and increase hedges.'
   : riskLevel === 'EUPHORIA WARNING'
   ? 'Market complacency detected. Consider profit-taking and protective puts.'

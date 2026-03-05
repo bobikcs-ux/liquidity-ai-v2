@@ -11,22 +11,62 @@ interface ReportData {
 export const generateReportHTML = (data: ReportData): string => {
   const { context, analysis, timestamp } = data;
   
-  // Calculate risk metrics
+  // Use database regime for risk level (strict sync)
   const fearGreed = parseInt(context.fearGreedValue) || 50;
   const yieldValue = parseFloat(context.yieldCurve || '0');
   
   let riskLevel = 'MODERATE';
   let riskColor = '#f59e0b';
-  if (fearGreed < 25 || yieldValue < -0.5) {
-    riskLevel = 'HIGH';
-    riskColor = '#ef4444';
-  } else if (fearGreed > 75) {
-    riskLevel = 'ELEVATED';
-    riskColor = '#f97316';
-  } else if (fearGreed > 50 && yieldValue > 0) {
-    riskLevel = 'LOW';
-    riskColor = '#22c55e';
+  
+  // Strictly use database regime if available
+  if (context.regime) {
+    const regime = context.regime.toLowerCase();
+    if (regime === 'crisis') {
+      riskLevel = 'HIGH';
+      riskColor = '#ef4444';
+    } else if (regime === 'stress') {
+      riskLevel = 'STRESS';
+      riskColor = '#f97316';
+    } else if (regime === 'normal') {
+      riskLevel = 'LOW';
+      riskColor = '#22c55e';
+    }
+  } else {
+    // Fallback only if no DB regime
+    if (fearGreed < 25 || yieldValue < -0.5) {
+      riskLevel = 'HIGH';
+      riskColor = '#ef4444';
+    } else if (fearGreed > 75) {
+      riskLevel = 'ELEVATED';
+      riskColor = '#f97316';
+    } else if (fearGreed > 50 && yieldValue > 0) {
+      riskLevel = 'LOW';
+      riskColor = '#22c55e';
+    }
   }
+  
+  // Calculate survival probability - handle decimal vs percentage
+  let survivalProb = 78;
+  if (context.survivalProbability != null) {
+    survivalProb = context.survivalProbability > 1 
+      ? Math.round(context.survivalProbability) 
+      : Math.round(context.survivalProbability * 100);
+  }
+  
+  // Liquidity state from balance sheet delta
+  let liquidityState = 'Stable';
+  if (context.balanceSheetDelta != null) {
+    liquidityState = context.balanceSheetDelta < -0.1 ? 'Tightening (QT)' : 
+                     context.balanceSheetDelta > 0.1 ? 'Easing (QE)' : 'Neutral';
+  } else if (context.systemicRisk != null) {
+    liquidityState = context.systemicRisk > 0.5 ? 'Tightening' : 
+                     context.systemicRisk > 0.3 ? 'Cautious' : 'Healthy';
+  }
+  
+  // Yield curve display with % unit
+  const yieldDisplay = context.yieldCurve && context.yieldCurve !== 'N/A' 
+    ? `${context.yieldCurve}%` 
+    : 'N/A';
 
   return `
 <!DOCTYPE html>
@@ -259,10 +299,16 @@ export const generateReportHTML = (data: ReportData): string => {
       
       <div class="metric-card">
         <div class="metric-label">Yield Curve (10Y-2Y)</div>
-        <div class="metric-value ${yieldValue < 0 ? 'negative' : 'positive'}">${context.yieldCurve}%</div>
+        <div class="metric-value ${yieldValue < 0 ? 'negative' : 'positive'}">${yieldDisplay}</div>
         <div class="metric-change ${yieldValue < 0 ? 'negative' : 'positive'}">
           ${yieldValue < 0 ? 'Inverted - Recession Signal' : 'Normal - Growth Expected'}
         </div>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-label">Survival Probability</div>
+        <div class="metric-value ${survivalProb < 60 ? 'negative' : survivalProb > 80 ? 'positive' : 'neutral'}">${survivalProb}%</div>
+        <div class="metric-change neutral">${liquidityState}</div>
       </div>
       
       <div class="metric-card">
