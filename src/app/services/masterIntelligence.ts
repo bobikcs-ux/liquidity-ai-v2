@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { GLOBAL_FEAR_GREED_VALUE, GLOBAL_FEAR_GREED_LABEL } from '../hooks/useMarketSnapshot';
+import { fetchL1Data, formatL1Value } from './l1DataNervousSystem';
 
 // 1. Interface for market data
 export interface MarketContext {
@@ -16,7 +17,25 @@ export interface MarketContext {
   dataSourcesOk?: boolean;
 }
 
-// 2. Main function to fetch all market data - tries Supabase first, then external APIs
+// 2. Enhanced function using L1 Data Nervous System
+export const fetchAllMarketDataL1 = async (): Promise<MarketContext> => {
+  const l1Data = await fetchL1Data();
+  
+  // Use L1 system with proper fallbacks
+  return {
+    yieldCurve: l1Data.yieldCurve !== null ? l1Data.yieldCurve.toFixed(2) : 'N/A',
+    fearGreedValue: l1Data.fearGreedIndex !== null ? String(l1Data.fearGreedIndex) : String(GLOBAL_FEAR_GREED_VALUE),
+    fearGreedLabel: l1Data.fearGreedIndex !== null 
+      ? (l1Data.fearGreedIndex < 25 ? 'Extreme Fear' : l1Data.fearGreedIndex < 45 ? 'Fear' : l1Data.fearGreedIndex < 55 ? 'Neutral' : l1Data.fearGreedIndex < 75 ? 'Greed' : 'Extreme Greed')
+      : GLOBAL_FEAR_GREED_LABEL,
+    btcPrice: l1Data.btcPrice ?? 0,
+    btcChange: l1Data.btcChange24h ?? 0,
+    btcDominance: l1Data.btcDominance ?? 0,
+    dataSourcesOk: l1Data.status === 'LIVE',
+  };
+};
+
+// 2b. Legacy function - tries Supabase first, then external APIs
 export const fetchAllMarketData = async (): Promise<MarketContext> => {
   // Try to fetch from Supabase first (market_snapshots table)
   if (supabase) {

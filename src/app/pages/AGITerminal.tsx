@@ -7,12 +7,14 @@
  */
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { Brain, Shield, Activity, Radio, Target, Zap, AlertTriangle, Globe } from 'lucide-react';
+import { Brain, Shield, Activity, Radio, Target, Zap, AlertTriangle, Globe, Wifi, WifiOff, RefreshCw } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { useL1Data } from '../hooks/useL1Data';
 import { SovereignIntelligenceNode } from '../components/SovereignIntelligenceNode';
 import { DefenseExecutionBrain } from '../components/DefenseExecutionBrain';
 import { TacticalRedoutOverlay, useTacticalRedout } from '../components/TacticalRedoutOverlay';
+import { L1StatusIndicator } from '../components/L1StatusIndicator';
 import { computeAGISystemState, type AGISystemState } from '../services/agiBrainEngine';
 
 // Layer Status Indicator
@@ -51,7 +53,7 @@ function LayerStatus({
 }
 
 // Nervous System Status Panel
-function NervousSystemPanel({ agiState }: { agiState: AGISystemState | null }) {
+function NervousSystemPanel({ agiState, l1Status }: { agiState: AGISystemState | null; l1Status: string }) {
   const [tick, setTick] = useState(0);
   
   useEffect(() => {
@@ -71,7 +73,7 @@ function NervousSystemPanel({ agiState }: { agiState: AGISystemState | null }) {
     { layer: 'L4', name: 'MICROSTRUCTURE', status: 'ONLINE' as const },
     { layer: 'L3', name: 'CROWD PSYCHOLOGY', status: 'ONLINE' as const, value: agiState?.emotion.bubbleRisk },
     { layer: 'L2', name: 'REGIME EVOLUTION', status: 'ONLINE' as const, value: agiState?.regime.regimeSpeed },
-    { layer: 'L1', name: 'DATA NERVOUS SYSTEM', status: 'ONLINE' as const },
+    { layer: 'L1', name: 'DATA NERVOUS SYSTEM', status: l1Status === 'LIVE' ? 'ONLINE' as const : l1Status === 'RECONNECTING' ? 'DEGRADED' as const : 'CRITICAL' as const },
   ];
 
   return (
@@ -84,7 +86,7 @@ function NervousSystemPanel({ agiState }: { agiState: AGISystemState | null }) {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[9px] font-mono text-gray-500">REFRESH: {60 - tick}s</span>
+          <span className="text-xs font-mono text-gray-500">REFRESH: {60 - tick}s</span>
           <div className="w-12 h-1 bg-gray-800 rounded-full overflow-hidden">
             <div 
               className="h-full bg-cyan-500 transition-all"
@@ -127,14 +129,14 @@ function BlackSwanWarEngine({ agiState }: { agiState: AGISystemState | null }) {
           </span>
         </div>
         {blackSwan.emergencyMode && (
-          <span className="text-[9px] font-bold text-red-500 bg-red-500/20 px-2 py-1 rounded animate-pulse">
+          <span className="text-xs font-bold text-red-500 bg-red-500/20 px-2 py-1 rounded animate-pulse">
             EMERGENCY
           </span>
         )}
       </div>
 
       <div className="text-center mb-4">
-        <div className="text-[10px] font-mono text-gray-500 uppercase mb-1">RISK INDEX</div>
+        <div className="text-xs font-mono text-gray-500 uppercase mb-1">RISK INDEX</div>
         <div className={`text-5xl font-black font-mono tabular-nums ${
           blackSwan.blackSwanRisk > 0.8 ? 'text-red-500' :
           blackSwan.blackSwanRisk > 0.5 ? 'text-amber-500' : 'text-green-500'
@@ -150,7 +152,7 @@ function BlackSwanWarEngine({ agiState }: { agiState: AGISystemState | null }) {
           { label: 'LIQ DRAIN', value: blackSwan.liquidityDrainVelocity, weight: '50%' },
         ].map((item, i) => (
           <div key={i} className="flex items-center gap-2">
-            <span className="text-[9px] font-mono text-gray-500 w-20">{item.label}</span>
+            <span className="text-xs font-mono text-gray-500 w-20">{item.label}</span>
             <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
               <div 
                 className={`h-full ${
@@ -160,7 +162,7 @@ function BlackSwanWarEngine({ agiState }: { agiState: AGISystemState | null }) {
                 style={{ width: `${item.value * 100}%` }}
               />
             </div>
-            <span className="text-[9px] font-mono text-gray-400 w-8 text-right">{item.weight}</span>
+            <span className="text-xs font-mono text-gray-400 w-8 text-right">{item.weight}</span>
           </div>
         ))}
       </div>
@@ -195,7 +197,7 @@ function MarketEmotionPanel({ agiState }: { agiState: AGISystemState | null }) {
           { label: 'LEVERAGE', value: emotion.leverageGrowthRate },
         ].map((item, i) => (
           <div key={i} className="p-2 bg-black/30 rounded-lg">
-            <div className="text-[9px] font-mono text-gray-500 mb-1">{item.label}</div>
+            <div className="text-xs font-mono text-gray-500 mb-1">{item.label}</div>
             <div className={`text-lg font-bold font-mono tabular-nums ${
               item.value > 70 ? 'text-red-400' : 
               item.value > 50 ? 'text-amber-400' : 'text-green-400'
@@ -208,7 +210,7 @@ function MarketEmotionPanel({ agiState }: { agiState: AGISystemState | null }) {
 
       <div className="mt-3 p-2 bg-purple-950/30 rounded-lg border border-purple-500/20">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] font-mono text-purple-400 uppercase">BUBBLE RISK</span>
+          <span className="text-xs font-mono text-purple-400 uppercase">BUBBLE RISK</span>
           <span className={`text-lg font-bold font-mono tabular-nums ${
             emotion.bubbleRisk > 70 ? 'text-red-400' : 
             emotion.bubbleRisk > 50 ? 'text-amber-400' : 'text-green-400'
@@ -224,6 +226,7 @@ function MarketEmotionPanel({ agiState }: { agiState: AGISystemState | null }) {
 export function AGITerminal() {
   const { uiTheme } = useAdaptiveTheme();
   const { latest: snapshot, loading } = useMarketSnapshot();
+  const { data: l1Data, displayValues, status: l1Status, isLoading: l1Loading } = useL1Data();
   const { isEmergencyMode, blackSwanRisk } = useTacticalRedout();
   const [showEmergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const isDark = uiTheme === 'terminal';
@@ -257,10 +260,10 @@ export function AGITerminal() {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-8 border-b border-cyan-900/30 pb-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <div className="px-2 py-1 bg-cyan-600 text-white text-[10px] font-mono font-bold rounded">
+              <div className="px-2 py-1 bg-cyan-600 text-white text-xs font-mono font-bold rounded">
                 AGI_DEFENSE_v2.0
               </div>
-              <div className={`px-2 py-1 text-[10px] font-mono font-bold rounded ${
+              <div className={`px-2 py-1 text-xs font-mono font-bold rounded ${
                 isEmergencyMode ? 'bg-red-500 text-white animate-pulse' : 'bg-green-500/20 text-green-400'
               }`}>
                 {isEmergencyMode ? 'EMERGENCY_MODE' : 'OPERATIONAL'}
@@ -296,7 +299,64 @@ export function AGITerminal() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Left Column - Nervous System + Black Swan */}
           <div className="space-y-6">
-            <NervousSystemPanel agiState={agiState} />
+            {/* L1 Data Nervous System Status */}
+            <L1StatusIndicator showFeeds={true} />
+            
+            {/* L1 Real-time Data Display */}
+            <div className="bg-[#0a0f1a] border border-gray-800 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity className="w-4 h-4 text-green-400" />
+                <span className="text-xs font-mono text-green-400 uppercase tracking-wider">
+                  L1 REAL-TIME DATA
+                </span>
+                <div className={`ml-auto flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono ${
+                  l1Status === 'LIVE' ? 'bg-green-500/20 text-green-400' :
+                  l1Status === 'RECONNECTING' ? 'bg-amber-500/20 text-amber-400' :
+                  'bg-red-500/20 text-red-400'
+                }`}>
+                  {l1Status === 'RECONNECTING' && <RefreshCw className="w-3 h-3 animate-spin" />}
+                  {l1Status}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2 bg-black/30 rounded-lg">
+                  <div className="text-xs font-mono text-gray-500 mb-1">YIELD CURVE</div>
+                  <div className={`text-sm font-bold font-mono tabular-nums ${
+                    displayValues.yieldCurve === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 'text-cyan-400'
+                  }`}>
+                    {displayValues.yieldCurve}
+                  </div>
+                </div>
+                <div className="p-2 bg-black/30 rounded-lg">
+                  <div className="text-xs font-mono text-gray-500 mb-1">BTC DOMINANCE</div>
+                  <div className={`text-sm font-bold font-mono tabular-nums ${
+                    displayValues.btcDominance === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 'text-cyan-400'
+                  }`}>
+                    {displayValues.btcDominance}
+                  </div>
+                </div>
+                <div className="p-2 bg-black/30 rounded-lg">
+                  <div className="text-xs font-mono text-gray-500 mb-1">BTC PRICE</div>
+                  <div className={`text-sm font-bold font-mono tabular-nums ${
+                    displayValues.btcPrice === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 'text-white'
+                  }`}>
+                    {displayValues.btcPrice}
+                  </div>
+                </div>
+                <div className="p-2 bg-black/30 rounded-lg">
+                  <div className="text-xs font-mono text-gray-500 mb-1">FEAR/GREED</div>
+                  <div className={`text-sm font-bold font-mono tabular-nums ${
+                    displayValues.fearGreed === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 
+                    l1Data?.fearGreedIndex && l1Data.fearGreedIndex < 25 ? 'text-red-400' : 
+                    l1Data?.fearGreedIndex && l1Data.fearGreedIndex > 75 ? 'text-green-400' : 'text-amber-400'
+                  }`}>
+                    {displayValues.fearGreed}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <NervousSystemPanel agiState={agiState} l1Status={l1Status} />
             <BlackSwanWarEngine agiState={agiState} />
             <MarketEmotionPanel agiState={agiState} />
           </div>
@@ -316,16 +376,27 @@ export function AGITerminal() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-xs font-mono text-gray-400">L1 NERVOUS SYSTEM ACTIVE</span>
+                {l1Status === 'RECONNECTING' ? (
+                  <RefreshCw className="w-3 h-3 text-amber-500 animate-spin" />
+                ) : l1Status === 'LIVE' ? (
+                  <Wifi className="w-3 h-3 text-green-500" />
+                ) : (
+                  <WifiOff className="w-3 h-3 text-red-500" />
+                )}
+                <span className={`text-xs font-mono ${
+                  l1Status === 'LIVE' ? 'text-green-400' : 
+                  l1Status === 'RECONNECTING' ? 'text-amber-400' : 'text-red-400'
+                }`}>
+                  L1 NERVOUS SYSTEM: {l1Status}
+                </span>
               </div>
               <div className="text-xs font-mono text-gray-600">|</div>
               <span className="text-xs font-mono text-gray-400">
-                LAST UPDATE: {agiState?.lastUpdate.toLocaleTimeString() ?? 'LOADING...'}
+                LAST UPDATE: {l1Data?.lastUpdate?.toLocaleTimeString() ?? 'RECONNECTING...'}
               </span>
             </div>
-            <div className="text-[10px] font-mono text-gray-500">
-              LIQUIDITY.AI // AGI DEFENSE INTELLIGENCE VERSION
+            <div className="text-xs font-mono text-gray-500">
+              LIQUIDITY.AI // AGI DEFENSE INTELLIGENCE v2.0
             </div>
           </div>
         </div>
