@@ -34,7 +34,7 @@ export function StressLab() {
         }`}>
           Stress Lab
         </h1>
-        <p className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+        <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
           Scenario simulation and stress testing
         </p>
       </div>
@@ -82,9 +82,9 @@ export function StressLab() {
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
               />
               <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-gray-500">10%</span>
+                <span className="text-xs font-medium text-gray-600">10%</span>
                 <span className="text-lg font-bold text-[#2563EB]">{customShock}%</span>
-                <span className="text-xs text-gray-500">50%</span>
+                <span className="text-xs font-medium text-gray-600">50%</span>
               </div>
             </div>
           )}
@@ -191,11 +191,11 @@ export function StressLab() {
                   <span className="text-sm text-gray-900">{item.event}</span>
                   <div className="flex items-center gap-4">
                     <span className="text-sm">
-                      <span className="text-gray-500">Survival:</span>{' '}
+                      <span className="text-gray-600">Survival:</span>{' '}
                       <span className="font-semibold text-green-600">{item.survival}%</span>
                     </span>
                     <span className="text-sm">
-                      <span className="text-gray-500">DD:</span>{' '}
+                      <span className="text-gray-600">DD:</span>{' '}
                       <span className="font-semibold text-red-600">-{item.drawdown}%</span>
                     </span>
                   </div>

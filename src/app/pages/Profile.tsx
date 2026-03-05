@@ -16,7 +16,7 @@ export function Profile() {
         }`}>
           Profile
         </h1>
-        <p className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+        <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
           Access & verification settings
         </p>
       </div>
@@ -177,10 +177,10 @@ export function Profile() {
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div>
                   <div className="font-medium text-gray-900">{log.action}</div>
-                  <div className="text-xs text-gray-500">{log.location} • {log.ip}</div>
+                  <div className="text-xs font-medium text-gray-600">{log.location} • {log.ip}</div>
                 </div>
               </div>
-              <span className="text-xs text-gray-500">{log.time}</span>
+              <span className="text-xs font-medium text-gray-600">{log.time}</span>
             </div>
           ))}
         </div>
@@ -198,33 +198,33 @@ export function Profile() {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold">Custom</div>
-              <div className="text-sm text-gray-400">Contact Sales</div>
+              <div className="text-sm text-gray-300">Contact Sales</div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
             <div className="flex items-center gap-2">
-              <Webhook className="w-5 h-5 text-gray-400" />
+              <Webhook className="w-5 h-5 text-gray-300" />
               <span className="text-sm">API Access</span>
             </div>
             <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-gray-400" />
+              <Zap className="w-5 h-5 text-gray-300" />
               <span className="text-sm">Webhooks</span>
             </div>
             <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-gray-400" />
+              <Shield className="w-5 h-5 text-gray-300" />
               <span className="text-sm">99.99% SLA</span>
             </div>
             <div className="flex items-center gap-2">
-              <Settings className="w-5 h-5 text-gray-400" />
+              <Settings className="w-5 h-5 text-gray-300" />
               <span className="text-sm">Custom Models</span>
             </div>
             <div className="flex items-center gap-2">
-              <User className="w-5 h-5 text-gray-400" />
+              <User className="w-5 h-5 text-gray-300" />
               <span className="text-sm">Dedicated Support</span>
             </div>
             <div className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-gray-400" />
+              <CreditCard className="w-5 h-5 text-gray-300" />
               <span className="text-sm">Flexible Billing</span>
             </div>
           </div>

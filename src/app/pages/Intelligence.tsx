@@ -40,7 +40,7 @@ export function Intelligence() {
         }`}>
           Intelligence Terminal
         </h1>
-        <p className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+        <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
           Deep analytics layer
         </p>
       </div>
@@ -94,7 +94,7 @@ export function Intelligence() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="text-xs text-gray-500">30-day forecast window</div>
+            <div className="text-xs font-medium text-gray-600">30-day forecast window</div>
           </div>
         </div>
 
@@ -133,7 +133,7 @@ export function Intelligence() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="text-xs text-gray-500">Pattern matching across 50+ historical events</div>
+            <div className="text-xs font-medium text-gray-600">Pattern matching across 50+ historical events</div>
           </div>
         </div>
 
@@ -184,7 +184,7 @@ export function Intelligence() {
                 <span className="text-sm text-gray-600">SPX / BTC</span>
                 <span className="text-sm font-semibold text-gray-900">0.73</span>
               </div>
-              <div className="text-xs text-gray-500">20-day rolling</div>
+              <div className="text-xs font-medium text-gray-600">20-day rolling</div>
             </div>
 
             <div className="pt-3 border-t border-gray-100">
@@ -192,7 +192,7 @@ export function Intelligence() {
                 <span className="text-sm text-gray-600">Bonds / Equities</span>
                 <span className="text-sm font-semibold text-gray-900">-0.42</span>
               </div>
-              <div className="text-xs text-gray-500">Normal diversification</div>
+              <div className="text-xs font-medium text-gray-600">Normal diversification</div>
             </div>
 
             <div className="pt-3 border-t border-gray-100">
@@ -200,12 +200,12 @@ export function Intelligence() {
                 <span className="text-sm text-gray-600">Gold / USD</span>
                 <span className="text-sm font-semibold text-gray-900">-0.68</span>
               </div>
-              <div className="text-xs text-gray-500">Inverse relationship intact</div>
+              <div className="text-xs font-medium text-gray-600">Inverse relationship intact</div>
             </div>
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="text-xs text-gray-500">Updated daily at market close</div>
+            <div className="text-xs font-medium text-gray-600">Updated daily at market close</div>
           </div>
         </div>
 
@@ -228,7 +228,7 @@ export function Intelligence() {
               <div key={index} className="flex items-center justify-between">
                 <div>
                   <div className="text-sm text-gray-900 mb-0.5">{item.source}</div>
-                  <div className="text-xs text-gray-500">7-day average</div>
+                  <div className="text-xs font-medium text-gray-600">7-day average</div>
                 </div>
                 <div className={`text-lg font-semibold ${
                   item.trend === 'up' ? 'text-green-600' : 'text-red-600'
@@ -299,7 +299,7 @@ export function Intelligence() {
           </div>
 
           <div className="mt-6 pt-6 border-t border-gray-100">
-            <div className="text-xs text-gray-500">Out-of-sample performance metrics</div>
+            <div className="text-xs font-medium text-gray-600">Out-of-sample performance metrics</div>
           </div>
         </div>
       </div>

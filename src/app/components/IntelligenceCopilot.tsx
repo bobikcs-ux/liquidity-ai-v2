@@ -306,7 +306,7 @@ export function IntelligenceCopilot() {
             <h3 className={`font-bold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
               Black Swan Intelligence
             </h3>
-            <p className={`text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>
+            <p className={`text-xs font-medium ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-500'}`}>
               Dual-Core AI Analysis
             </p>
           </div>
@@ -339,7 +339,7 @@ export function IntelligenceCopilot() {
         }`}
       >
         {commandHistory.length === 0 ? (
-          <div className={`text-center py-8 ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'}`}>
+          <div className={`text-center py-8 ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-400'}`}>
             <Terminal className="w-12 h-12 mx-auto mb-3 opacity-50" />
             <p className="text-sm">Type /help to see available commands</p>
             <p className="text-xs mt-1">or /scan to start a full analysis</p>
@@ -347,8 +347,8 @@ export function IntelligenceCopilot() {
         ) : (
           commandHistory.map((result, idx) => (
             <div key={idx} className="space-y-1">
-              <div className={`text-xs flex items-center gap-2 ${
-                isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
+              <div className={`text-xs font-medium flex items-center gap-2 ${
+                isDark || isHybrid ? 'text-slate-300' : 'text-gray-400'
               }`}>
                 <Clock className="w-3 h-3" />
                 {result.timestamp.toLocaleTimeString()}
@@ -382,24 +382,24 @@ export function IntelligenceCopilot() {
             'bg-amber-50 border border-amber-200'
           }`}>
             <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-              <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
                 BTC: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
                   ${marketContext.btcPrice.toLocaleString()}
                 </span>
               </div>
-              <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
                 Fear/Greed: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
                   {marketContext.fearGreedValue}
                 </span>
               </div>
-              <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
                 Yield Curve: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
                   {marketContext.yieldCurve && marketContext.yieldCurve !== 'N/A' 
                     ? `${marketContext.yieldCurve}%` 
                     : 'N/A'}
                 </span>
               </div>
-              <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
                 BTC Dom: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
                   {marketContext.btcDominance.toFixed(1)}%
                 </span>
@@ -430,7 +430,7 @@ export function IntelligenceCopilot() {
                 <span className={`font-mono ${isDark || isHybrid ? 'text-amber-400' : 'text-amber-600'}`}>
                   /{cmd}
                 </span>
-                <span className={`text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>
+                <span className={`text-xs font-medium ${isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}`}>
                   {info.description}
                 </span>
               </button>

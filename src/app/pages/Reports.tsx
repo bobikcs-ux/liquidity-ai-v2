@@ -70,7 +70,7 @@ export function Reports() {
         }`}>
           Reports
         </h1>
-        <p className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+        <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
           Evidence-based PDF intelligence
         </p>
       </div>
@@ -119,7 +119,7 @@ export function Reports() {
                   
                   <p className="text-sm text-gray-600 mb-3">{report.description}</p>
                   
-                  <div className="flex items-center gap-4 text-xs text-gray-500">
+                  <div className="flex items-center gap-4 text-xs font-medium text-gray-600">
                     <span className="flex items-center gap-1">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
