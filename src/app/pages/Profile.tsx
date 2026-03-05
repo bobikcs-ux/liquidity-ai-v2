@@ -1,115 +1,431 @@
-import React from 'react';
-import { User, Phone, Shield, CreditCard, Zap, Webhook, Settings } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Phone, Shield, CreditCard, Zap, Webhook, Settings, Crown, Sparkles, X, Loader2, CheckCircle, Building2 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { useUserRole } from '../context/UserRoleContext';
+import { sendStructuredEmail, EMAIL_REGEX } from '../components/ProModal';
 
-export function Profile() {
+// Stripe checkout URL
+const STRIPE_CHECKOUT_URL = 'https://checkout.stripe.com/pay/pro_plan';
+
+// Institutional Inquiry Modal
+function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!EMAIL_REGEX.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      await sendStructuredEmail({
+        type: 'institutional_inquiry',
+        email,
+        name: name || undefined,
+        company: company || undefined,
+        message: message || 'Institutional plan inquiry',
+        context: {
+          requestedAt: new Date().toISOString(),
+          source: 'Profile Page - Contact Sales',
+        },
+      });
+      
+      setSubmitted(true);
+      setTimeout(() => {
+        onClose();
+        setSubmitted(false);
+        setEmail('');
+        setName('');
+        setCompany('');
+        setMessage('');
+      }, 2000);
+    } catch {
+      setError('Failed to submit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      <div className={`relative w-full max-w-md mx-4 rounded-3xl p-8 shadow-2xl ${
+        isDark || isHybrid 
+          ? 'bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-600' 
+          : 'bg-white border border-gray-200'
+      }`}>
+        <button
+          onClick={onClose}
+          aria-label="Close modal"
+          className={`absolute top-4 right-4 p-2 rounded-lg transition-colors ${
+            isDark || isHybrid 
+              ? 'hover:bg-gray-700 text-gray-400' 
+              : 'hover:bg-gray-100 text-gray-500'
+          }`}
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-lg">
+            <Building2 className="w-8 h-8 text-white" />
+          </div>
+        </div>
+
+        {submitted ? (
+          <>
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="w-16 h-16 text-green-500" />
+            </div>
+            <h2 className={`text-2xl font-bold text-center mb-2 ${
+              isDark || isHybrid ? 'text-white' : 'text-gray-900'
+            }`}>
+              Request Received!
+            </h2>
+            <p className={`text-center ${
+              isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Our sales team will contact you within 24 hours.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className={`text-2xl font-bold text-center mb-2 ${
+              isDark || isHybrid ? 'text-white' : 'text-gray-900'
+            }`}>
+              Contact Sales Team
+            </h2>
+
+            <p className={`text-center mb-6 ${
+              isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Learn about our Institutional plan with custom pricing
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  isDark || isHybrid 
+                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
+                } outline-none`}
+              />
+              
+              <input
+                type="text"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                placeholder="Company name"
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  isDark || isHybrid 
+                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
+                } outline-none`}
+              />
+              
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError('');
+                }}
+                placeholder="Work email *"
+                required
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  error
+                    ? 'border-red-500' 
+                    : isDark || isHybrid 
+                      ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
+                } outline-none`}
+              />
+              
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Tell us about your needs (optional)"
+                rows={3}
+                className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
+                  isDark || isHybrid 
+                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
+                } outline-none`}
+              />
+              
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
+              
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3 px-6 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Contact Sales'
+                )}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function Profile() {
+  const { uiTheme } = useAdaptiveTheme();
+  const { isPro, freeReportsDownloaded, copilotQuestionsAsked } = useUserRole();
+  const isDark = uiTheme === 'terminal';
+  const isHybrid = uiTheme === 'hybrid';
+  const [showInstitutionalModal, setShowInstitutionalModal] = useState(false);
+
+  const handleUpgrade = () => {
+    const returnUrl = encodeURIComponent(`${window.location.origin}/profile?success=true`);
+    window.location.href = `${STRIPE_CHECKOUT_URL}?success_url=${returnUrl}`;
+  };
+  
+  return (
+    <>
+    <InstitutionalInquiryModal isOpen={showInstitutionalModal} onClose={() => setShowInstitutionalModal(false)} />
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className={`text-3xl font-bold mb-2 ${
-          isDark || isHybrid ? 'text-white' : 'text-gray-900'
-        }`}>
-          Profile
-        </h1>
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className={`text-3xl font-bold ${
+            isDark || isHybrid ? 'text-white' : 'text-gray-900'
+          }`}>
+            Profile
+          </h1>
+          {isPro && (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white animate-pulse">
+              <Crown className="w-4 h-4" />
+              <span className="text-sm font-bold">PRO MEMBER</span>
+              <Sparkles className="w-4 h-4" />
+            </div>
+          )}
+        </div>
         <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
           Access & verification settings
         </p>
       </div>
 
       {/* User Info Card */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6">
+      <div className={`rounded-3xl shadow-sm border p-6 ${
+        isDark || isHybrid ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-[#2563EB] to-[#1d4ed8] rounded-2xl flex items-center justify-center">
+            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
+              isPro 
+                ? 'bg-gradient-to-br from-amber-500 to-amber-600' 
+                : 'bg-gradient-to-br from-[#2563EB] to-[#1d4ed8]'
+            }`}>
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Sarah Thompson</h2>
-              <p className="text-gray-600">sarah.thompson@institutional.com</p>
+              <h2 className={`text-xl font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                Sarah Thompson
+              </h2>
+              <p className={isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}>
+                sarah.thompson@institutional.com
+              </p>
             </div>
           </div>
-          <button className="px-4 py-2 text-sm font-medium text-[#2563EB] hover:bg-blue-50 rounded-xl transition-colors">
+          <button className={`px-4 py-2 text-sm font-medium rounded-xl transition-colors ${
+            isDark || isHybrid 
+              ? 'text-blue-400 hover:bg-gray-700' 
+              : 'text-[#2563EB] hover:bg-blue-50'
+          }`}>
             Edit Profile
           </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 bg-gray-50 rounded-xl">
-            <div className="text-sm text-gray-600 mb-1">Member Since</div>
-            <div className="font-semibold text-gray-900">January 2025</div>
+          <div className={`p-4 rounded-xl ${isDark || isHybrid ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+            <div className={`text-sm mb-1 ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Member Since</div>
+            <div className={`font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>January 2025</div>
           </div>
-          <div className="p-4 bg-gray-50 rounded-xl">
-            <div className="text-sm text-gray-600 mb-1">Last Login</div>
-            <div className="font-semibold text-gray-900">2 hours ago</div>
+          <div className={`p-4 rounded-xl ${isDark || isHybrid ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+            <div className={`text-sm mb-1 ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Last Login</div>
+            <div className={`font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>2 hours ago</div>
           </div>
-          <div className="p-4 bg-gray-50 rounded-xl">
-            <div className="text-sm text-gray-600 mb-1">Reports Downloaded</div>
-            <div className="font-semibold text-gray-900">87</div>
+          <div className={`p-4 rounded-xl ${isDark || isHybrid ? 'bg-gray-700/50' : 'bg-gray-50'}`}>
+            <div className={`text-sm mb-1 ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Reports Downloaded</div>
+            <div className={`font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+              {isPro ? '87' : freeReportsDownloaded}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Current Plan */}
-      <div className="bg-gradient-to-br from-[#2563EB] to-[#1d4ed8] rounded-3xl shadow-lg p-6 text-white">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-3">
-              Current Plan
+      {isPro ? (
+        <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-3xl shadow-lg p-6 text-white relative overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+          
+          <div className="relative flex items-start justify-between mb-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-3">
+                <Crown className="w-4 h-4" />
+                Current Plan
+              </div>
+              <h2 className="text-3xl font-bold mb-2">PRO MEMBER</h2>
+              <p className="text-amber-100">Full access to institutional-grade intelligence</p>
             </div>
-            <h2 className="text-2xl font-bold mb-2">PRO</h2>
-            <p className="text-blue-100">Full access to intelligence platform</p>
+            <div className="text-right">
+              <div className="text-3xl font-bold">$49</div>
+              <div className="text-sm text-amber-100">per month</div>
+            </div>
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold">$149</div>
-            <div className="text-sm text-blue-100">per month</div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-blue-200" />
-            <span className="text-sm">Full Analytics</span>
+          <div className="relative grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-amber-200" />
+              <span className="text-sm">Full Analytics</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-amber-200" />
+              <span className="text-sm">Unlimited AI Copilot</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5 text-amber-200" />
+              <span className="text-sm">Priority Support</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-amber-200" />
+              <span className="text-sm">Custom Alerts</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-blue-200" />
-            <span className="text-sm">Real-time Data</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-blue-200" />
-            <span className="text-sm">Priority Support</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Settings className="w-5 h-5 text-blue-200" />
-            <span className="text-sm">Custom Alerts</span>
-          </div>
-        </div>
 
-        <div className="flex gap-3">
-          <button className="flex-1 bg-white text-[#2563EB] py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors">
-            Manage Subscription
-          </button>
-          <button className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl font-semibold transition-colors">
-            View Invoice
+          <div className="relative flex gap-3">
+            <button className="flex-1 bg-white text-amber-600 py-3 rounded-xl font-semibold hover:bg-amber-50 transition-colors">
+              Manage Subscription
+            </button>
+            <button className="px-6 py-3 bg-white/20 hover:bg-white/30 rounded-xl font-semibold transition-colors">
+              View Invoice
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className={`rounded-3xl shadow-lg p-6 border-2 border-dashed ${
+          isDark || isHybrid ? 'bg-gray-800/50 border-amber-500/50' : 'bg-amber-50 border-amber-300'
+        }`}>
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mb-3 ${
+                isDark || isHybrid ? 'bg-gray-700 text-gray-300' : 'bg-gray-200 text-gray-700'
+              }`}>
+                Current Plan
+              </div>
+              <h2 className={`text-2xl font-bold mb-2 ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                FREE
+              </h2>
+              <p className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+                Limited access to platform features
+              </p>
+            </div>
+            <div className="text-right">
+              <div className={`text-3xl font-bold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>$0</div>
+              <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>per month</div>
+            </div>
+          </div>
+
+          {/* Usage Stats */}
+          <div className={`p-4 rounded-xl mb-6 ${isDark || isHybrid ? 'bg-gray-700/50' : 'bg-white'}`}>
+            <h3 className={`text-sm font-medium mb-3 ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'}`}>
+              Usage This Period
+            </h3>
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>Free Reports</span>
+                  <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>{freeReportsDownloaded}/1</span>
+                </div>
+                <div className={`h-2 rounded-full ${isDark || isHybrid ? 'bg-gray-600' : 'bg-gray-200'}`}>
+                  <div 
+                    className="h-full rounded-full bg-amber-500 transition-all"
+                    style={{ width: `${Math.min(freeReportsDownloaded * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>AI Copilot Questions</span>
+                  <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>{copilotQuestionsAsked}/3</span>
+                </div>
+                <div className={`h-2 rounded-full ${isDark || isHybrid ? 'bg-gray-600' : 'bg-gray-200'}`}>
+                  <div 
+                    className="h-full rounded-full bg-amber-500 transition-all"
+                    style={{ width: `${Math.min((copilotQuestionsAsked / 3) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            onClick={handleUpgrade}
+            className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+          >
+            <Crown className="w-5 h-5" />
+            Upgrade to PRO - $49/mo
           </button>
         </div>
-      </div>
+      )}
 
       {/* Verification Status */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6">
+      <div className={`rounded-3xl shadow-sm border p-6 ${
+        isDark || isHybrid ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-[#F0FDF4] rounded-xl flex items-center justify-center">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+            isDark || isHybrid ? 'bg-green-900/30' : 'bg-[#F0FDF4]'
+          }`}>
             <Phone className="w-5 h-5 text-green-600" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">Verification Status</h2>
+          <h2 className={`text-xl font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+            Verification Status
+          </h2>
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
+          <div className={`flex items-center justify-between p-4 rounded-xl ${
+            isDark || isHybrid ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'
+          }`}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -117,14 +433,16 @@ export function Profile() {
                 </svg>
               </div>
               <div>
-                <div className="font-semibold text-gray-900">Email Verified</div>
-                <div className="text-sm text-gray-600">sarah.thompson@institutional.com</div>
+                <div className={`font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Email Verified</div>
+                <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'} style={{ fontSize: '0.875rem' }}>sarah.thompson@institutional.com</div>
               </div>
             </div>
             <span className="text-sm font-medium text-green-700">Active</span>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-xl">
+          <div className={`flex items-center justify-between p-4 rounded-xl ${
+            isDark || isHybrid ? 'bg-green-900/20 border border-green-800' : 'bg-green-50 border border-green-200'
+          }`}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -132,24 +450,28 @@ export function Profile() {
                 </svg>
               </div>
               <div>
-                <div className="font-semibold text-gray-900">Phone Verified</div>
-                <div className="text-sm text-gray-600">+1 (555) 123-4567</div>
+                <div className={`font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Phone Verified</div>
+                <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'} style={{ fontSize: '0.875rem' }}>+1 (555) 123-4567</div>
               </div>
             </div>
             <span className="text-sm font-medium text-green-700">Active</span>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-xl">
+          <div className={`flex items-center justify-between p-4 rounded-xl ${
+            isDark || isHybrid ? 'bg-gray-700/50 border border-gray-600' : 'bg-gray-50 border border-gray-200'
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                <Shield className="w-5 h-5 text-gray-600" />
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                isDark || isHybrid ? 'bg-gray-600' : 'bg-gray-300'
+              }`}>
+                <Shield className={`w-5 h-5 ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`} />
               </div>
               <div>
-                <div className="font-semibold text-gray-900">Two-Factor Authentication</div>
-                <div className="text-sm text-gray-600">Add extra security layer</div>
+                <div className={`font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Two-Factor Authentication</div>
+                <div className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'} style={{ fontSize: '0.875rem' }}>Add extra security layer</div>
               </div>
             </div>
-            <button className="text-sm font-medium text-[#2563EB] hover:underline">
+            <button className={`text-sm font-medium ${isDark || isHybrid ? 'text-blue-400' : 'text-[#2563EB]'} hover:underline`}>
               Enable
             </button>
           </div>
@@ -157,10 +479,12 @@ export function Profile() {
       </div>
 
       {/* Access Logs */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6">
+      <div className={`rounded-3xl shadow-sm border p-6 ${
+        isDark || isHybrid ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Recent Access Logs</h2>
-          <button className="text-sm text-[#2563EB] font-medium hover:text-[#1d4ed8]">
+          <h2 className={`text-xl font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Recent Access Logs</h2>
+          <button className={`text-sm font-medium ${isDark || isHybrid ? 'text-blue-400' : 'text-[#2563EB]'} hover:opacity-80`}>
             View All
           </button>
         </div>
@@ -172,75 +496,85 @@ export function Profile() {
             { action: 'Intelligence Terminal', location: 'New York, US', time: '5 hours ago', ip: '192.168.1.1' },
             { action: 'Login', location: 'New York, US', time: '8 hours ago', ip: '192.168.1.1' },
           ].map((log, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+            <div key={index} className={`flex items-center justify-between p-3 rounded-xl ${
+              isDark || isHybrid ? 'bg-gray-700/50' : 'bg-gray-50'
+            }`}>
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                 <div>
-                  <div className="font-medium text-gray-900">{log.action}</div>
-                  <div className="text-xs font-medium text-gray-600">{log.location} • {log.ip}</div>
+                  <div className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>{log.action}</div>
+                  <div className={`text-xs font-medium ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>{log.location} • {log.ip}</div>
                 </div>
               </div>
-              <span className="text-xs font-medium text-gray-600">{log.time}</span>
+              <span className={`text-xs font-medium ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>{log.time}</span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Upgrade Options */}
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Upgrade to Institutional</h2>
-        
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white mb-6">
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <h3 className="text-2xl font-bold mb-2">INSTITUTIONAL</h3>
-              <p className="text-gray-300">Enterprise-grade infrastructure</p>
+      {/* Upgrade Options - Only show for non-PRO users */}
+      {!isPro && (
+        <div className={`rounded-3xl shadow-sm border p-6 ${
+          isDark || isHybrid ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
+          <h2 className={`text-xl font-semibold mb-6 ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Upgrade to Institutional</h2>
+          
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white mb-6">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-2xl font-bold mb-2">INSTITUTIONAL</h3>
+                <p className="text-gray-300">Enterprise-grade infrastructure</p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold">Custom</div>
+                <div className="text-sm text-gray-300">Contact Sales</div>
+              </div>
             </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold">Custom</div>
-              <div className="text-sm text-gray-300">Contact Sales</div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+              <div className="flex items-center gap-2">
+                <Webhook className="w-5 h-5 text-gray-300" />
+                <span className="text-sm">API Access</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-gray-300" />
+                <span className="text-sm">Webhooks</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-gray-300" />
+                <span className="text-sm">99.99% SLA</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-gray-300" />
+                <span className="text-sm">Custom Models</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <User className="w-5 h-5 text-gray-300" />
+                <span className="text-sm">Dedicated Support</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-gray-300" />
+                <span className="text-sm">Flexible Billing</span>
+              </div>
             </div>
+
+            <button 
+              onClick={() => setShowInstitutionalModal(true)}
+              className="w-full bg-white text-gray-900 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
+            >
+              Contact Sales Team
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
-            <div className="flex items-center gap-2">
-              <Webhook className="w-5 h-5 text-gray-300" />
-              <span className="text-sm">API Access</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-gray-300" />
-              <span className="text-sm">Webhooks</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-gray-300" />
-              <span className="text-sm">99.99% SLA</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Settings className="w-5 h-5 text-gray-300" />
-              <span className="text-sm">Custom Models</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <User className="w-5 h-5 text-gray-300" />
-              <span className="text-sm">Dedicated Support</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-gray-300" />
-              <span className="text-sm">Flexible Billing</span>
-            </div>
+          <div className={`text-sm text-center ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>
+            Need help choosing a plan?{' '}
+            <a href="#" className={`font-medium hover:underline ${isDark || isHybrid ? 'text-blue-400' : 'text-[#2563EB]'}`}>
+              Compare all features
+            </a>
           </div>
-
-          <button className="w-full bg-white text-gray-900 py-3 rounded-xl font-semibold hover:bg-gray-100 transition-colors">
-            Contact Sales Team
-          </button>
         </div>
-
-        <div className="text-sm text-gray-600 text-center">
-          Need help choosing a plan?{' '}
-          <a href="#" className="text-[#2563EB] font-medium hover:underline">
-            Compare all features
-          </a>
-        </div>
-      </div>
+      )}
     </div>
+    </>
   );
 }

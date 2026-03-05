@@ -4,6 +4,7 @@ import {
   TrendingUp, Shield, Brain, ChevronUp, ChevronDown, X, FileDown
 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { useUserRole } from '../context/UserRoleContext';
 import { runMasterScan, MarketContext, analyzeBlackSwanRisk, fetchAllMarketData } from '../services/masterIntelligence';
 import { saveMarketReport, logSystemEvent } from '../services/supabaseService';
 import { quickExport } from '../utils/exportPDF';
@@ -53,8 +54,9 @@ export function IntelligenceCopilot() {
   const inputRef = useRef<HTMLInputElement>(null);
   const historyRef = useRef<HTMLDivElement>(null);
   const { currentRegime, uiTheme } = useAdaptiveTheme();
+  const { incrementCopilotQuestion, isPro, copilotQuestionsAsked } = useUserRole();
 
-  const isDark = uiTheme === 'dark';
+  const isDark = uiTheme === 'dark' || uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
 
   // Auto-scroll to bottom of history
@@ -72,6 +74,16 @@ export function IntelligenceCopilot() {
   // Process commands
   const processCommand = useCallback(async (input: string) => {
     const cmd = input.toLowerCase().replace('/', '').trim() as CommandType;
+    
+    // Check if command counts against limit (help, clear, status don't count)
+    const freeCommands: CommandType[] = ['help', 'clear', 'status'];
+    const countsAgainstLimit = !freeCommands.includes(cmd);
+    
+    // Enforce limit for free users
+    if (countsAgainstLimit && !incrementCopilotQuestion()) {
+      // ProModal will be shown by incrementCopilotQuestion
+      return;
+    }
     
     const addResult = (output: string, type: CommandResult['type'] = 'success') => {
       setCommandHistory(prev => [...prev, {
@@ -224,7 +236,7 @@ export function IntelligenceCopilot() {
       default:
         addResult(`Unknown command: ${input}\nType /help for available commands.`, 'error');
     }
-  }, [currentRegime, uiTheme]);
+  }, [currentRegime, uiTheme, incrementCopilotQuestion]);
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -307,7 +319,7 @@ export function IntelligenceCopilot() {
               Black Swan Intelligence
             </h3>
             <p className={`text-xs font-medium ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-500'}`}>
-              Dual-Core AI Analysis
+              {isPro ? 'PRO - Unlimited Access' : `FREE - ${Math.max(0, 3 - copilotQuestionsAsked)}/3 queries left`}
             </p>
           </div>
         </div>

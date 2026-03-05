@@ -1,12 +1,45 @@
 'use client';
 
-import React from 'react';
-import { Lock, X, Zap, Shield, TrendingUp, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { Lock, X, Zap, Shield, TrendingUp, FileText, Loader2, CheckCircle } from 'lucide-react';
 import { useUserRole } from '../context/UserRoleContext';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 
+// Email validation regex
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+// Stripe checkout URL
+const STRIPE_CHECKOUT_URL = 'https://checkout.stripe.com/pay/pro_plan';
+
+// Email endpoint
+const BUSINESS_EMAIL = 'bobikcs@studio-bobikcs.com';
+
+// Helper function to send structured email
+async function sendStructuredEmail(data: {
+  type: 'lead_gen' | 'institutional_inquiry' | 'data_source_request' | 'daily_snapshot';
+  email: string;
+  name?: string;
+  company?: string;
+  message?: string;
+  context?: Record<string, unknown>;
+}) {
+  // In production, this would call your backend API
+  // For now, we'll use a mailto fallback and log the data
+  console.log('[v0] Sending structured email:', data);
+  
+  const subject = encodeURIComponent(`[BOBIKCS Terminal] ${data.type.replace(/_/g, ' ').toUpperCase()}`);
+  const body = encodeURIComponent(
+    `Type: ${data.type}\nEmail: ${data.email}\n${data.name ? `Name: ${data.name}\n` : ''}${data.company ? `Company: ${data.company}\n` : ''}${data.message ? `Message: ${data.message}\n` : ''}${data.context ? `\nContext: ${JSON.stringify(data.context, null, 2)}` : ''}`
+  );
+  
+  // Open mailto as fallback (in production, use backend API)
+  window.open(`mailto:${BUSINESS_EMAIL}?subject=${subject}&body=${body}`, '_blank');
+  
+  return true;
+}
+
 export function ProModal() {
-  const { showProModal, closeProModal, proModalFeature, setUserRole } = useUserRole();
+  const { showProModal, closeProModal, proModalFeature } = useUserRole();
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
@@ -17,8 +50,14 @@ export function ProModal() {
     { icon: Shield, label: 'Institutional Risk Drivers' },
     { icon: TrendingUp, label: 'Stress Heat Map Analysis' },
     { icon: FileText, label: 'Advanced Reports (Volatility, Liquidity, Crash Engine)' },
-    { icon: Zap, label: 'Full Stress Lab Access' },
+    { icon: Zap, label: 'Full Stress Lab Access & Unlimited AI Copilot' },
   ];
+
+  const handleUpgrade = () => {
+    // Redirect to Stripe checkout with return URL
+    const returnUrl = encodeURIComponent(`${window.location.origin}${window.location.pathname}?success=true`);
+    window.location.href = `${STRIPE_CHECKOUT_URL}?success_url=${returnUrl}`;
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -91,13 +130,10 @@ export function ProModal() {
         {/* CTA Buttons */}
         <div className="space-y-3">
           <button
-            onClick={() => {
-              setUserRole('PRO');
-              closeProModal();
-            }}
+            onClick={handleUpgrade}
             className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/20"
           >
-            Upgrade to PRO
+            Upgrade to PRO - $49/mo
           </button>
           
           <button
@@ -116,7 +152,7 @@ export function ProModal() {
         <p className={`text-xs text-center mt-6 ${
           isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
         }`}>
-          Starting at $49/month. Cancel anytime.
+          Secure checkout powered by Stripe. Cancel anytime.
         </p>
       </div>
     </div>
@@ -125,24 +161,60 @@ export function ProModal() {
 
 // Email Collection Modal for FREE Daily Snapshot
 export function EmailCollectionModal() {
-  const { showEmailModal, setShowEmailModal } = useUserRole();
+  const { showEmailModal, setShowEmailModal, incrementReportDownload } = useUserRole();
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
-  const [email, setEmail] = React.useState('');
-  const [submitted, setSubmitted] = React.useState(false);
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   if (!showEmailModal) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateEmail = (email: string) => EMAIL_REGEX.test(email);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would submit to your backend
-    setSubmitted(true);
-    setTimeout(() => {
+    setError('');
+    
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    // Check if user has exceeded free report limit
+    if (!incrementReportDownload()) {
       setShowEmailModal(false);
-      setSubmitted(false);
-      setEmail('');
-    }, 2000);
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      await sendStructuredEmail({
+        type: 'daily_snapshot',
+        email,
+        name: name || undefined,
+        context: {
+          requestedAt: new Date().toISOString(),
+          source: 'Daily Snapshot Modal',
+        },
+      });
+      
+      setSubmitted(true);
+      setTimeout(() => {
+        setShowEmailModal(false);
+        setSubmitted(false);
+        setEmail('');
+        setName('');
+      }, 2000);
+    } catch {
+      setError('Failed to submit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -177,6 +249,9 @@ export function EmailCollectionModal() {
 
         {submitted ? (
           <>
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="w-16 h-16 text-green-500" />
+            </div>
             <h2 className={`text-2xl font-bold text-center mb-2 ${
               isDark || isHybrid ? 'text-white' : 'text-gray-900'
             }`}>
@@ -204,11 +279,10 @@ export function EmailCollectionModal() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name (optional)"
                 className={`w-full px-4 py-3 rounded-xl border transition-colors ${
                   isDark || isHybrid 
                     ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500' 
@@ -216,11 +290,41 @@ export function EmailCollectionModal() {
                 } outline-none`}
               />
               
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError('');
+                }}
+                placeholder="Enter your email *"
+                required
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  error 
+                    ? 'border-red-500' 
+                    : isDark || isHybrid 
+                      ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                } outline-none`}
+              />
+              
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
+              
               <button
                 type="submit"
-                className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20"
+                disabled={isSubmitting}
+                className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Download Report
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Download Report'
+                )}
               </button>
             </form>
 
@@ -276,3 +380,52 @@ export function LockedOverlay({
     </div>
   );
 }
+
+// Confetti Component
+export function ConfettiEffect() {
+  const { showConfetti } = useUserRole();
+  
+  if (!showConfetti) return null;
+  
+  return (
+    <div className="fixed inset-0 pointer-events-none z-[100]">
+      {/* Generate confetti particles */}
+      {Array.from({ length: 100 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute animate-confetti"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: '-10px',
+            width: `${Math.random() * 10 + 5}px`,
+            height: `${Math.random() * 10 + 5}px`,
+            backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'][Math.floor(Math.random() * 6)],
+            borderRadius: Math.random() > 0.5 ? '50%' : '0',
+            animationDelay: `${Math.random() * 2}s`,
+            animationDuration: `${Math.random() * 2 + 2}s`,
+          }}
+        />
+      ))}
+      
+      {/* Add CSS animation */}
+      <style>{`
+        @keyframes confetti-fall {
+          0% {
+            transform: translateY(0) rotate(0deg);
+            opacity: 1;
+          }
+          100% {
+            transform: translateY(100vh) rotate(720deg);
+            opacity: 0;
+          }
+        }
+        .animate-confetti {
+          animation: confetti-fall linear forwards;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// Export email helper for use in other components
+export { sendStructuredEmail, EMAIL_REGEX };

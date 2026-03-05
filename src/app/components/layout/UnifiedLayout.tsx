@@ -8,7 +8,6 @@ import {
   Database, 
   User,
   TrendingUp,
-  TrendingDown,
   Moon,
   Sun,
   Zap,
@@ -36,7 +35,7 @@ export function UnifiedLayout() {
   const location = useLocation();
   const { currentRegime, uiTheme, setManualOverride } = useAdaptiveTheme();
   const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
-  const { isPro, setUserRole, userRole } = useUserRole();
+  const { isPro } = useUserRole();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
@@ -122,25 +121,15 @@ export function UnifiedLayout() {
             </span>
           </div>
 
-          {/* Theme Indicator & Manual Override */}
+          {/* Theme Indicator & PRO Badge */}
           <div className="hidden lg:flex items-center gap-3">
-            {/* PRO/FREE Toggle */}
-            <button 
-              onClick={() => setUserRole(isPro ? 'FREE' : 'PRO')}
-              aria-label={isPro ? 'Switch to FREE tier' : 'Switch to PRO tier'}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-                isPro 
-                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white' 
-                  : isDark || isHybrid 
-                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-              }`}
-            >
-              <Crown className={`w-4 h-4 ${isPro ? 'text-white' : isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`} />
-              <span className="text-xs font-medium">
-                {isPro ? 'PRO' : 'FREE'}
-              </span>
-            </button>
+            {/* PRO Badge (shown when user is PRO) */}
+            {isPro && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white">
+                <Crown className="w-4 h-4 text-white" />
+                <span className="text-xs font-semibold">PRO MEMBER</span>
+              </div>
+            )}
             
             <button 
               onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
@@ -339,7 +328,7 @@ export function UnifiedLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className={`flex-1 pt-[112px] lg:pt-[129px] pb-20 lg:pb-8 transition-all duration-300 ${
+      <main className={`flex-1 pt-[112px] lg:pt-[129px] pb-32 lg:pb-24 transition-all duration-300 ${
         sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
       } ${
         isDark ? 'bg-[#0F1419]' : isHybrid ? 'bg-[#1a1f2e]' : 'bg-[#F8F9FA]'
@@ -347,6 +336,27 @@ export function UnifiedLayout() {
         <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6">
           <Outlet />
         </div>
+        
+        {/* Footer */}
+        <footer className={`mt-12 border-t py-8 transition-all duration-300 ${
+          sidebarCollapsed ? '' : ''
+        } ${
+          isDark ? 'border-gray-800' : isHybrid ? 'border-gray-700' : 'border-gray-200'
+        }`}>
+          <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className={`text-sm ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>
+                &copy; 2026 Studio Bobikcs. All rights reserved.
+              </div>
+              <div className={`text-sm font-medium ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'}`}>
+                <span className="font-mono tracking-wider">BOBIKCS // TERMINAL</span>
+                <span className={`ml-2 ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'}`}>
+                  is a professional risk intelligence platform.
+                </span>
+              </div>
+            </div>
+          </div>
+        </footer>
       </main>
 
       {/* Mobile Bottom Navigation */}

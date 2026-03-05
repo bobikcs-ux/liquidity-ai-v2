@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Database, TrendingUp, Globe, Lock, Activity, AlertCircle, Info } from 'lucide-react';
+import { Database, TrendingUp, Lock, Activity, AlertCircle, Info, Plus, X, Loader2, CheckCircle } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { sendStructuredEmail, EMAIL_REGEX } from '../components/ProModal';
 
 // Tooltip component
 function Tooltip({ content, children }: { content: string; children: React.ReactNode }) {
@@ -37,23 +38,248 @@ function LiveIndicator() {
   );
 }
 
-export function DataSources() {
+// Request Data Source Modal
+function RequestDataSourceModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   
+  const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
+  const [dataSource, setDataSource] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    
+    if (!EMAIL_REGEX.test(email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    if (!dataSource.trim()) {
+      setError('Please describe the data source you need');
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      await sendStructuredEmail({
+        type: 'data_source_request',
+        email,
+        name: name || undefined,
+        message: `Data Source Request: ${dataSource}\n\nAdditional Details: ${message}`,
+        context: {
+          requestedAt: new Date().toISOString(),
+          source: 'Data Sources Page',
+        },
+      });
+      
+      setSubmitted(true);
+      setTimeout(() => {
+        onClose();
+        setSubmitted(false);
+        setEmail('');
+        setName('');
+        setDataSource('');
+        setMessage('');
+      }, 2000);
+    } catch {
+      setError('Failed to submit. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div 
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      
+      <div className={`relative w-full max-w-md mx-4 rounded-3xl p-8 shadow-2xl ${
+        isDark || isHybrid 
+          ? 'bg-gradient-to-br from-gray-900 to-gray-800 border border-blue-500/30' 
+          : 'bg-white border border-gray-200'
+      }`}>
+        <button
+          onClick={onClose}
+          aria-label="Close modal"
+          className={`absolute top-4 right-4 p-2 rounded-lg transition-colors ${
+            isDark || isHybrid 
+              ? 'hover:bg-gray-700 text-gray-400' 
+              : 'hover:bg-gray-100 text-gray-500'
+          }`}
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <Database className="w-8 h-8 text-white" />
+          </div>
+        </div>
+
+        {submitted ? (
+          <>
+            <div className="flex justify-center mb-4">
+              <CheckCircle className="w-16 h-16 text-green-500" />
+            </div>
+            <h2 className={`text-2xl font-bold text-center mb-2 ${
+              isDark || isHybrid ? 'text-white' : 'text-gray-900'
+            }`}>
+              Request Received!
+            </h2>
+            <p className={`text-center ${
+              isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Our team will review your data source request and get back to you soon.
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 className={`text-2xl font-bold text-center mb-2 ${
+              isDark || isHybrid ? 'text-white' : 'text-gray-900'
+            }`}>
+              Request a Data Source
+            </h2>
+
+            <p className={`text-center mb-6 ${
+              isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Need specific data for your analysis? Let us know.
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name (optional)"
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  isDark || isHybrid 
+                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                } outline-none`}
+              />
+              
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError('');
+                }}
+                placeholder="Your email *"
+                required
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  error && !EMAIL_REGEX.test(email)
+                    ? 'border-red-500' 
+                    : isDark || isHybrid 
+                      ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                } outline-none`}
+              />
+              
+              <input
+                type="text"
+                value={dataSource}
+                onChange={(e) => {
+                  setDataSource(e.target.value);
+                  setError('');
+                }}
+                placeholder="Data source name / type *"
+                required
+                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                  error && !dataSource.trim()
+                    ? 'border-red-500' 
+                    : isDark || isHybrid 
+                      ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500' 
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                } outline-none`}
+              />
+              
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Additional details (optional)"
+                rows={3}
+                className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
+                  isDark || isHybrid 
+                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-blue-500' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-blue-500'
+                } outline-none`}
+              />
+              
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
+              
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  'Submit Request'
+                )}
+              </button>
+            </form>
+
+            <p className={`text-xs text-center mt-4 ${
+              isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
+            }`}>
+              We typically respond within 24-48 hours.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function DataSources() {
+  const { uiTheme } = useAdaptiveTheme();
+  const isDark = uiTheme === 'terminal';
+  const isHybrid = uiTheme === 'hybrid';
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  
+  return (
+    <>
+    <RequestDataSourceModal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} />
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className={`text-3xl font-bold mb-2 ${
-          isDark || isHybrid ? 'text-white' : 'text-gray-900'
-        }`}>
-          Data Sources
-        </h1>
-        <p className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
-          Transparency & trust in our intelligence infrastructure
-        </p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className={`text-3xl font-bold mb-2 ${
+            isDark || isHybrid ? 'text-white' : 'text-gray-900'
+          }`}>
+            Data Sources
+          </h1>
+          <p className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}>
+            Transparency & trust in our intelligence infrastructure
+          </p>
+        </div>
+        <button
+          onClick={() => setShowRequestModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-xl transition-all shadow-lg shadow-blue-500/20"
+        >
+          <Plus className="w-4 h-4" />
+          Request Data Source
+        </button>
       </div>
 
       {/* Overview Stats */}
@@ -372,14 +598,15 @@ export function DataSources() {
                 <span className="text-green-600 mt-0.5">✓</span>
                 <span>Not registered as investment advisor</span>
               </li>
-              <li className="flex items-start gap-2">
-                <span className="text-green-600 mt-0.5">✓</span>
-                <span>For informational purposes only</span>
-              </li>
+            <li className="flex items-start gap-2">
+              <span className="text-green-600 mt-0.5">✓</span>
+              <span>For informational purposes only</span>
+            </li>
             </ul>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -2,7 +2,7 @@ import { RouterProvider } from 'react-router';
 import { router } from './routes';
 import { AdaptiveThemeProvider } from './context/AdaptiveThemeContext';
 import { UserRoleProvider } from './context/UserRoleContext';
-import { ProModal, EmailCollectionModal } from './components/ProModal';
+import { ProModal, EmailCollectionModal, ConfettiEffect } from './components/ProModal';
 
 function App() {
   return (
@@ -11,6 +11,7 @@ function App() {
         <RouterProvider router={router} />
         <ProModal />
         <EmailCollectionModal />
+        <ConfettiEffect />
       </UserRoleProvider>
     </AdaptiveThemeProvider>
   );

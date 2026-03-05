@@ -5,11 +5,17 @@ import { useUserRole } from '../context/UserRoleContext';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { quickExport } from '../utils/exportPDF';
 
+// Stripe checkout URL
+const STRIPE_CHECKOUT_URL = 'https://checkout.stripe.com/pay/pro_plan';
+
+// Consistent AI processing delay (2 seconds)
+const AI_PROCESSING_DELAY = 2000;
+
 export function Reports() {
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
-  const { isPro, openProModal, setShowEmailModal } = useUserRole();
+  const { isPro, openProModal, setShowEmailModal, incrementReportDownload, freeReportsDownloaded } = useUserRole();
   const { latest: snapshot } = useMarketSnapshot();
   const [currentPage, setCurrentPage] = useState(1);
   const [downloadingId, setDownloadingId] = useState<number | null>(null);
@@ -149,12 +155,19 @@ export function Reports() {
   };
 
   const handleReportAction = (report: typeof allReports[0], action: 'download' | 'external') => {
+    // Check if report type is locked (PRO-only)
     if (isReportLocked(report.type)) {
       openProModal(`${report.type.charAt(0).toUpperCase() + report.type.slice(1)} Reports`);
       return;
     }
     
+    // For daily reports (free tier), check download limit
     if (report.type === 'daily' && !isPro) {
+      // Check if user has exceeded free report limit
+      if (!incrementReportDownload()) {
+        // ProModal will be shown by incrementReportDownload
+        return;
+      }
       setShowEmailModal(true);
       return;
     }
@@ -169,8 +182,8 @@ export function Reports() {
   const handleDownload = async (reportId: number) => {
     setDownloadingId(reportId);
     
-    // Simulate 2-second AI processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Consistent AI processing delay (2 seconds) for perceived value
+    await new Promise(resolve => setTimeout(resolve, AI_PROCESSING_DELAY));
     
     // Generate and export PDF
     const marketContext = {
@@ -192,7 +205,8 @@ export function Reports() {
 
   const handleOpenExternal = async (reportId: number) => {
     setDownloadingId(reportId);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Consistent AI processing delay (2 seconds) for perceived value
+    await new Promise(resolve => setTimeout(resolve, AI_PROCESSING_DELAY));
     
     const marketContext = {
       yieldCurve: snapshot?.yield_spread?.toFixed(2) || '-0.42',
