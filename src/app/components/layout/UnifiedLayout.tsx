@@ -393,9 +393,7 @@ export function UnifiedLayout() {
                 <DataSourceStatusCompact />
                 <InstitutionalQR 
                   size={64} 
-                  fgColor="#000000"
-                  bgColor="#ffffff"
-                  label="[ NODE: LIQUIDITY.BOBIKCS.COM ]"
+                  label=""
                 />
               </div>
               

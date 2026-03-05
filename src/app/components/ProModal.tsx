@@ -66,10 +66,46 @@ export function InstitutionalQR({
 // Alias for backwards compatibility
 export const QRCode = InstitutionalQR;
 
-// Email endpoint
-const BUSINESS_EMAIL = 'bobikcs@studio-bobikcs.com';
+// Formspree endpoint for institutional inquiries
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mpqyaobb';
 
-// Helper function to send structured email
+// Helper function to send form data via Formspree
+export async function sendInstitutionalInquiry(data: {
+  fullName: string;
+  workEmail: string;
+  company: string;
+  inquiryDetails: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(FORMSPREE_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        fullName: data.fullName,
+        workEmail: data.workEmail,
+        company: data.company,
+        inquiryDetails: data.inquiryDetails,
+        _subject: `[LIQUIDITY.AI] Institutional Inquiry from ${data.company}`,
+        submittedAt: new Date().toISOString(),
+      }),
+    });
+
+    if (response.ok) {
+      return { success: true };
+    } else {
+      const errorData = await response.json().catch(() => ({}));
+      return { success: false, error: errorData.error || 'Submission failed' };
+    }
+  } catch (error) {
+    console.error('[ProModal] Formspree submission error:', error);
+    return { success: false, error: 'Network error. Please try again.' };
+  }
+}
+
+// Legacy helper function for backwards compatibility
 async function sendStructuredEmail(data: {
   type: 'lead_gen' | 'institutional_inquiry' | 'data_source_request' | 'daily_snapshot';
   email: string;
@@ -78,16 +114,42 @@ async function sendStructuredEmail(data: {
   message?: string;
   context?: Record<string, unknown>;
 }) {
-  // In production, this would call your backend API
-  // For now, we'll use a mailto fallback
+  // For institutional inquiries, use Formspree
+  if (data.type === 'institutional_inquiry') {
+    const result = await sendInstitutionalInquiry({
+      fullName: data.name || '',
+      workEmail: data.email,
+      company: data.company || '',
+      inquiryDetails: data.message || 'Institutional plan inquiry',
+    });
+    if (!result.success) {
+      throw new Error(result.error);
+    }
+    return true;
+  }
   
-  const subject = encodeURIComponent(`[BOBIKCS Terminal] ${data.type.replace(/_/g, ' ').toUpperCase()}`);
-  const body = encodeURIComponent(
-    `Type: ${data.type}\nEmail: ${data.email}\n${data.name ? `Name: ${data.name}\n` : ''}${data.company ? `Company: ${data.company}\n` : ''}${data.message ? `Message: ${data.message}\n` : ''}${data.context ? `\nContext: ${JSON.stringify(data.context, null, 2)}` : ''}`
-  );
-  
-  // Open mailto as fallback (in production, use backend API)
-  window.open(`mailto:${BUSINESS_EMAIL}?subject=${subject}&body=${body}`, '_blank');
+  // For other types, use Formspree with different fields
+  const response = await fetch(FORMSPREE_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+      type: data.type,
+      email: data.email,
+      name: data.name,
+      company: data.company,
+      message: data.message,
+      context: data.context,
+      _subject: `[LIQUIDITY.AI] ${data.type.replace(/_/g, ' ').toUpperCase()}`,
+      submittedAt: new Date().toISOString(),
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Submission failed');
+  }
   
   return true;
 }

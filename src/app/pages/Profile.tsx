@@ -1,24 +1,25 @@
 import React, { useState } from 'react';
-import { User, Phone, Shield, CreditCard, Zap, Webhook, Settings, Crown, Sparkles, X, Loader2, CheckCircle, Building2 } from 'lucide-react';
+import { User, Phone, Shield, CreditCard, Zap, Webhook, Settings, Crown, Sparkles, X, Loader2, CheckCircle, Building2, Send } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useUserRole } from '../context/UserRoleContext';
-import { sendStructuredEmail, EMAIL_REGEX } from '../components/ProModal';
+import { sendInstitutionalInquiry, EMAIL_REGEX } from '../components/ProModal';
 
 // Revolut payment link (external) - Updated checkout link
 const REVOLUT_PAYMENT_URL = 'https://checkout.revolut.com/pay/d65728c7-7bee-48b1-9c48-ee51b51c9257';
 
-// Institutional Inquiry Modal
+// Institutional Inquiry Modal - Uses Formspree
 function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   
-  const [email, setEmail] = useState('');
-  const [name, setName] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [workEmail, setWorkEmail] = useState('');
   const [company, setCompany] = useState('');
-  const [message, setMessage] = useState('');
+  const [inquiryDetails, setInquiryDetails] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
@@ -27,56 +28,73 @@ function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClo
     e.preventDefault();
     setError('');
     
-    if (!EMAIL_REGEX.test(email)) {
-      setError('Please enter a valid email address');
+    // Validate required fields
+    if (!fullName.trim()) {
+      setError('Please enter your full name');
+      return;
+    }
+    
+    if (!EMAIL_REGEX.test(workEmail)) {
+      setError('Please enter a valid work email address');
+      return;
+    }
+    
+    if (!company.trim()) {
+      setError('Please enter your company name');
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      await sendStructuredEmail({
-        type: 'institutional_inquiry',
-        email,
-        name: name || undefined,
-        company: company || undefined,
-        message: message || 'Institutional plan inquiry',
-        context: {
-          requestedAt: new Date().toISOString(),
-          source: 'Profile Page - Contact Sales',
-        },
+      const result = await sendInstitutionalInquiry({
+        fullName: fullName.trim(),
+        workEmail: workEmail.trim(),
+        company: company.trim(),
+        inquiryDetails: inquiryDetails.trim() || 'Institutional plan inquiry',
       });
       
-      setSubmitted(true);
-      setTimeout(() => {
-        onClose();
-        setSubmitted(false);
-        setEmail('');
-        setName('');
-        setCompany('');
-        setMessage('');
-      }, 2000);
+      if (result.success) {
+        setSubmittedEmail(workEmail);
+        setSubmitted(true);
+      } else {
+        setError(result.error || 'Failed to submit. Please try again.');
+      }
     } catch {
-      setError('Failed to submit. Please try again.');
+      setError('Network error. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleClose = () => {
+    onClose();
+    // Reset form after animation
+    setTimeout(() => {
+      setSubmitted(false);
+      setFullName('');
+      setWorkEmail('');
+      setCompany('');
+      setInquiryDetails('');
+      setSubmittedEmail('');
+      setError('');
+    }, 300);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={handleClose}
       />
       
-      <div className={`relative w-full max-w-md mx-4 rounded-3xl p-8 shadow-2xl ${
+      <div className={`relative w-full max-w-lg rounded-2xl p-6 md:p-8 shadow-2xl ${
         isDark || isHybrid 
-          ? 'bg-gradient-to-br from-gray-900 to-gray-800 border border-gray-600' 
+          ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 border border-amber-500/20' 
           : 'bg-white border border-gray-200'
       }`}>
         <button
-          onClick={onClose}
+          onClick={handleClose}
           aria-label="Close modal"
           className={`absolute top-4 right-4 p-2 rounded-lg transition-colors ${
             isDark || isHybrid 
@@ -87,105 +105,158 @@ function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClo
           <X className="w-5 h-5" />
         </button>
 
+        {/* Icon Header */}
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
             <Building2 className="w-8 h-8 text-white" />
           </div>
         </div>
 
         {submitted ? (
-          <>
+          <div className="text-center py-4">
             <div className="flex justify-center mb-4">
-              <CheckCircle className="w-16 h-16 text-green-500" />
+              <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                <CheckCircle className="w-10 h-10 text-green-500" />
+              </div>
             </div>
-            <h2 className={`text-2xl font-bold text-center mb-2 ${
+            <h2 className={`text-2xl font-bold mb-3 ${
               isDark || isHybrid ? 'text-white' : 'text-gray-900'
             }`}>
-              Thank You!
+              Inquiry Sent Successfully
             </h2>
-            <p className={`text-center ${
-              isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
+            <p className={`text-base leading-relaxed ${
+              isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
             }`}>
-              Your request has been received. We will contact you shortly.
+              Our team will review your request and contact you at{' '}
+              <span className="font-semibold text-amber-500">{submittedEmail}</span>
             </p>
-          </>
+            <button
+              onClick={handleClose}
+              className={`mt-6 w-full py-3 px-6 font-semibold rounded-xl transition-all ${
+                isDark || isHybrid
+                  ? 'bg-gray-700 hover:bg-gray-600 text-white'
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+              }`}
+            >
+              Close
+            </button>
+          </div>
         ) : (
           <>
             <h2 className={`text-2xl font-bold text-center mb-2 ${
               isDark || isHybrid ? 'text-white' : 'text-gray-900'
             }`}>
-              Contact Sales Team
+              Institutional Inquiry
             </h2>
 
             <p className={`text-center mb-6 ${
               isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              Learn about our Institutional plan with custom pricing
+              Contact our sales team for enterprise pricing and custom solutions
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Your name"
-                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
-                  isDark || isHybrid 
-                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
-                } outline-none`}
-              />
+              {/* Full Name */}
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${
+                  isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Full Name <span className="text-amber-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="John Smith"
+                  required
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                    isDark || isHybrid 
+                      ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-amber-500/50' 
+                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-amber-500'
+                  } outline-none focus:ring-2 focus:ring-amber-500/20`}
+                />
+              </div>
               
-              <input
-                type="text"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                placeholder="Company name"
-                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
-                  isDark || isHybrid 
-                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
-                } outline-none`}
-              />
+              {/* Work Email */}
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${
+                  isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Work Email <span className="text-amber-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={workEmail}
+                  onChange={(e) => {
+                    setWorkEmail(e.target.value);
+                    setError('');
+                  }}
+                  placeholder="john@company.com"
+                  required
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                    error && error.includes('email')
+                      ? 'border-red-500 focus:border-red-500' 
+                      : isDark || isHybrid 
+                        ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-amber-500/50' 
+                        : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-amber-500'
+                  } outline-none focus:ring-2 focus:ring-amber-500/20`}
+                />
+              </div>
               
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError('');
-                }}
-                placeholder="Work email *"
-                required
-                className={`w-full px-4 py-3 rounded-xl border transition-colors ${
-                  error
-                    ? 'border-red-500' 
-                    : isDark || isHybrid 
-                      ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
-                } outline-none`}
-              />
+              {/* Company */}
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${
+                  isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Company <span className="text-amber-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="Acme Corporation"
+                  required
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors ${
+                    isDark || isHybrid 
+                      ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-amber-500/50' 
+                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-amber-500'
+                  } outline-none focus:ring-2 focus:ring-amber-500/20`}
+                />
+              </div>
               
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us about your needs (optional)"
-                rows={3}
-                className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
-                  isDark || isHybrid 
-                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-gray-500' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-gray-500'
-                } outline-none`}
-              />
+              {/* Inquiry Details */}
+              <div>
+                <label className={`block text-sm font-medium mb-1.5 ${
+                  isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'
+                }`}>
+                  Inquiry Details
+                </label>
+                <textarea
+                  value={inquiryDetails}
+                  onChange={(e) => setInquiryDetails(e.target.value)}
+                  placeholder="Tell us about your requirements, team size, and how we can help..."
+                  rows={4}
+                  className={`w-full px-4 py-3 rounded-xl border transition-colors resize-none ${
+                    isDark || isHybrid 
+                      ? 'bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 focus:border-amber-500/50' 
+                      : 'bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-400 focus:border-amber-500'
+                  } outline-none focus:ring-2 focus:ring-amber-500/20`}
+                />
+              </div>
               
+              {/* Error Message */}
               {error && (
-                <p className="text-sm text-red-500">{error}</p>
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                  <X className="w-4 h-4 text-red-500 flex-shrink-0" />
+                  <p className="text-sm text-red-500">{error}</p>
+                </div>
               )}
               
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3 px-6 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-xl transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3.5 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>
@@ -193,10 +264,20 @@ function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClo
                     Sending...
                   </>
                 ) : (
-                  'Contact Sales'
+                  <>
+                    <Send className="w-5 h-5" />
+                    Submit Inquiry
+                  </>
                 )}
               </button>
             </form>
+            
+            {/* Privacy Note */}
+            <p className={`text-xs text-center mt-4 ${
+              isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
+            }`}>
+              Your information is secure and will only be used to respond to your inquiry.
+            </p>
           </>
         )}
       </div>
