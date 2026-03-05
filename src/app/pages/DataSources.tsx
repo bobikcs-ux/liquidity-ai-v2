@@ -136,12 +136,12 @@ function RequestDataSourceModal({ isOpen, onClose }: { isOpen: boolean; onClose:
             <h2 className={`text-2xl font-bold text-center mb-2 ${
               isDark || isHybrid ? 'text-white' : 'text-gray-900'
             }`}>
-              Request Received!
+              Thank You!
             </h2>
             <p className={`text-center ${
               isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              Our team will review your data source request and get back to you soon.
+              Your request has been received. We will contact you shortly.
             </p>
           </>
         ) : (

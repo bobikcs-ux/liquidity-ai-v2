@@ -6,10 +6,10 @@ import { useUserRole } from '../context/UserRoleContext';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 
 // Email validation regex
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// Stripe checkout URL
-const STRIPE_CHECKOUT_URL = 'https://checkout.stripe.com/pay/pro_plan';
+// Revolut payment link (external)
+const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
 
 // Email endpoint
 const BUSINESS_EMAIL = 'bobikcs@studio-bobikcs.com';
@@ -24,8 +24,7 @@ async function sendStructuredEmail(data: {
   context?: Record<string, unknown>;
 }) {
   // In production, this would call your backend API
-  // For now, we'll use a mailto fallback and log the data
-  console.log('[v0] Sending structured email:', data);
+  // For now, we'll use a mailto fallback
   
   const subject = encodeURIComponent(`[BOBIKCS Terminal] ${data.type.replace(/_/g, ' ').toUpperCase()}`);
   const body = encodeURIComponent(
@@ -54,9 +53,8 @@ export function ProModal() {
   ];
 
   const handleUpgrade = () => {
-    // Redirect to Stripe checkout with return URL
-    const returnUrl = encodeURIComponent(`${window.location.origin}${window.location.pathname}?success=true`);
-    window.location.href = `${STRIPE_CHECKOUT_URL}?success_url=${returnUrl}`;
+    // Open Revolut payment link in new tab
+    window.open(REVOLUT_PAYMENT_URL, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -133,7 +131,7 @@ export function ProModal() {
             onClick={handleUpgrade}
             className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/20"
           >
-            Upgrade to PRO - $49/mo
+            Upgrade to PRO - $149
           </button>
           
           <button
@@ -148,12 +146,20 @@ export function ProModal() {
           </button>
         </div>
 
-        {/* Pricing Note */}
-        <p className={`text-xs text-center mt-6 ${
-          isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
+        {/* Payment Instructions */}
+        <div className={`mt-4 p-3 rounded-xl ${
+          isDark || isHybrid ? 'bg-gray-800/50' : 'bg-gray-50'
         }`}>
-          Secure checkout powered by Stripe. Cancel anytime.
-        </p>
+          <p className={`text-xs text-center ${
+            isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            After completing payment, please email your confirmation to{' '}
+            <a href="mailto:bobikcs@studio-bobikcs.com" className="text-amber-500 hover:underline font-medium">
+              bobikcs@studio-bobikcs.com
+            </a>{' '}
+            to activate your PRO account.
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -260,7 +266,7 @@ export function EmailCollectionModal() {
             <p className={`text-center ${
               isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              Your Daily Snapshot will be delivered to your inbox.
+              Your request has been received. We will contact you shortly.
             </p>
           </>
         ) : (
@@ -428,4 +434,4 @@ export function ConfettiEffect() {
 }
 
 // Export email helper for use in other components
-export { sendStructuredEmail, EMAIL_REGEX };
+export { sendStructuredEmail };

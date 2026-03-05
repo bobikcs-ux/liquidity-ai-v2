@@ -4,8 +4,8 @@ import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useUserRole } from '../context/UserRoleContext';
 import { sendStructuredEmail, EMAIL_REGEX } from '../components/ProModal';
 
-// Stripe checkout URL
-const STRIPE_CHECKOUT_URL = 'https://checkout.stripe.com/pay/pro_plan';
+// Revolut payment link (external)
+const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
 
 // Institutional Inquiry Modal
 function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -101,12 +101,12 @@ function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClo
             <h2 className={`text-2xl font-bold text-center mb-2 ${
               isDark || isHybrid ? 'text-white' : 'text-gray-900'
             }`}>
-              Request Received!
+              Thank You!
             </h2>
             <p className={`text-center ${
               isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
             }`}>
-              Our sales team will contact you within 24 hours.
+              Your request has been received. We will contact you shortly.
             </p>
           </>
         ) : (
@@ -212,8 +212,8 @@ export function Profile() {
   const [showInstitutionalModal, setShowInstitutionalModal] = useState(false);
 
   const handleUpgrade = () => {
-    const returnUrl = encodeURIComponent(`${window.location.origin}/profile?success=true`);
-    window.location.href = `${STRIPE_CHECKOUT_URL}?success_url=${returnUrl}`;
+    // Open Revolut payment link in new tab
+    window.open(REVOLUT_PAYMENT_URL, '_blank', 'noopener,noreferrer');
   };
   
   return (
@@ -402,8 +402,19 @@ export function Profile() {
             className="w-full py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
           >
             <Crown className="w-5 h-5" />
-            Upgrade to PRO - $49/mo
+            Upgrade to PRO - $149
           </button>
+          
+          {/* Payment Instructions */}
+          <div className={`mt-4 p-3 rounded-xl ${isDark || isHybrid ? 'bg-gray-700/50' : 'bg-white'}`}>
+            <p className={`text-xs text-center ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>
+              After completing payment, please email your confirmation to{' '}
+              <a href="mailto:bobikcs@studio-bobikcs.com" className="text-amber-500 hover:underline font-medium">
+                bobikcs@studio-bobikcs.com
+              </a>{' '}
+              to activate your PRO account.
+            </p>
+          </div>
         </div>
       )}
 
