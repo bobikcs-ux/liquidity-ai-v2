@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 
 type StatusLevel = 'LOW' | 'ELEVATED' | 'HIGH' | 'CRITICAL';
 
@@ -11,7 +11,8 @@ interface StatusBadgeProps {
 
 // Standardized status badge colors (Bloomberg terminal style)
 // HIGH → red, ELEVATED → amber, NORMAL/LOW → green, CRITICAL → red pulsing
-export function StatusBadge({ level, className = '' }: StatusBadgeProps) {
+// Memoized to prevent unnecessary re-renders - only updates when level or className changes
+export const StatusBadge = memo(function StatusBadge({ level, className = '' }: StatusBadgeProps) {
   const getStatusStyles = (status: string) => {
     switch (status.toUpperCase()) {
       case 'CRITICAL':
@@ -45,7 +46,9 @@ export function StatusBadge({ level, className = '' }: StatusBadgeProps) {
       {level}
     </span>
   );
-}
+});
+
+export default StatusBadge;
 
 // Risk level determination helper (reusable across components)
 export function getRiskLevel(value: number): StatusLevel {

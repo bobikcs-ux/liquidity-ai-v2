@@ -9,6 +9,11 @@ import { ConflictTransmissionModel } from '../components/ConflictTransmissionMod
 import { EmploymentDisruptionLayer } from '../components/EmploymentDisruptionLayer';
 import { NarrativeShockModel } from '../components/NarrativeShockModel';
 import { DataSourceStatus } from '../components/DataSourceStatus';
+import { BlackSwanDetector } from '../components/BlackSwanDetector';
+import { LiquidityTransmission } from '../components/LiquidityTransmission';
+import { TerminalEventStream } from '../components/TerminalEventStream';
+import { DataIntegrityPanel } from '../components/DataIntegrityPanel';
+import { BlackSwanTimeline } from '../components/BlackSwanTimeline';
 
 export function Dashboard() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
@@ -74,6 +79,15 @@ export function Dashboard() {
         </div>
       </div>
 
+      {/* Black Swan Early Warning System */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <BlackSwanDetector />
+        <BlackSwanTimeline />
+      </div>
+      
+      {/* Liquidity Transmission Pipeline */}
+      <LiquidityTransmission />
+      
       {/* Autonomous Risk Defense AI - Силно визуално предупреждение */}
       {currentRegime.riskLevel >= 60 && (
         <div className="relative overflow-hidden rounded-2xl border-2 border-red-600/50 bg-red-950/10 p-1 animate-in fade-in slide-in-from-top-4 duration-700">
@@ -197,6 +211,12 @@ export function Dashboard() {
         </div>
       </div>
 
+      {/* Terminal Event Stream & Data Integrity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <TerminalEventStream maxEvents={8} />
+        <DataIntegrityPanel />
+      </div>
+
       {/* Stress signals & AI Copilot Row */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
         <div className={cardStyle}>
@@ -225,7 +245,7 @@ export function Dashboard() {
            </div>
         </div>
 
-        {/* Интег��ация на AI Copilot */}
+        {/* AI Copilot */}
         <div className="flex flex-col">
            <AICopilot />
         </div>

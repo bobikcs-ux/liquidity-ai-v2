@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, memo } from 'react';
 import { Outlet, useLocation, Link } from 'react-router';
 import { 
   Home, 
@@ -33,6 +33,7 @@ import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 import { useUserRole } from '../../context/UserRoleContext';
 import { InstitutionalQR } from '../ProModal';
 import { DataSourceStatusCompact } from '../DataSourceStatus';
+import { GlobalStatusBar } from '../GlobalStatusBar';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
@@ -107,8 +108,15 @@ export function UnifiedLayout() {
     <div className="min-h-[100dvh] transition-colors duration-500"
       style={{ backgroundColor: isDark ? '#0F1419' : isHybrid ? '#1a1f2e' : '#F8F9FA' }}
     >
-      {/* Top Bar */}
-      <div className={`border-b fixed top-0 left-0 right-0 z-40 transition-colors duration-500 ${
+      {/* Global Status Bar - Thin fixed header for institutional terminal feel */}
+      {(isDark || isHybrid) && (
+        <GlobalStatusBar className="fixed top-0 left-0 right-0 z-50" />
+      )}
+      
+      {/* Top Bar - Adjusts position based on GlobalStatusBar presence */}
+      <div className={`border-b fixed left-0 right-0 z-40 transition-colors duration-500 ${
+        (isDark || isHybrid) ? 'top-[36px]' : 'top-0'
+      } ${
         isDark ? 'bg-[#1a2332] border-blue-900' : isHybrid ? 'bg-[#242b3d] border-gray-700' : 'bg-white border-gray-200'
       }`}>
         <div className="px-4 lg:px-6 h-16 flex items-center justify-between">
@@ -346,8 +354,10 @@ export function UnifiedLayout() {
         </div>
       </div>
 
-      {/* Desktop Sidebar */}
-      <aside className={`hidden lg:block fixed left-0 top-[104px] bottom-0 border-r z-30 transition-all duration-300 ${
+      {/* Desktop Sidebar - Adjusts position based on GlobalStatusBar presence */}
+      <aside className={`hidden lg:block fixed left-0 bottom-0 border-r z-30 transition-all duration-300 ${
+        (isDark || isHybrid) ? 'top-[140px]' : 'top-[104px]'
+      } ${
         sidebarCollapsed ? 'w-20' : 'w-64'
       } ${
         isDark ? 'bg-[#1a2332] border-blue-900' : isHybrid ? 'bg-[#242b3d] border-gray-700' : 'bg-white border-gray-200'
@@ -446,8 +456,10 @@ export function UnifiedLayout() {
         </nav>
       </aside>
 
-      {/* Main Content Area - No bottom padding needed now that bottom nav is removed */}
-      <main className={`flex-1 pt-[112px] lg:pt-[129px] pb-8 lg:pb-24 transition-all duration-300 ${
+      {/* Main Content Area - Adjusts for GlobalStatusBar */}
+      <main className={`flex-1 pb-8 lg:pb-24 transition-all duration-300 ${
+        (isDark || isHybrid) ? 'pt-[148px] lg:pt-[165px]' : 'pt-[112px] lg:pt-[129px]'
+      } ${
         sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
       } ${
         isDark ? 'bg-[#0F1419]' : isHybrid ? 'bg-[#1a1f2e]' : 'bg-[#F8F9FA]'
