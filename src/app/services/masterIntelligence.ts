@@ -10,39 +10,56 @@ export interface MarketContext {
 
 // 2. Main function to fetch all market data
 export const fetchAllMarketData = async (): Promise<MarketContext> => {
+  // Get API keys from environment
+  const FRED_KEY = import.meta.env.VITE_FRED_API_KEY || 
+    (typeof process !== 'undefined' && process.env.VITE_FRED_API_KEY);
+  const COINGECKO_KEY = import.meta.env.NEXT_PUBLIC_COINGECKO_API_KEY || 
+    (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_COINGECKO_API_KEY);
+  
+  // CoinGecko headers with API key if available
+  const cgHeaders: HeadersInit = { 'Accept': 'application/json' };
+  if (COINGECKO_KEY) {
+    cgHeaders['x-cg-demo-api-key'] = COINGECKO_KEY;
+  }
+  
   try {
-    const [fredRes, fngRes, globalRes, cgRes] = await Promise.all([
-      // FRED (Macro) - uses loaded API key
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key=${import.meta.env.VITE_FRED_API_KEY}&file_type=json&limit=1&sort_order=desc`)
-        .then(res => res.json())
-        .catch(() => ({ observations: [{ value: 'N/A' }] })),
+    const [fredRes, fngRes, cgGlobalRes, cgPriceRes] = await Promise.all([
+      // FRED (Macro) - Yield Curve 10Y-2Y
+      FRED_KEY 
+        ? fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key=${FRED_KEY}&file_type=json&limit=1&sort_order=desc`)
+            .then(res => res.json())
+            .catch(() => ({ observations: [{ value: 'Loading...' }] }))
+        : Promise.resolve({ observations: [{ value: 'Loading...' }] }),
       
-      // Alternative.me (Sentiment)
-      fetch('https://api.alternative.me/fng/')
+      // Alternative.me (Sentiment - Fear & Greed)
+      fetch(import.meta.env.VITE_FEAR_GREED_API_URL || 'https://api.alternative.me/fng/')
         .then(res => res.json())
         .catch(() => ({ data: [{ value: '50', value_classification: 'Neutral' }] })),
       
-      // Alternative.me (Global Data)
-      fetch('https://api.alternative.me/v2/global/')
+      // CoinGecko Global Data (BTC Dominance) with API key
+      fetch('https://api.coingecko.com/api/v3/global', { headers: cgHeaders })
         .then(res => res.json())
-        .catch(() => ({ data: { bitcoin_percentage_of_market_cap: 0 } })),
+        .catch(() => ({ data: { market_cap_percentage: { btc: 0 } } })),
       
-      // CoinGecko (Public Price - no key needed)
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
+      // CoinGecko Price Data with API key
+      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true', { headers: cgHeaders })
         .then(res => res.json())
         .catch(() => ({ bitcoin: { usd: 0, usd_24h_change: 0 } }))
     ]);
 
+    const yieldValue = fredRes.observations?.[0]?.value;
+    const btcDominance = cgGlobalRes.data?.market_cap_percentage?.btc || 0;
+    
     return {
-      yieldCurve: fredRes.observations?.[0]?.value || "N/A",
+      yieldCurve: yieldValue && yieldValue !== '.' ? yieldValue : "Loading...",
       fearGreedValue: fngRes.data?.[0]?.value || "50",
       fearGreedLabel: fngRes.data?.[0]?.value_classification || "Neutral",
-      btcPrice: cgRes.bitcoin?.usd || 0,
-      btcChange: cgRes.bitcoin?.usd_24h_change || 0,
-      btcDominance: globalRes.data?.bitcoin_percentage_of_market_cap || 0
+      btcPrice: cgPriceRes.bitcoin?.usd || 0,
+      btcChange: cgPriceRes.bitcoin?.usd_24h_change || 0,
+      btcDominance: btcDominance
     };
   } catch (error) {
-    console.error("Master Fetch Error:", error);
+    console.error("[v0] Master Fetch Error:", error);
     throw error;
   }
 };
@@ -65,13 +82,18 @@ Format: Bullet points for Risk Level, Liquidity State, and Final Warning.
 
 // 4. Function that talks to Gemini API
 export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<string> => {
-  const GEMINI_KEY = import.meta.env.VITE_GOOGLE_AI_KEY;
+  // Check for API key: GOOGLE_GENERATIVE_AI_API_KEY (Vercel) or VITE_GOOGLE_AI_KEY (Vite dev)
+  const GEMINI_KEY = 
+    (typeof process !== 'undefined' && process.env.GOOGLE_GENERATIVE_AI_API_KEY) ||
+    import.meta.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+    import.meta.env.VITE_GOOGLE_AI_KEY;
   
   if (!GEMINI_KEY) {
-    // Return a mock analysis when no API key is available
+    console.warn('[v0] Google AI key not found, using mock analysis');
     return generateMockAnalysis(context);
   }
 
+  console.log('[v0] Using Google AI for Black Swan analysis');
   const prompt = buildBlackSwanPrompt(context);
 
   try {
@@ -95,13 +117,15 @@ export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<stri
     );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('[v0] Gemini API error:', response.status, errorText);
       throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || generateMockAnalysis(context);
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("[v0] Gemini API Error:", error);
     return generateMockAnalysis(context);
   }
 };
