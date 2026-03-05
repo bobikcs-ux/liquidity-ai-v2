@@ -360,13 +360,13 @@ export function UnifiedLayout() {
                 </div>
               </div>
               
-              {/* Center - Share Terminal QR - Institutional Style */}
+              {/* Center - Terminal QR - Industrial Style, Level H Error Correction */}
               <div className="hidden md:block">
                 <QRCode 
-                  url={typeof window !== 'undefined' ? window.location.href : 'https://bobikcs.terminal'} 
-                  size={44} 
-                  color={isDark || isHybrid ? '#34d399' : '#059669'}
-                  label="[ ENCRYPTED NODE LINK ]"
+                  size={56} 
+                  color={isDark || isHybrid ? '#10b981' : '#059669'}
+                  bgColor="transparent"
+                  label="[ NODE: LIQUIDITY.BOBIKCS.COM ]"
                 />
               </div>
               
