@@ -1,6 +1,41 @@
-import React from 'react';
-import { Database, TrendingUp, Globe, Lock, Activity, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Database, TrendingUp, Globe, Lock, Activity, AlertCircle, Info } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+
+// Tooltip component
+function Tooltip({ content, children }: { content: string; children: React.ReactNode }) {
+  const [show, setShow] = useState(false);
+  
+  return (
+    <div className="relative inline-block">
+      <div
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+      >
+        {children}
+      </div>
+      {show && (
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
+          {content}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Live indicator component
+function LiveIndicator() {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-600">
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+      </span>
+      LIVE
+    </span>
+  );
+}
 
 export function DataSources() {
   const { uiTheme } = useAdaptiveTheme();
@@ -25,19 +60,19 @@ export function DataSources() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
           <div className="text-sm text-gray-600 mb-1">Data Sources</div>
-          <div className="text-2xl font-bold text-gray-900">47</div>
+          <div className="text-2xl font-bold text-gray-900 tabular-nums">47</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
           <div className="text-sm text-gray-600 mb-1">Daily Updates</div>
-          <div className="text-2xl font-bold text-[#2563EB]">1.2M</div>
+          <div className="text-2xl font-bold text-[#2563EB] tabular-nums">1.2M</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-          <div className="text-sm text-gray-600 mb-1">Model Accuracy</div>
-          <div className="text-2xl font-bold text-green-600">89.4%</div>
+          <div className="text-sm text-gray-600 mb-1">Data Confidence</div>
+          <div className="text-2xl font-bold text-green-600 tabular-nums min-w-[4ch]">99.4%</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
           <div className="text-sm text-gray-600 mb-1">Uptime</div>
-          <div className="text-2xl font-bold text-gray-900">99.97%</div>
+          <div className="text-2xl font-bold text-gray-900 tabular-nums min-w-[5ch]">99.97%</div>
         </div>
       </div>
 
@@ -52,15 +87,23 @@ export function DataSources() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            { name: 'Federal Reserve (FRED)', type: 'Central Bank', frequency: 'Daily', lag: '1 day' },
-            { name: 'European Central Bank', type: 'Central Bank', frequency: 'Daily', lag: '1 day' },
-            { name: 'Bank of Japan', type: 'Central Bank', frequency: 'Daily', lag: '2 days' },
-            { name: 'US Treasury', type: 'Government', frequency: 'Daily', lag: 'Real-time' },
-            { name: 'OECD Statistics', type: 'International Org', frequency: 'Monthly', lag: '1 week' },
-            { name: 'Bloomberg Economics', type: 'Financial Data', frequency: 'Daily', lag: 'Real-time' },
+            { name: 'Federal Reserve (FRED)', type: 'Central Bank', frequency: 'Daily', lag: '1 day', api: 'FRED API v3 - Federal Reserve Economic Data', isLive: true },
+            { name: 'European Central Bank', type: 'Central Bank', frequency: 'Daily', lag: '1 day', api: 'ECB Statistical Data Warehouse API', isLive: false },
+            { name: 'Bank of Japan', type: 'Central Bank', frequency: 'Daily', lag: '2 days', api: 'BOJ Time-Series Data API', isLive: false },
+            { name: 'US Treasury', type: 'Government', frequency: 'Daily', lag: 'Real-time', api: 'TreasuryDirect API v2', isLive: false },
+            { name: 'OECD Statistics', type: 'International Org', frequency: 'Monthly', lag: '1 week', api: 'OECD.Stat JSON API', isLive: false },
+            { name: 'Bloomberg Economics', type: 'Financial Data', frequency: 'Daily', lag: 'Real-time', api: 'Bloomberg B-PIPE Terminal Feed', isLive: false },
           ].map((source, index) => (
             <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div className="font-semibold text-gray-900 mb-2">{source.name}</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-900">{source.name}</span>
+                  <Tooltip content={source.api}>
+                    <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                {source.isLive && <LiveIndicator />}
+              </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <span className="text-gray-500 block mb-1">Type</span>
@@ -91,13 +134,21 @@ export function DataSources() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            { name: 'NYSE / NASDAQ', coverage: 'US Equities', latency: '<100ms', resolution: 'Tick' },
-            { name: 'CME Group', coverage: 'Futures & Options', latency: '<50ms', resolution: 'Tick' },
-            { name: 'ICE Data Services', coverage: 'Fixed Income', latency: '<200ms', resolution: '1-min' },
-            { name: 'Refinitiv', coverage: 'FX & Commodities', latency: '<100ms', resolution: 'Tick' },
+            { name: 'NYSE / NASDAQ', coverage: 'US Equities', latency: '<100ms', resolution: 'Tick', api: 'NYSE Market Data Feed (UTP SIP)', isLive: true },
+            { name: 'CME Group', coverage: 'Futures & Options', latency: '<50ms', resolution: 'Tick', api: 'CME Smart Stream Real-time', isLive: false },
+            { name: 'ICE Data Services', coverage: 'Fixed Income', latency: '<200ms', resolution: '1-min', api: 'ICE Consolidated Feed API', isLive: false },
+            { name: 'Refinitiv', coverage: 'FX & Commodities', latency: '<100ms', resolution: 'Tick', api: 'Refinitiv Elektron Real-Time', isLive: false },
           ].map((source, index) => (
             <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div className="font-semibold text-gray-900 mb-2">{source.name}</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-900">{source.name}</span>
+                  <Tooltip content={source.api}>
+                    <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                {source.isLive && <LiveIndicator />}
+              </div>
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <span className="text-gray-500 block mb-1">Coverage</span>
@@ -128,13 +179,21 @@ export function DataSources() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            { name: 'Bitcoin Network', metrics: 'Hash rate, UTXO, Fees', update: '10 min' },
-            { name: 'Ethereum Network', metrics: 'Gas, TVL, MEV', update: '12 sec' },
-            { name: 'Stablecoin Supplies', metrics: 'USDT, USDC, DAI flows', update: 'Real-time' },
-            { name: 'DeFi Protocols', metrics: 'Liquidity, Volume, TVL', update: '1 min' },
+            { name: 'Bitcoin Network', metrics: 'Hash rate, UTXO, Fees', update: '10 min', api: 'Blockchain.com & Mempool.space API', isLive: true },
+            { name: 'Ethereum Network', metrics: 'Gas, TVL, MEV', update: '12 sec', api: 'Etherscan Pro API & Infura', isLive: false },
+            { name: 'Stablecoin Supplies', metrics: 'USDT, USDC, DAI flows', update: 'Real-time', api: 'CoinGecko Pro Endpoint', isLive: true },
+            { name: 'DeFi Protocols', metrics: 'Liquidity, Volume, TVL', update: '1 min', api: 'DefiLlama API v2', isLive: false },
           ].map((source, index) => (
             <div key={index} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div className="font-semibold text-gray-900 mb-2">{source.name}</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-900">{source.name}</span>
+                  <Tooltip content={source.api}>
+                    <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                  </Tooltip>
+                </div>
+                {source.isLive && <LiveIndicator />}
+              </div>
               <div className="text-xs space-y-1">
                 <div className="flex justify-between">
                   <span className="text-gray-500">Metrics</span>
@@ -176,7 +235,7 @@ export function DataSources() {
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Last Update</span>
-                <span className="text-gray-900">Jan 2026</span>
+                <span className="text-gray-900">March 2026</span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Accuracy</span>
@@ -193,7 +252,7 @@ export function DataSources() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
               <div>
                 <span className="text-gray-500 block mb-1">Training Period</span>
-                <span className="text-gray-900">2000-2024</span>
+                <span className="text-gray-900">2000-2026</span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Retrain Cycle</span>
@@ -201,7 +260,7 @@ export function DataSources() {
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Last Update</span>
-                <span className="text-gray-900">Feb 2026</span>
+                <span className="text-gray-900">March 2026</span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Accuracy</span>
@@ -218,7 +277,7 @@ export function DataSources() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
               <div>
                 <span className="text-gray-500 block mb-1">Training Period</span>
-                <span className="text-gray-900">1987-2024</span>
+                <span className="text-gray-900">1987-2026</span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Retrain Cycle</span>
@@ -226,7 +285,7 @@ export function DataSources() {
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Last Update</span>
-                <span className="text-gray-900">Jan 2026</span>
+                <span className="text-gray-900">March 2026</span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Accuracy</span>

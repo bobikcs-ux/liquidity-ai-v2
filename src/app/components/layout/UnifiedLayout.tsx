@@ -15,10 +15,12 @@ import {
   AlertTriangle,
   Shield,
   Menu,
-  ChevronLeft
+  ChevronLeft,
+  Crown
 } from 'lucide-react';
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
+import { useUserRole } from '../../context/UserRoleContext';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
@@ -34,6 +36,7 @@ export function UnifiedLayout() {
   const location = useLocation();
   const { currentRegime, uiTheme, setManualOverride } = useAdaptiveTheme();
   const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
+  const { isPro, setUserRole, userRole } = useUserRole();
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(() => {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
@@ -121,6 +124,24 @@ export function UnifiedLayout() {
 
           {/* Theme Indicator & Manual Override */}
           <div className="hidden lg:flex items-center gap-3">
+            {/* PRO/FREE Toggle */}
+            <button 
+              onClick={() => setUserRole(isPro ? 'FREE' : 'PRO')}
+              aria-label={isPro ? 'Switch to FREE tier' : 'Switch to PRO tier'}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
+                isPro 
+                  ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white' 
+                  : isDark || isHybrid 
+                    ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
+                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+              }`}
+            >
+              <Crown className={`w-4 h-4 ${isPro ? 'text-white' : isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`} />
+              <span className="text-xs font-medium">
+                {isPro ? 'PRO' : 'FREE'}
+              </span>
+            </button>
+            
             <button 
               onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
               aria-label={uiTheme === 'terminal' ? 'Switch to light theme' : 'Switch to terminal theme'}

@@ -1,54 +1,222 @@
-import React from 'react';
-import { FileText, Download, Share2, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { FileText, Download, AlertCircle, ExternalLink, Link2, Loader2 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { useUserRole } from '../context/UserRoleContext';
+import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { quickExport } from '../utils/exportPDF';
 
 export function Reports() {
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
+  const { isPro, openProModal, setShowEmailModal } = useUserRole();
+  const { latest: snapshot } = useMarketSnapshot();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [downloadingId, setDownloadingId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   
-  const reports = [
+  type ReportType = 'daily' | 'volatility' | 'liquidity' | 'crash';
+
+  const allReports = [
     {
       id: 1,
-      title: 'Q1 2026 Liquidity Intelligence Report',
-      date: '2026-03-01',
+      title: 'Daily Market Snapshot - March 5, 2026',
+      date: '2026-03-05',
       riskLevel: 'Low',
-      description: 'Comprehensive analysis of global liquidity conditions and regime transitions',
-      pages: 47,
+      description: 'Daily risk assessment and market intelligence summary',
+      pages: 12,
+      type: 'daily' as ReportType,
     },
     {
       id: 2,
-      title: 'Volatility Expansion Alert - February 2026',
-      date: '2026-02-15',
+      title: 'Volatility Expansion Alert - March 2026',
+      date: '2026-03-03',
       riskLevel: 'Medium',
       description: 'Early warning signals for potential volatility spike in equity markets',
       pages: 23,
+      type: 'volatility' as ReportType,
     },
     {
       id: 3,
-      title: 'Correlation Breakdown Analysis',
-      date: '2026-02-01',
-      riskLevel: 'High',
-      description: 'Cross-asset correlation stress indicators and portfolio implications',
-      pages: 31,
-    },
-    {
-      id: 4,
       title: 'Central Bank Liquidity Flow Report',
-      date: '2026-01-15',
+      date: '2026-03-01',
       riskLevel: 'Low',
       description: 'Monthly tracking of global central bank balance sheets and QE operations',
       pages: 38,
+      type: 'liquidity' as ReportType,
+    },
+    {
+      id: 4,
+      title: 'Crash Similarity Engine - March 2026',
+      date: '2026-02-28',
+      riskLevel: 'High',
+      description: 'Historical pattern matching and tail risk assessment',
+      pages: 29,
+      type: 'crash' as ReportType,
     },
     {
       id: 5,
+      title: 'Daily Market Snapshot - March 4, 2026',
+      date: '2026-03-04',
+      riskLevel: 'Low',
+      description: 'Daily risk assessment and market intelligence summary',
+      pages: 11,
+      type: 'daily' as ReportType,
+    },
+    // Page 2 reports
+    {
+      id: 6,
+      title: 'Volatility Alert - February 2026',
+      date: '2026-02-15',
+      riskLevel: 'Medium',
+      description: 'Mid-month volatility analysis and regime signals',
+      pages: 19,
+      type: 'volatility' as ReportType,
+    },
+    {
+      id: 7,
+      title: 'Liquidity Conditions Report - February',
+      date: '2026-02-10',
+      riskLevel: 'Low',
+      description: 'Comprehensive liquidity analysis across markets',
+      pages: 34,
+      type: 'liquidity' as ReportType,
+    },
+    {
+      id: 8,
+      title: 'Daily Market Snapshot - February 28',
+      date: '2026-02-28',
+      riskLevel: 'Low',
+      description: 'End of month market intelligence summary',
+      pages: 13,
+      type: 'daily' as ReportType,
+    },
+    {
+      id: 9,
+      title: 'Crash Engine - February 2026',
+      date: '2026-02-20',
+      riskLevel: 'Medium',
+      description: 'Pattern analysis and historical crash similarities',
+      pages: 27,
+      type: 'crash' as ReportType,
+    },
+    {
+      id: 10,
+      title: 'Daily Market Snapshot - February 27',
+      date: '2026-02-27',
+      riskLevel: 'Low',
+      description: 'Daily risk metrics and market overview',
+      pages: 12,
+      type: 'daily' as ReportType,
+    },
+    // Page 3 reports
+    {
+      id: 11,
+      title: 'Q4 2025 Liquidity Intelligence Report',
+      date: '2026-01-15',
+      riskLevel: 'Low',
+      description: 'Quarterly comprehensive analysis of global liquidity',
+      pages: 52,
+      type: 'liquidity' as ReportType,
+    },
+    {
+      id: 12,
       title: 'Crash Similarity Engine - January 2026',
       date: '2026-01-10',
       riskLevel: 'Low',
       description: 'Historical pattern matching and tail risk assessment',
       pages: 29,
+      type: 'crash' as ReportType,
+    },
+    {
+      id: 13,
+      title: 'Volatility Alert - January 2026',
+      date: '2026-01-05',
+      riskLevel: 'High',
+      description: 'Year-start volatility expansion warning',
+      pages: 21,
+      type: 'volatility' as ReportType,
     },
   ];
+
+  const reportsPerPage = 5;
+  const totalPages = Math.ceil(allReports.length / reportsPerPage);
+  const reports = allReports.slice((currentPage - 1) * reportsPerPage, currentPage * reportsPerPage);
+
+  const isReportLocked = (type: ReportType) => {
+    if (isPro) return false;
+    return type !== 'daily';
+  };
+
+  const handleReportAction = (report: typeof allReports[0], action: 'download' | 'external') => {
+    if (isReportLocked(report.type)) {
+      openProModal(`${report.type.charAt(0).toUpperCase() + report.type.slice(1)} Reports`);
+      return;
+    }
+    
+    if (report.type === 'daily' && !isPro) {
+      setShowEmailModal(true);
+      return;
+    }
+    
+    if (action === 'download') {
+      handleDownload(report.id);
+    } else {
+      handleOpenExternal(report.id);
+    }
+  };
+
+  const handleDownload = async (reportId: number) => {
+    setDownloadingId(reportId);
+    
+    // Simulate 2-second AI processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Generate and export PDF
+    const marketContext = {
+      yieldCurve: snapshot?.yield_spread?.toFixed(2) || '-0.42',
+      fearGreedValue: '45', // Default value - FNG fetched separately
+      fearGreedLabel: 'Neutral',
+      btcPrice: snapshot?.btc_price || 67500,
+      btcChange: 2.3,
+      btcDominance: snapshot?.btc_dominance || 58.2,
+      survivalProbability: snapshot?.survival_probability,
+      systemicRisk: snapshot?.systemic_risk,
+      regime: snapshot?.regime,
+      balanceSheetDelta: snapshot?.balance_sheet_delta,
+    };
+    
+    await quickExport(marketContext, `Generated intelligence report for ${new Date().toLocaleDateString()}.`);
+    setDownloadingId(null);
+  };
+
+  const handleOpenExternal = async (reportId: number) => {
+    setDownloadingId(reportId);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const marketContext = {
+      yieldCurve: snapshot?.yield_spread?.toFixed(2) || '-0.42',
+      fearGreedValue: '45', // Default value - FNG fetched separately
+      fearGreedLabel: 'Neutral',
+      btcPrice: snapshot?.btc_price || 67500,
+      btcChange: 2.3,
+      btcDominance: snapshot?.btc_dominance || 58.2,
+      survivalProbability: snapshot?.survival_probability,
+      systemicRisk: snapshot?.systemic_risk,
+      regime: snapshot?.regime,
+      balanceSheetDelta: snapshot?.balance_sheet_delta,
+    };
+    
+    await quickExport(marketContext, `Intelligence report opened in new tab.`);
+    setDownloadingId(null);
+  };
+
+  const handleCopyLink = (reportId: number) => {
+    const url = `${window.location.origin}/reports/${reportId}`;
+    navigator.clipboard.writeText(url);
+    setCopiedId(reportId);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const getRiskColor = (level: string) => {
     switch (level) {
@@ -138,18 +306,59 @@ export function Reports() {
 
               {/* Right Section - Actions */}
               <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Copy Link */}
                 <button 
-                  aria-label={`Share ${report.title}`}
+                  onClick={() => handleCopyLink(report.id)}
+                  aria-label={`Copy link to ${report.title}`}
+                  className="p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group relative"
+                >
+                  <Link2 className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
+                  {copiedId === report.id && (
+                    <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap">
+                      Copied!
+                    </span>
+                  )}
+                </button>
+                
+                {/* Open External */}
+                <button 
+                  onClick={() => handleReportAction(report, 'external')}
+                  aria-label={`Open ${report.title} in new tab`}
                   className="p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group"
                 >
-                  <Share2 className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
+                  {downloadingId === report.id ? (
+                    <Loader2 className="w-5 h-5 text-gray-600 animate-spin" />
+                  ) : (
+                    <ExternalLink className="w-5 h-5 text-gray-600 group-hover:text-gray-900" />
+                  )}
                 </button>
+                
+                {/* Download */}
                 <button 
+                  onClick={() => handleReportAction(report, 'download')}
                   aria-label={`Download ${report.title}`}
-                  className="flex items-center gap-2 px-4 py-3 bg-[#2563EB] text-white rounded-xl hover:bg-[#1d4ed8] transition-colors font-medium"
+                  disabled={downloadingId === report.id}
+                  className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-colors font-medium ${
+                    isReportLocked(report.type) 
+                      ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                      : 'bg-[#2563EB] hover:bg-[#1d4ed8] text-white'
+                  }`}
                 >
-                  <Download className="w-5 h-5" />
-                  <span className="hidden sm:inline">Download</span>
+                  {downloadingId === report.id ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="hidden sm:inline">AI Processing...</span>
+                    </>
+                  ) : isReportLocked(report.type) ? (
+                    <>
+                      <span className="hidden sm:inline">PRO</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      <span className="hidden sm:inline">Download</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -176,15 +385,35 @@ export function Reports() {
 
       {/* Pagination */}
       <div className="flex items-center justify-between pt-6">
-        <button className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50" disabled>
+        <button 
+          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+          className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           Previous
         </button>
         <div className="flex items-center gap-2">
-          <button aria-label="Go to page 1" aria-current="page" className="w-10 h-10 rounded-xl bg-[#2563EB] text-white font-medium">1</button>
-          <button aria-label="Go to page 2" className="w-10 h-10 rounded-xl hover:bg-gray-100 text-gray-700 font-medium">2</button>
-          <button aria-label="Go to page 3" className="w-10 h-10 rounded-xl hover:bg-gray-100 text-gray-700 font-medium">3</button>
+          {[1, 2, 3].map(page => (
+            <button 
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              aria-label={`Go to page ${page}`}
+              aria-current={currentPage === page ? 'page' : undefined}
+              className={`w-10 h-10 rounded-xl font-medium transition-colors ${
+                currentPage === page 
+                  ? 'bg-[#2563EB] text-white' 
+                  : 'hover:bg-gray-100 text-gray-700'
+              }`}
+            >
+              {page}
+            </button>
+          ))}
         </div>
-        <button className="px-4 py-2 text-sm font-medium text-[#2563EB] hover:text-[#1d4ed8]">
+        <button 
+          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 text-sm font-medium text-[#2563EB] hover:text-[#1d4ed8] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           Next
         </button>
       </div>

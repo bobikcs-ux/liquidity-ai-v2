@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FlaskConical, TrendingDown, Clock, Target } from 'lucide-react';
+import { FlaskConical, TrendingDown, Clock, Target, Lock } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { useUserRole } from '../context/UserRoleContext';
 
 export function StressLab() {
   const [selectedScenario, setSelectedScenario] = useState('liquidity');
@@ -8,6 +9,7 @@ export function StressLab() {
   const { uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
+  const { isPro, openProModal } = useUserRole();
   
   const scenarios = [
     { id: 'liquidity', label: 'Liquidity Shock', description: '-30% market depth' },
@@ -24,6 +26,109 @@ export function StressLab() {
   };
 
   const currentResults = results[selectedScenario as keyof typeof results];
+
+  // Full page locked overlay for FREE users
+  if (!isPro) {
+    return (
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className={`text-3xl font-bold mb-2 ${
+            isDark || isHybrid ? 'text-white' : 'text-gray-900'
+          }`}>
+            Stress Lab
+          </h1>
+          <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
+            Scenario simulation and stress testing
+          </p>
+        </div>
+
+        {/* Locked Overlay */}
+        <div 
+          className={`relative rounded-3xl p-12 text-center cursor-pointer ${
+            isDark || isHybrid 
+              ? 'bg-gradient-to-br from-gray-900 to-gray-800 border border-amber-500/30' 
+              : 'bg-gradient-to-br from-white to-gray-50 border border-gray-200'
+          }`}
+          onClick={() => openProModal('Stress Lab')}
+          style={{
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          {/* Blurred Background Preview */}
+          <div className="absolute inset-0 opacity-20 overflow-hidden rounded-3xl">
+            <div className="grid grid-cols-3 gap-4 p-8">
+              {[1, 2, 3, 4, 5, 6].map(i => (
+                <div key={i} className={`h-32 rounded-xl ${
+                  isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-200'
+                }`} />
+              ))}
+            </div>
+          </div>
+
+          {/* Lock Content */}
+          <div className="relative z-10">
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 mb-6">
+              <Lock className="w-10 h-10 text-white" />
+            </div>
+            
+            <h2 className={`text-2xl font-bold mb-3 ${
+              isDark || isHybrid ? 'text-white' : 'text-gray-900'
+            }`}>
+              Stress Lab is a PRO Feature
+            </h2>
+            
+            <p className={`text-lg mb-6 max-w-md mx-auto ${
+              isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              Run Monte Carlo simulations, test custom shock scenarios, and analyze portfolio survival probabilities.
+            </p>
+
+            <button
+              className="px-8 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/20"
+            >
+              Upgrade to PRO
+            </button>
+
+            <p className={`text-sm mt-4 ${
+              isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
+            }`}>
+              Starting at $49/month
+            </p>
+          </div>
+        </div>
+
+        {/* Feature Preview Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            { title: 'Liquidity Shock', desc: 'Test -30% market depth scenarios' },
+            { title: 'Volatility Spike', desc: 'Simulate VIX expansion to 60+' },
+            { title: 'Correlation Breakdown', desc: 'All assets correlation to +0.9' },
+          ].map((feature, index) => (
+            <div 
+              key={index}
+              className={`p-6 rounded-2xl opacity-50 ${
+                isDark || isHybrid 
+                  ? 'bg-gray-800/50 border border-gray-700' 
+                  : 'bg-gray-100 border border-gray-200'
+              }`}
+            >
+              <h3 className={`font-semibold mb-2 ${
+                isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'
+              }`}>
+                {feature.title}
+              </h3>
+              <p className={`text-sm ${
+                isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                {feature.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

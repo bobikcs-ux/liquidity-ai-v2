@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Activity, TrendingUp, Zap, Target, Shield, Brain, Info } from 'lucide-react';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { useUserRole } from '../context/UserRoleContext';
+import { LockedOverlay } from '../components/ProModal';
 
 type RiskLevel = 'GREEN' | 'AMBER' | 'RED' | 'BLACK';
 
@@ -15,6 +17,7 @@ interface SystemicSignal {
 export function BlackSwanTerminal() {
   const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
+  const { isPro } = useUserRole();
   
   // Calculate Black Swan Risk Index from real data
   const systemicRisk = snapshot?.systemic_risk != null 
@@ -202,16 +205,17 @@ export function BlackSwanTerminal() {
         </div>
       </div>
       
-      {/* Primary Risk Drivers */}
-      <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <Zap className="w-5 h-5 text-red-500" />
+{/* Primary Risk Drivers */}
+      <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6 relative overflow-hidden">
+        {!isPro && <LockedOverlay feature="Institutional Risk Drivers" />}
+        <div className="flex items-center gap-3 mb-6">
+          <Zap className="w-5 h-5 text-red-500" />
 <h3 className="text-sm font-semibold tracking-wider text-gray-200">
             PRIMARY RISK DRIVERS
           </h3>
-        </div>
-        
-        <div className="space-y-4">
+        </div>
+        
+        <div className="space-y-4">
           {riskDrivers.map((driver, index) => (
             <div key={index} className="border border-gray-800 rounded-md p-4 bg-gray-900/30">
               <div className="flex items-start justify-between mb-3">
@@ -397,14 +401,15 @@ export function BlackSwanTerminal() {
         </div>
       </div>
       
-      {/* Correlation Network Preview */}
-      <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6">
-        <div className="flex items-center gap-3 mb-6">
-          <Shield className="w-5 h-5 text-green-400" />
+{/* Correlation Network Preview */}
+      <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6 relative overflow-hidden">
+        {!isPro && <LockedOverlay feature="Stress Heat Map" />}
+        <div className="flex items-center gap-3 mb-6">
+          <Shield className="w-5 h-5 text-green-400" />
 <h3 className="text-sm font-semibold tracking-wider text-gray-200">
             SYSTEMIC STRESS HEAT MAP
           </h3>
-        </div>
+        </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
