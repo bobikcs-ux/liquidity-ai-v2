@@ -27,6 +27,32 @@ button, a {
   }
 }
 
+/* Hide scrollbar utility for mobile nav */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Touch manipulation for better mobile performance */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Safe area for mobile devices with notches */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Minimum touch target size (44x44px per Apple HIG) */
+.min-touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
 /* Print Styles for Dossier */
 @media print {
   body {

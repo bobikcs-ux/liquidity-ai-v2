@@ -16,8 +16,18 @@ import {
   Menu,
   ChevronLeft,
   Crown,
-  Cpu
+  Cpu,
+  X,
+  MoreHorizontal
 } from 'lucide-react';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '../ui/drawer';
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 import { useUserRole } from '../../context/UserRoleContext';
@@ -86,7 +96,7 @@ export function UnifiedLayout() {
   };
 
   return (
-    <div className="min-h-screen transition-colors duration-500"
+    <div className="min-h-[100dvh] transition-colors duration-500"
       style={{ backgroundColor: isDark ? '#0F1419' : isHybrid ? '#1a1f2e' : '#F8F9FA' }}
     >
       {/* Top Bar */}
@@ -124,6 +134,21 @@ export function UnifiedLayout() {
               {currentRegime.confidence}% confidence
             </span>
           </div>
+
+          {/* Mobile Theme Toggle - Visible on mobile only */}
+          <button 
+            onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
+            aria-label={`Switch to ${uiTheme === 'terminal' ? 'light' : 'dark'} theme`}
+            className={`lg:hidden flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${
+              isDark ? 'bg-gray-800 hover:bg-gray-700' : isHybrid ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+            }`}
+          >
+            {uiTheme === 'terminal' ? (
+              <Sun className={`w-5 h-5 ${isDark ? 'text-amber-400' : 'text-gray-600'}`} />
+            ) : (
+              <Moon className="w-5 h-5 text-gray-600" />
+            )}
+          </button>
 
           {/* Theme Indicator & PRO Badge */}
           <div className="hidden lg:flex items-center gap-3">
@@ -385,36 +410,160 @@ export function UnifiedLayout() {
         </footer>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className={`lg:hidden fixed bottom-0 left-0 right-0 border-t z-40 transition-colors duration-500 ${
+      {/* Mobile Bottom Navigation - Scrollable with drawer for more */}
+      <nav className={`lg:hidden fixed bottom-0 left-0 right-0 border-t z-40 transition-colors duration-500 safe-area-inset-bottom ${
         isDark ? 'bg-[#1a2332] border-blue-900' : isHybrid ? 'bg-[#242b3d] border-gray-700' : 'bg-white border-gray-200'
-      }`}>
-        <div className="flex items-center justify-around px-2 py-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.path);
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all ${
-                  active
-                    ? isDark || isHybrid
-                      ? 'text-blue-400'
-                      : 'text-[#2563EB]'
-                    : isDark || isHybrid
-                    ? 'text-gray-500'
-                    : 'text-gray-400'
+      }`} style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="flex items-center justify-between px-1">
+          {/* Primary nav items - first 5 items */}
+          <div className="flex-1 flex items-center justify-around overflow-x-auto scrollbar-hide">
+            {navItems.slice(0, 5).map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.path);
+              
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[56px] px-2 py-2 rounded-xl transition-all touch-manipulation ${
+                    active
+                      ? isDark || isHybrid
+                        ? 'text-blue-400 bg-blue-500/10'
+                        : 'text-[#2563EB] bg-blue-50'
+                      : isDark || isHybrid
+                      ? 'text-gray-500 active:bg-gray-800'
+                      : 'text-gray-400 active:bg-gray-100'
+                  }`}
+                >
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-xs font-medium truncate max-w-[56px]">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+          
+          {/* More drawer for remaining items */}
+          <Drawer>
+            <DrawerTrigger asChild>
+              <button 
+                className={`flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[56px] px-2 py-2 rounded-xl transition-all touch-manipulation ${
+                  isDark || isHybrid
+                    ? 'text-gray-500 active:bg-gray-800'
+                    : 'text-gray-400 active:bg-gray-100'
                 }`}
+                aria-label="More navigation options"
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </Link>
-            );
-          })}
+                <MoreHorizontal className="w-5 h-5 flex-shrink-0" />
+                <span className="text-xs font-medium">More</span>
+              </button>
+            </DrawerTrigger>
+            <DrawerContent className={`${
+              isDark ? 'bg-[#1a2332] border-blue-900' : isHybrid ? 'bg-[#242b3d] border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+              <DrawerHeader className="border-b border-gray-700/50">
+                <div className="flex items-center justify-between">
+                  <DrawerTitle className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
+                    Navigation
+                  </DrawerTitle>
+                  <DrawerClose asChild>
+                    <button 
+                      className={`p-2 rounded-lg ${isDark || isHybrid ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                      aria-label="Close menu"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </DrawerClose>
+                </div>
+              </DrawerHeader>
+              <div className="p-4 space-y-2">
+                {/* Show remaining nav items */}
+                {navItems.slice(5).map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.path);
+                  
+                  return (
+                    <DrawerClose key={item.path} asChild>
+                      <Link
+                        to={item.path}
+                        className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all touch-manipulation min-h-[56px] ${
+                          active
+                            ? isDark || isHybrid
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-[#2563EB] text-white'
+                            : isDark || isHybrid
+                            ? 'text-gray-300 hover:bg-gray-800 active:bg-gray-700'
+                            : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
+                        }`}
+                      >
+                        <Icon className="w-6 h-6 flex-shrink-0" />
+                        <span className="font-medium text-base">{item.label}</span>
+                      </Link>
+                    </DrawerClose>
+                  );
+                })}
+                
+                {/* Data Sources - always in drawer */}
+                <DrawerClose asChild>
+                  <Link
+                    to="/data-sources"
+                    className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all touch-manipulation min-h-[56px] ${
+                      isActive('/data-sources')
+                        ? isDark || isHybrid
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-[#2563EB] text-white'
+                        : isDark || isHybrid
+                        ? 'text-gray-300 hover:bg-gray-800 active:bg-gray-700'
+                        : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
+                    }`}
+                  >
+                    <Database className="w-6 h-6 flex-shrink-0" />
+                    <span className="font-medium text-base">Data Sources</span>
+                  </Link>
+                </DrawerClose>
+                
+                {/* Theme toggle in drawer */}
+                <button
+                  onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
+                  className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all touch-manipulation min-h-[56px] ${
+                    isDark || isHybrid
+                      ? 'text-gray-300 hover:bg-gray-800 active:bg-gray-700'
+                      : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
+                  }`}
+                >
+                  {uiTheme === 'terminal' ? (
+                    <Sun className="w-6 h-6 flex-shrink-0 text-amber-400" />
+                  ) : (
+                    <Moon className="w-6 h-6 flex-shrink-0" />
+                  )}
+                  <span className="font-medium text-base">
+                    {uiTheme === 'terminal' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  </span>
+                </button>
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </nav>
+
+      {/* Mobile Theme Toggle FAB - Fixed position */}
+      <button
+        onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
+        className={`lg:hidden fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all touch-manipulation ${
+          isDark 
+            ? 'bg-gray-800 hover:bg-gray-700 border border-gray-700' 
+            : isHybrid 
+            ? 'bg-gray-700 hover:bg-gray-600 border border-gray-600' 
+            : 'bg-white hover:bg-gray-50 border border-gray-200'
+        }`}
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        aria-label={`Switch to ${uiTheme === 'terminal' ? 'light' : 'dark'} theme`}
+      >
+        {uiTheme === 'terminal' ? (
+          <Sun className="w-6 h-6 text-amber-400" />
+        ) : (
+          <Moon className="w-6 h-6 text-gray-600" />
+        )}
+      </button>
     </div>
   );
 }
