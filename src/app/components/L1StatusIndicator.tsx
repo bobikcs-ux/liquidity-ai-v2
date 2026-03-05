@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { Activity, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Activity, Wifi, WifiOff, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useL1Data } from '../hooks/useL1Data';
 import { getStatusColor, getFeedStatusIcon } from '../services/l1DataNervousSystem';
 
@@ -25,7 +25,7 @@ export function L1StatusIndicator({
   showHeartbeat = true,
   className = '' 
 }: L1StatusIndicatorProps) {
-  const { status, feedStatus, lastUpdate, isLoading, refresh, forceRefresh, heartbeat } = useL1Data();
+  const { status, feedStatus, lastUpdate, isLoading, refresh, forceRefresh, heartbeat, isStaleData, staleFeeds, inReconnectMode } = useL1Data();
 
   const statusColor = getStatusColor(status);
   const isReconnecting = status === 'RECONNECTING' || status === 'DEGRADED';
@@ -51,6 +51,27 @@ export function L1StatusIndicator({
 
   return (
     <div className={`rounded-lg border border-gray-700 bg-gray-900/50 p-3 ${className}`}>
+      {/* STALE_DATA Warning Banner */}
+      {isStaleData && (
+        <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/30">
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+          <span className="text-xs font-mono text-amber-400">STALE_DATA</span>
+          {staleFeeds.length > 0 && (
+            <span className="text-xs font-mono text-amber-400/70 truncate">
+              ({staleFeeds.join(', ')})
+            </span>
+          )}
+        </div>
+      )}
+      
+      {/* SYSTEM_RECONNECT_SEQUENCE Banner */}
+      {inReconnectMode && (
+        <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded bg-red-500/10 border border-red-500/30 animate-pulse">
+          <RefreshCw className="w-3.5 h-3.5 text-red-500 animate-spin flex-shrink-0" />
+          <span className="text-xs font-mono text-red-400">SYSTEM_RECONNECT_SEQUENCE</span>
+        </div>
+      )}
+      
       {/* Header with Heartbeat */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">

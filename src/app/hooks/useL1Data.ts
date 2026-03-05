@@ -13,14 +13,17 @@ import {
   formatL1Value, 
   validateForAGI,
   pingHeartbeat,
-  getHeartbeatStatus,
   triggerForceRefresh,
   consumeForceRefresh,
-  type L1DataState 
+  isDataStale,
+  isInReconnectMode,
+  type L1DataState,
+  type L1DataStateExtended 
 } from '../services/l1DataNervousSystem';
 
 const REFRESH_INTERVAL_MS = 60 * 1000; // 60 seconds per spec
 const HEARTBEAT_INTERVAL_MS = 15 * 1000; // 15 seconds
+const STALE_CHECK_INTERVAL_MS = 30 * 1000; // Check for stale data every 30s
 
 export interface HeartbeatStatus {
   alive: boolean;
@@ -29,7 +32,7 @@ export interface HeartbeatStatus {
 }
 
 export interface UseL1DataReturn {
-  data: L1DataState | null;
+  data: L1DataStateExtended | null;
   isLoading: boolean;
   error: string | null;
   refresh: () => Promise<void>;
@@ -60,10 +63,15 @@ export interface UseL1DataReturn {
   
   // Heartbeat
   heartbeat: HeartbeatStatus;
+  
+  // Stale data tracking
+  isStaleData: boolean;
+  staleFeeds: string[];
+  inReconnectMode: boolean;
 }
 
 export function useL1Data(): UseL1DataReturn {
-  const [data, setData] = useState<L1DataState | null>(null);
+  const [data, setData] = useState<L1DataStateExtended | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [heartbeat, setHeartbeat] = useState<HeartbeatStatus>({
@@ -72,6 +80,7 @@ export function useL1Data(): UseL1DataReturn {
     latencyMs: null,
   });
   const isMounted = useRef(true);
+  const lastFetchTime = useRef<number>(0);
 
   const refresh = useCallback(async () => {
     if (!isMounted.current) return;
@@ -152,15 +161,29 @@ export function useL1Data(): UseL1DataReturn {
     return () => clearInterval(interval);
   }, [checkHeartbeat]);
 
-  // Compute display values with RECONNECTING... fallback
+  // Auto-refresh when data is stale (> 5 minutes old)
+  useEffect(() => {
+    const checkStaleData = () => {
+      if (isDataStale() || isInReconnectMode()) {
+        console.log('[L1] Auto-refresh triggered - data is stale or in reconnect mode');
+        refresh();
+      }
+    };
+    
+    const interval = setInterval(checkStaleData, STALE_CHECK_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [refresh]);
+
+  // Compute display values with Loading.../Syncing... states
+  const isStale = data?.isStaleData ?? false;
   const displayValues = {
-    yieldCurve: data ? formatL1Value(data.yieldCurve, 'percent', 2) : 'RECONNECTING...',
-    btcDominance: data ? formatL1Value(data.btcDominance, 'percent', 1) : 'RECONNECTING...',
-    btcPrice: data ? formatL1Value(data.btcPrice, 'currency') : 'RECONNECTING...',
+    yieldCurve: formatL1Value(data?.yieldCurve ?? null, 'percent', 2, isLoading, isStale),
+    btcDominance: formatL1Value(data?.btcDominance ?? null, 'percent', 1, isLoading, isStale),
+    btcPrice: formatL1Value(data?.btcPrice ?? null, 'currency', 0, isLoading, isStale),
     btcChange: data?.btcChange24h !== null && data?.btcChange24h !== undefined
       ? `${data.btcChange24h >= 0 ? '+' : ''}${data.btcChange24h.toFixed(2)}%`
-      : 'RECONNECTING...',
-    fearGreed: data ? formatL1Value(data.fearGreedIndex, 'index') : 'RECONNECTING...',
+      : isLoading ? 'Loading...' : 'Syncing...',
+    fearGreed: formatL1Value(data?.fearGreedIndex ?? null, 'index', 0, isLoading, isStale),
   };
 
   // AGI-validated values - guaranteed non-null/non-zero
@@ -178,6 +201,9 @@ export function useL1Data(): UseL1DataReturn {
     feedStatus: data?.feedStatus ?? null,
     lastUpdate: data?.lastUpdate ?? null,
     heartbeat,
+    isStaleData: data?.isStaleData ?? true,
+    staleFeeds: data?.staleFeeds ?? [],
+    inReconnectMode: data?.inReconnectMode ?? false,
   };
 }
 

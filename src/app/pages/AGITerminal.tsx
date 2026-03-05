@@ -226,7 +226,7 @@ function MarketEmotionPanel({ agiState }: { agiState: AGISystemState | null }) {
 export function AGITerminal() {
   const { uiTheme } = useAdaptiveTheme();
   const { latest: snapshot, loading } = useMarketSnapshot();
-  const { data: l1Data, displayValues, status: l1Status, isLoading: l1Loading, heartbeat, agiValues, forceRefresh } = useL1Data();
+  const { data: l1Data, displayValues, status: l1Status, isLoading: l1Loading, heartbeat, agiValues, forceRefresh, isStaleData, staleFeeds, inReconnectMode } = useL1Data();
   const { isEmergencyMode, blackSwanRisk } = useTacticalRedout();
   const [showEmergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const isDark = uiTheme === 'terminal';
@@ -307,6 +307,27 @@ export function AGITerminal() {
             
             {/* L1 Real-time Data Display */}
             <div className="bg-[#0a0f1a] border border-gray-800 rounded-xl p-4">
+              {/* STALE_DATA Warning */}
+              {isStaleData && (
+                <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded bg-amber-500/10 border border-amber-500/30">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                  <span className="text-xs font-mono text-amber-400">STALE_DATA</span>
+                  {staleFeeds.length > 0 && (
+                    <span className="text-xs font-mono text-amber-400/70 truncate">
+                      ({staleFeeds.slice(0, 2).join(', ')})
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              {/* SYSTEM_RECONNECT_SEQUENCE Warning */}
+              {inReconnectMode && (
+                <div className="flex items-center gap-2 mb-3 px-2 py-1.5 rounded bg-red-500/10 border border-red-500/30 animate-pulse">
+                  <RefreshCw className="w-3.5 h-3.5 text-red-500 animate-spin flex-shrink-0" />
+                  <span className="text-xs font-mono text-red-400">SYSTEM_RECONNECT_SEQUENCE</span>
+                </div>
+              )}
+              
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="w-4 h-4 text-green-400" />
                 <span className="text-xs font-mono text-green-400 uppercase tracking-wider">
@@ -338,7 +359,9 @@ export function AGITerminal() {
                 <div className="p-2 bg-black/30 rounded-lg">
                   <div className="text-xs font-mono text-gray-500 mb-1">YIELD CURVE</div>
                   <div className={`text-sm font-bold font-mono tabular-nums ${
-                    displayValues.yieldCurve === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 'text-cyan-400'
+                    displayValues.yieldCurve === 'Loading...' || displayValues.yieldCurve === 'Syncing...' 
+                      ? 'text-amber-400 animate-pulse' 
+                      : isStaleData ? 'text-amber-300' : 'text-cyan-400'
                   }`}>
                     {displayValues.yieldCurve}
                   </div>
@@ -346,7 +369,9 @@ export function AGITerminal() {
                 <div className="p-2 bg-black/30 rounded-lg">
                   <div className="text-xs font-mono text-gray-500 mb-1">BTC DOMINANCE</div>
                   <div className={`text-sm font-bold font-mono tabular-nums ${
-                    displayValues.btcDominance === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 'text-cyan-400'
+                    displayValues.btcDominance === 'Loading...' || displayValues.btcDominance === 'Syncing...' 
+                      ? 'text-amber-400 animate-pulse' 
+                      : isStaleData ? 'text-amber-300' : 'text-cyan-400'
                   }`}>
                     {displayValues.btcDominance}
                   </div>
@@ -354,7 +379,9 @@ export function AGITerminal() {
                 <div className="p-2 bg-black/30 rounded-lg">
                   <div className="text-xs font-mono text-gray-500 mb-1">BTC PRICE</div>
                   <div className={`text-sm font-bold font-mono tabular-nums ${
-                    displayValues.btcPrice === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 'text-white'
+                    displayValues.btcPrice === 'Loading...' || displayValues.btcPrice === 'Syncing...' 
+                      ? 'text-amber-400 animate-pulse' 
+                      : isStaleData ? 'text-amber-300' : 'text-white'
                   }`}>
                     {displayValues.btcPrice}
                   </div>
@@ -362,9 +389,11 @@ export function AGITerminal() {
                 <div className="p-2 bg-black/30 rounded-lg">
                   <div className="text-xs font-mono text-gray-500 mb-1">FEAR/GREED</div>
                   <div className={`text-sm font-bold font-mono tabular-nums ${
-                    displayValues.fearGreed === 'RECONNECTING...' ? 'text-amber-400 animate-pulse' : 
-                    l1Data?.fearGreedIndex && l1Data.fearGreedIndex < 25 ? 'text-red-400' : 
-                    l1Data?.fearGreedIndex && l1Data.fearGreedIndex > 75 ? 'text-green-400' : 'text-amber-400'
+                    displayValues.fearGreed === 'Loading...' || displayValues.fearGreed === 'Syncing...' 
+                      ? 'text-amber-400 animate-pulse' 
+                      : l1Data?.fearGreedIndex && l1Data.fearGreedIndex < 25 ? 'text-red-400' 
+                      : l1Data?.fearGreedIndex && l1Data.fearGreedIndex > 75 ? 'text-green-400' 
+                      : 'text-amber-400'
                   }`}>
                     {displayValues.fearGreed}
                   </div>

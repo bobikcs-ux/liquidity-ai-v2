@@ -60,6 +60,32 @@ let heartbeatActive = false;
 let lastHeartbeat: Date | null = null;
 let heartbeatPingMs: number | null = null;
 
+// Consecutive failure tracking for SYSTEM_RECONNECT_SEQUENCE
+let consecutiveFailures = 0;
+const MAX_CONSECUTIVE_FAILURES = 3;
+let systemReconnectMode = false;
+let lastSuccessfulFetch: Date | null = null;
+
+// Stale data tracking
+const STALE_DATA_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+
+export function isDataStale(): boolean {
+  if (!lastSuccessfulFetch) return true;
+  return (Date.now() - lastSuccessfulFetch.getTime()) > STALE_DATA_THRESHOLD_MS;
+}
+
+export function getLastSuccessfulFetch(): Date | null {
+  return lastSuccessfulFetch;
+}
+
+export function isInReconnectMode(): boolean {
+  return systemReconnectMode;
+}
+
+export function getConsecutiveFailures(): number {
+  return consecutiveFailures;
+}
+
 // In-memory cache for last known good values
 const valueCache: {
   btcDominance: L1CachedValue | null;
@@ -140,18 +166,48 @@ export function consumeForceRefresh(): boolean {
 // RETRY LOGIC
 // ============================================================================
 
+// API call logging for diagnostics
+function logApiCall(endpoint: string, success: boolean, responseCode?: number, error?: string) {
+  const timestamp = new Date().toISOString();
+  const status = success ? '200 OK' : `FAILED${responseCode ? ` (${responseCode})` : ''}`;
+  console.log(`[L1] ${timestamp} | ${endpoint} | ${status}${error ? ` | ${error}` : ''}`);
+  
+  if (!success) {
+    consecutiveFailures++;
+    console.warn(`[L1] Consecutive failures: ${consecutiveFailures}/${MAX_CONSECUTIVE_FAILURES}`);
+    
+    if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES && !systemReconnectMode) {
+      console.error('[L1] SYSTEM_RECONNECT_SEQUENCE TRIGGERED - 3 consecutive failures detected');
+      systemReconnectMode = true;
+      triggerForceRefresh();
+    }
+  } else {
+    if (consecutiveFailures > 0) {
+      console.log(`[L1] Connection restored after ${consecutiveFailures} failures`);
+    }
+    consecutiveFailures = 0;
+    systemReconnectMode = false;
+  }
+}
+
 async function fetchWithRetry<T>(
   fetchFn: () => Promise<T>,
+  endpointName: string,
   retries: number = MAX_RETRIES,
   delay: number = RETRY_DELAY_MS
 ): Promise<T | null> {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      return await fetchFn();
+      const result = await fetchFn();
+      logApiCall(endpointName, true, 200);
+      return result;
     } catch (error) {
-      console.warn(`[L1] Fetch attempt ${attempt}/${retries} failed:`, error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.warn(`[L1] ${endpointName} attempt ${attempt}/${retries} failed:`, errorMsg);
       if (attempt < retries) {
         await new Promise(resolve => setTimeout(resolve, delay * attempt));
+      } else {
+        logApiCall(endpointName, false, undefined, errorMsg);
       }
     }
   }
@@ -162,13 +218,14 @@ async function fetchWithRetry<T>(
 // FRED YIELD CURVE FETCH
 // ============================================================================
 
-async function fetchYieldCurveFromFRED(): Promise<number | null> {
+async function fetchYieldCurveFromFRED(): Promise<{ value: number | null; isStale: boolean }> {
   const FRED_KEY = import.meta.env.VITE_FRED_API_KEY || 
     (typeof process !== 'undefined' && process.env.VITE_FRED_API_KEY);
   
   if (!FRED_KEY) {
-    console.warn('[L1] FRED API key not configured');
-    return null;
+    console.warn('[L1] FRED API key not configured - using fallback');
+    logApiCall('FRED_T10Y2Y', false, undefined, 'API key not configured');
+    return { value: null, isStale: true };
   }
 
   const result = await fetchWithRetry(async () => {
@@ -187,10 +244,10 @@ async function fetchYieldCurveFromFRED(): Promise<number | null> {
     if (value && value !== '.' && value !== 'N/A') {
       return parseFloat(value);
     }
-    throw new Error('Invalid FRED response');
-  });
+    throw new Error('Invalid FRED response - value is N/A or missing');
+  }, 'FRED_T10Y2Y');
 
-  return result;
+  return { value: result, isStale: result === null };
 }
 
 // ============================================================================
@@ -223,7 +280,7 @@ async function fetchBTCDataFromCoinGecko(): Promise<CoinGeckoData> {
       );
       if (!response.ok) throw new Error(`CoinGecko price API returned ${response.status}`);
       return response.json();
-    }),
+    }, 'COINGECKO_PRICE'),
     fetchWithRetry(async () => {
       const response = await fetch(
         'https://api.coingecko.com/api/v3/global',
@@ -231,7 +288,7 @@ async function fetchBTCDataFromCoinGecko(): Promise<CoinGeckoData> {
       );
       if (!response.ok) throw new Error(`CoinGecko global API returned ${response.status}`);
       return response.json();
-    })
+    }, 'COINGECKO_GLOBAL')
   ]);
 
   // Extract market cap data for fallback calculation
@@ -275,7 +332,7 @@ async function fetchFearGreedIndex(): Promise<number | null> {
     const value = data.data?.[0]?.value;
     if (value) return parseInt(value, 10);
     throw new Error('Invalid Fear & Greed response');
-  });
+  }, 'FEAR_GREED_INDEX');
 
   return result;
 }
@@ -321,8 +378,19 @@ async function fetchLastValidFromSupabase(): Promise<SupabaseSnapshot | null> {
 // MAIN L1 DATA FETCH
 // ============================================================================
 
-export async function fetchL1Data(): Promise<L1DataState> {
+export interface L1DataStateExtended extends L1DataState {
+  isStaleData: boolean;
+  staleFeeds: string[];
+  consecutiveFailures: number;
+  inReconnectMode: boolean;
+}
+
+export async function fetchL1Data(): Promise<L1DataStateExtended> {
+  console.log('[L1] Starting data fetch cycle...');
+  const fetchStartTime = Date.now();
+  
   const errors: string[] = [];
+  const staleFeeds: string[] = [];
   const feedStatus: L1DataState['feedStatus'] = {
     fred: 'RECONNECTING',
     coingecko: 'RECONNECTING',
@@ -331,32 +399,46 @@ export async function fetchL1Data(): Promise<L1DataState> {
   };
 
   // Fetch from all sources in parallel
-  const [yieldCurve, coinGeckoData, fearGreed, supabaseSnapshot] = await Promise.all([
+  const [yieldCurveResult, coinGeckoData, fearGreed, supabaseSnapshot] = await Promise.all([
     fetchYieldCurveFromFRED(),
     fetchBTCDataFromCoinGecko(),
     fetchFearGreedIndex(),
     fetchLastValidFromSupabase(),
   ]);
+  
+  // Track if FRED returned stale data
+  const yieldCurve = yieldCurveResult.value;
+  if (yieldCurveResult.isStale) {
+    staleFeeds.push('FRED');
+  }
 
-  // Process Yield Curve
+  // Process Yield Curve with STALE_DATA tracking
   let finalYieldCurve: number | null = null;
+  let yieldCurveIsStale = false;
+  
   if (yieldCurve !== null) {
     finalYieldCurve = yieldCurve;
     feedStatus.fred = 'LIVE';
     valueCache.yieldCurve = { value: yieldCurve, timestamp: new Date(), source: 'api' };
   } else if (supabaseSnapshot?.yield_spread !== null && supabaseSnapshot?.yield_spread !== undefined) {
     finalYieldCurve = supabaseSnapshot.yield_spread;
-    feedStatus.fred = 'DEGRADED' as any;
-    errors.push('FRED: Using Supabase cached value');
+    feedStatus.fred = 'RECONNECTING';
+    yieldCurveIsStale = true;
+    errors.push('FRED: STALE_DATA - Using Supabase cached value');
+    staleFeeds.push('FRED_SUPABASE_CACHE');
   } else if (valueCache.yieldCurve && (Date.now() - valueCache.yieldCurve.timestamp.getTime()) < CACHE_EXPIRY_MS) {
     finalYieldCurve = valueCache.yieldCurve.value;
-    feedStatus.fred = 'DEGRADED' as any;
-    errors.push('FRED: Using memory cached value');
+    feedStatus.fred = 'RECONNECTING';
+    yieldCurveIsStale = true;
+    errors.push('FRED: STALE_DATA - Using memory cached value');
+    staleFeeds.push('FRED_MEMORY_CACHE');
   } else {
-    // Use default fallback
+    // Use hardcoded fallback per spec: -0.23 (last major economic print)
     finalYieldCurve = DEFAULT_YIELD_CURVE;
     feedStatus.fred = 'OFFLINE';
-    errors.push(`FRED: Using default fallback (${DEFAULT_YIELD_CURVE}%)`);
+    yieldCurveIsStale = true;
+    errors.push(`FRED: STALE_DATA - Using hardcoded fallback (${DEFAULT_YIELD_CURVE}%)`);
+    staleFeeds.push('FRED_FALLBACK');
   }
 
   // Process BTC Dominance with enhanced fallback chain
@@ -438,6 +520,17 @@ export async function fetchL1Data(): Promise<L1DataState> {
     overallStatus = overallStatus === 'OFFLINE' ? 'OFFLINE' : 'RECONNECTING';
   }
 
+  // CRITICAL: Only update lastSuccessfulFetch on actual successful API responses
+  const anyLiveFeed = Object.values(feedStatus).some(s => s === 'LIVE');
+  if (anyLiveFeed) {
+    lastSuccessfulFetch = new Date();
+    console.log(`[L1] Fetch cycle complete in ${Date.now() - fetchStartTime}ms - Status: ${overallStatus}`);
+  } else {
+    console.warn(`[L1] Fetch cycle complete but NO live feeds - Status: ${overallStatus}`);
+  }
+
+  const isStaleData = staleFeeds.length > 0 || isDataStale();
+
   return {
     btcDominance: finalBtcDominance,
     yieldCurve: finalYieldCurve,
@@ -445,9 +538,13 @@ export async function fetchL1Data(): Promise<L1DataState> {
     btcChange24h: coinGeckoData.btcChange24h,
     fearGreedIndex: finalFearGreed,
     status: overallStatus,
-    lastUpdate: new Date(),
+    lastUpdate: anyLiveFeed ? new Date() : lastSuccessfulFetch,
     feedStatus,
     errors,
+    isStaleData,
+    staleFeeds,
+    consecutiveFailures,
+    inReconnectMode: systemReconnectMode,
   };
 }
 
@@ -514,25 +611,49 @@ export function validateForAGI(data: L1DataState): {
 // DISPLAY HELPERS
 // ============================================================================
 
+export type DisplayMode = 'value' | 'loading' | 'syncing' | 'stale';
+
+export function getDisplayMode(value: number | null, isLoading: boolean, isStale: boolean): DisplayMode {
+  if (isLoading && (value === null || value === 0)) return 'loading';
+  if (value === null || value === 0) return 'syncing';
+  if (isStale) return 'stale';
+  return 'value';
+}
+
 export function formatL1Value(
   value: number | null,
   type: 'percent' | 'currency' | 'index',
-  decimals: number = 2
+  decimals: number = 2,
+  isLoading: boolean = false,
+  isStale: boolean = false
 ): string {
+  // Show Loading... skeleton until first valid data
+  if (isLoading && (value === null || value === 0)) {
+    return 'Loading...';
+  }
+  
+  // Show Syncing... pulse for null/0 after initial load
   if (value === null || value === 0) {
-    return 'RECONNECTING...';
+    return 'Syncing...';
   }
 
+  // Format with optional stale indicator
+  let formatted: string;
   switch (type) {
     case 'percent':
-      return `${value.toFixed(decimals)}%`;
+      formatted = `${value.toFixed(decimals)}%`;
+      break;
     case 'currency':
-      return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+      formatted = `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+      break;
     case 'index':
-      return `${Math.round(value)}/100`;
+      formatted = `${Math.round(value)}/100`;
+      break;
     default:
-      return String(value);
+      formatted = String(value);
   }
+  
+  return formatted;
 }
 
 export function getStatusColor(status: L1DataState['status']): string {
