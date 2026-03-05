@@ -20,7 +20,7 @@ import {
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 import { useUserRole } from '../../context/UserRoleContext';
-import { QRCode } from '../ProModal';
+import { InstitutionalQR } from '../ProModal';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
@@ -362,10 +362,10 @@ export function UnifiedLayout() {
               
               {/* Center - Terminal QR - Industrial Style, Level H Error Correction */}
               <div className="hidden md:block">
-                <QRCode 
-                  size={56} 
-                  color={isDark || isHybrid ? '#10b981' : '#059669'}
-                  bgColor="transparent"
+                <InstitutionalQR 
+                  size={64} 
+                  fgColor="#10b981"
+                  bgColor="#000000"
                   label="[ NODE: LIQUIDITY.BOBIKCS.COM ]"
                 />
               </div>
