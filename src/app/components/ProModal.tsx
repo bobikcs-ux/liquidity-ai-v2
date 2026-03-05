@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { QRCodeSVG } from 'qrcode.react';
 import { Lock, X, Zap, Shield, TrendingUp, FileText, Loader2, CheckCircle } from 'lucide-react';
 import { useUserRole } from '../context/UserRoleContext';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
@@ -9,71 +8,55 @@ import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 // Email validation regex
 export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-// Revolut payment link (external)
-const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
+// Revolut payment link (external) - Updated checkout link
+const REVOLUT_PAYMENT_URL = 'https://checkout.revolut.com/pay/d65728c7-7bee-48b1-9c48-ee51b51c9257';
 
 // Official production URL for all QR codes
 export const PRODUCTION_URL = 'https://liquidity.bobikcs.com/';
 
 // =============================================================================
 // INSTITUTIONAL QR CODE COMPONENT - PRODUCTION SPEC
-// Level H error correction (30%), Black on White, Square modules, 220x220
-// Pure SVG - NEVER use canvas or html2canvas
+// Uses static image from /public/revolut-qr.png - NO external libraries
+// Pure image rendering for reliable PDF scanning
 // =============================================================================
 
 interface InstitutionalQRProps {
-  value?: string;
+  imageSrc?: string;
   size?: number;
-  fgColor?: string;
-  bgColor?: string;
   label?: string;
   className?: string;
 }
 
-// Production-grade QR code component using qrcode.react (SVG only)
+// Production-grade QR code component using static image (no qrcode.react)
 export function InstitutionalQR({ 
-  value = PRODUCTION_URL,
-  size = 220, // Production spec: 220x220
-  fgColor = '#000000', // Black foreground (production spec)
-  bgColor = '#ffffff', // White background (production spec)
-  label = '[ NODE: LIQUIDITY.BOBIKCS.COM ]',
+  imageSrc = '/revolut-qr.png',
+  size = 140,
+  label = 'Scan to pay with Revolut App',
   className = ''
 }: InstitutionalQRProps) {
   return (
     <div className={`flex flex-col items-center gap-3 ${className}`}>
-      {/* QR Code - Pure SVG, NEVER rasterize */}
+      {/* Label above QR */}
+      {label && (
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+          {label}
+        </p>
+      )}
+      
+      {/* QR Code - Static Image with white background */}
       <div 
-        style={{
-          padding: '16px',
-          background: bgColor,
-          display: 'inline-block',
-          border: '1px solid #e5e7eb',
-        }}
+        className="p-4 bg-white rounded-lg shadow-md"
+        style={{ display: 'inline-block' }}
       >
-        <QRCodeSVG
-          value={value}
-          size={size}
-          level="H" // High error correction (30%) - dense, professional
-          includeMargin={true}
-          marginSize={4} // margin: 4 as per spec
-          bgColor={bgColor}
-          fgColor={fgColor}
+        <img 
+          src={imageSrc}
+          alt="QR Code for payment"
+          width={size}
+          height={size}
+          className="block"
+          style={{ imageRendering: 'crisp-edges' }}
         />
       </div>
-
-      {/* Industrial monospace label */}
-      {label && (
-        <div
-          style={{
-            fontFamily: 'monospace',
-            fontSize: '8px',
-            letterSpacing: '2px',
-            color: '#000000',
-          }}
-        >
-          {label}
-        </div>
-      )}
     </div>
   );
 }
@@ -195,9 +178,29 @@ export function ProModal() {
           ))}
         </div>
 
-        {/* CTA Buttons with QR Code */}
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="flex-1 space-y-3 w-full">
+        {/* CTA Buttons with Revolut QR Code */}
+        <div className="flex flex-col gap-6">
+          {/* Revolut QR Code - Static Image (No Libraries) */}
+          <div className="flex flex-col items-center">
+            <p className={`text-xs font-medium mb-3 uppercase tracking-wider ${
+              isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'
+            }`}>
+              Scan to pay with Revolut App
+            </p>
+            <div className="p-4 bg-white rounded-lg shadow-md">
+              <img 
+                src="/revolut-qr.png" 
+                alt="Scan to pay with Revolut" 
+                width={140} 
+                height={140}
+                className="block"
+                style={{ imageRendering: 'crisp-edges' }}
+              />
+            </div>
+          </div>
+          
+          {/* CTA Buttons */}
+          <div className="space-y-3 w-full">
             <button
               onClick={handleUpgrade}
               className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/20"
@@ -215,17 +218,6 @@ export function ProModal() {
             >
               Maybe Later
             </button>
-          </div>
-          
-          {/* QR Code - Industrial Style, Level H Error Correction */}
-          <div className="flex flex-col items-center">
-            <InstitutionalQR 
-              value={REVOLUT_PAYMENT_URL} 
-              size={72} 
-              fgColor={isDark || isHybrid ? '#fbbf24' : '#d97706'}
-              bgColor={isDark || isHybrid ? '#1f2937' : '#111827'}
-              label="[ PAYMENT GATEWAY ]"
-            />
           </div>
         </div>
 
