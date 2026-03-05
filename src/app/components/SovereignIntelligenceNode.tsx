@@ -43,9 +43,9 @@ function TacticalGauge({
   const angle = (percentage / 100) * 270 - 135; // -135 to 135 degrees
   
   const sizeClasses = {
-    sm: { container: 'w-20 h-20', text: 'text-lg', label: 'text-[8px]' },
-    md: { container: 'w-28 h-28', text: 'text-2xl', label: 'text-[9px]' },
-    lg: { container: 'w-36 h-36', text: 'text-3xl', label: 'text-[10px]' }
+    sm: { container: 'w-20 h-20', text: 'text-lg', label: 'text-xs' },
+    md: { container: 'w-28 h-28', text: 'text-2xl', label: 'text-xs' },
+    lg: { container: 'w-36 h-36', text: 'text-3xl', label: 'text-xs' }
   };
   
   const colorClasses = {
@@ -109,7 +109,7 @@ function TacticalGauge({
             {value.toFixed(1)}
           </span>
           {showDecay && decayValue !== 0 && (
-            <span className={`text-[9px] font-mono ${decayValue < 0 ? 'text-red-400' : 'text-green-400'}`}>
+            <span className={`text-xs font-mono ${decayValue < 0 ? 'text-red-400' : 'text-green-400'}`}>
               {decayValue > 0 ? '+' : ''}{decayValue.toFixed(1)}%
             </span>
           )}
@@ -120,7 +120,7 @@ function TacticalGauge({
           {label}
         </div>
         {sublabel && (
-          <div className="text-[8px] font-mono text-gray-500 uppercase">
+          <div className="text-xs font-mono text-gray-400 uppercase">
             {sublabel}
           </div>
         )}
@@ -143,7 +143,7 @@ function PowerBlock({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-16 text-[9px] font-mono text-gray-400 uppercase truncate">{label}</div>
+      <div className="w-16 text-xs font-mono text-gray-400 uppercase truncate">{label}</div>
       <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
         <div 
           className={`h-full ${color} transition-all duration-500`}
@@ -223,12 +223,12 @@ export function SovereignIntelligenceNode() {
             <h3 className={`text-sm font-bold uppercase tracking-wider ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
               SOVEREIGN INTELLIGENCE NODE
             </h3>
-            <p className="text-[9px] font-mono text-cyan-400 uppercase">L10-L8 // CIVILIZATION & MONETARY POWER</p>
+            <p className="text-xs font-mono text-cyan-400 uppercase">L10-L8 // CIVILIZATION & MONETARY POWER</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-          <span className="text-[9px] font-mono text-gray-400">LIVE</span>
+          <span className="text-xs font-mono text-gray-400">LIVE</span>
         </div>
       </div>
 
@@ -272,7 +272,7 @@ export function SovereignIntelligenceNode() {
       <div className={`rounded-lg p-4 mb-6 ${isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'}`}>
         <div className="flex items-center gap-2 mb-4">
           <Shield className="w-4 h-4 text-blue-400" />
-          <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+          <span className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
             RESERVE CURRENCY DOMINANCE MATRIX
           </span>
         </div>
@@ -288,7 +288,7 @@ export function SovereignIntelligenceNode() {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
-            <span className="text-[10px] font-mono font-bold text-gray-400 uppercase tracking-wider">
+            <span className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
               CIVILIZATION STABILITY INDEX (L10)
             </span>
           </div>
@@ -309,7 +309,7 @@ export function SovereignIntelligenceNode() {
           ].map((metric, i) => (
             <div key={i} className={`p-3 rounded-lg ${isDark || isHybrid ? 'bg-black/30' : 'bg-white'}`}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[8px] font-mono text-gray-500">{metric.icon}</span>
+                <span className="text-xs font-mono text-gray-400">{metric.icon}</span>
                 <span className={`text-lg font-bold font-mono tabular-nums ${
                   metric.value >= 70 ? 'text-green-400' :
                   metric.value >= 50 ? 'text-amber-400' : 'text-red-400'
@@ -317,7 +317,7 @@ export function SovereignIntelligenceNode() {
                   {metric.value.toFixed(0)}
                 </span>
               </div>
-              <div className="text-[9px] font-mono text-gray-400 uppercase">{metric.label}</div>
+              <div className="text-xs font-mono text-gray-400 uppercase">{metric.label}</div>
               <div className="mt-2 h-1 bg-gray-800 rounded-full overflow-hidden">
                 <div 
                   className={`h-full transition-all duration-500 ${
@@ -338,7 +338,7 @@ export function SovereignIntelligenceNode() {
           <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
           <div>
             <div className="text-xs font-bold text-red-400 uppercase">STRUCTURAL INSTABILITY DETECTED</div>
-            <div className="text-[10px] text-red-300/70">Long-term civilization risk factors exceeding thresholds</div>
+            <div className="text-xs text-red-300/70">Long-term civilization risk factors exceeding thresholds</div>
           </div>
         </div>
       )}

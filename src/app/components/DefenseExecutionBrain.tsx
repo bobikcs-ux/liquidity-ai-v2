@@ -112,7 +112,7 @@ function StrategicPivotOverlay({
                         {action.allocation}
                       </div>
                     )}
-                    <div className={`px-2 py-1 rounded text-[9px] font-bold uppercase ${
+                    <div className={`px-2 py-1 rounded text-xs font-bold uppercase ${
                       action.priority === 'CRITICAL' 
                         ? 'bg-red-500 text-white' 
                         : action.priority === 'HIGH'
@@ -192,7 +192,7 @@ function DefenseGauge({ score }: { score: number }) {
         }`}>
           {(score * 100).toFixed(0)}
         </span>
-        <span className="text-[9px] font-mono text-gray-400 uppercase">DEFENSE</span>
+        <span className="text-xs font-mono text-gray-400 uppercase">DEFENSE</span>
       </div>
     </div>
   );
@@ -268,7 +268,7 @@ export function DefenseExecutionBrain() {
               <h3 className={`text-sm font-bold uppercase tracking-wider ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 DEFENSE EXECUTION BRAIN
               </h3>
-              <p className={`text-[9px] font-mono uppercase ${strategicPivotRequired ? 'text-red-400' : 'text-amber-400'}`}>
+              <p className={`text-xs font-mono uppercase ${strategicPivotRequired ? 'text-red-400' : 'text-amber-400'}`}>
                 L6 // AUTONOMOUS CAPITAL DEFENSE
               </p>
             </div>
@@ -301,7 +301,7 @@ export function DefenseExecutionBrain() {
 
           {/* Risk Components */}
           <div className="space-y-3">
-            <div className="text-[10px] font-mono text-gray-400 uppercase tracking-wider mb-2">
+            <div className="text-xs font-mono text-gray-400 uppercase tracking-wider mb-2">
               RISK COMPONENTS
             </div>
             {[
@@ -311,7 +311,7 @@ export function DefenseExecutionBrain() {
               { label: 'Vol Expansion', value: defense.volatilityExpansionProb, invert: false },
             ].map((item, i) => (
               <div key={i} className="flex items-center justify-between gap-3">
-                <span className="text-[10px] font-mono text-gray-400 uppercase">{item.label}</span>
+                <span className="text-xs font-mono text-gray-400 uppercase">{item.label}</span>
                 <div className="flex items-center gap-2">
                   <div className="w-20 h-1.5 bg-gray-800 rounded-full overflow-hidden">
                     <div 
@@ -344,9 +344,9 @@ export function DefenseExecutionBrain() {
                 : 'bg-gray-900/50 border border-gray-700'
             }`}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[9px] font-mono text-gray-400 uppercase">LIQUIDITY BRAIN (L5)</span>
+                <span className="text-xs font-mono text-gray-400 uppercase">LIQUIDITY BRAIN (L5)</span>
                 {liquidity.contractionWarning && (
-                  <span className="text-[8px] font-bold text-red-400 bg-red-500/20 px-1.5 py-0.5 rounded animate-pulse">
+                  <span className="text-xs font-bold text-red-400 bg-red-500/20 px-1.5 py-0.5 rounded animate-pulse">
                     WARNING
                   </span>
                 )}
@@ -356,7 +356,7 @@ export function DefenseExecutionBrain() {
               }`}>
                 {liquidity.liquidityBrainIndex.toFixed(2)}
               </div>
-              <div className="text-[9px] text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1">
                 {liquidity.contractionWarning ? 'CONTRACTION MODE' : 'EXPANSION MODE'}
               </div>
             </div>
@@ -364,8 +364,8 @@ export function DefenseExecutionBrain() {
             {/* Regime Speed */}
             <div className={`p-3 rounded-lg ${isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50'}`}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[9px] font-mono text-gray-400 uppercase">REGIME SPEED (L2)</span>
-                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
+                <span className="text-xs font-mono text-gray-400 uppercase">REGIME SPEED (L2)</span>
+                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                   regime.currentPhase === 'CRISIS' ? 'bg-red-500 text-white' :
                   regime.currentPhase === 'CONTRACTION' ? 'bg-amber-500 text-black' :
                   regime.currentPhase === 'BUBBLE' ? 'bg-purple-500 text-white' :
@@ -380,7 +380,7 @@ export function DefenseExecutionBrain() {
               }`}>
                 {regime.regimeSpeed.toFixed(2)}
               </div>
-              <div className="text-[9px] text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 mt-1">
                 {regime.regimeSpeed > 5 ? 'RAPID TRANSITION' : regime.regimeSpeed > 3 ? 'ELEVATED' : 'STABLE'}
               </div>
             </div>
@@ -389,7 +389,7 @@ export function DefenseExecutionBrain() {
 
         {/* Defense Formula Display */}
         <div className={`mt-6 p-3 rounded-lg ${isDark || isHybrid ? 'bg-gray-900/30 border border-gray-800' : 'bg-gray-50'}`}>
-          <div className="text-[9px] font-mono text-gray-500 leading-relaxed">
+          <div className="text-xs font-mono text-gray-500 leading-relaxed">
             <span className="text-cyan-400">DefenseScore</span> = 
             (1 - <span className="text-green-400">SurvivalProb</span>) * 0.35 + 
             <span className="text-red-400">SystemicRisk</span> * 0.25 + 

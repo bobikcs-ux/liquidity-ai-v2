@@ -160,7 +160,7 @@ export function TacticalRedoutOverlay({ onDismiss, forcedMode = false }: Tactica
                 <div className="text-5xl font-black text-red-500 tabular-nums font-mono">
                   {(blackSwan.liquidityDrainVelocity * 100).toFixed(0)}%
                 </div>
-                <div className="text-[10px] text-red-400/50 mt-2 uppercase">VELOCITY</div>
+                <div className="text-xs text-red-400/50 mt-2 uppercase">VELOCITY</div>
               </div>
 
               {/* Correlation Collapse */}
@@ -172,7 +172,7 @@ export function TacticalRedoutOverlay({ onDismiss, forcedMode = false }: Tactica
                 <div className="text-5xl font-black text-red-500 tabular-nums font-mono">
                   {(blackSwan.correlationCollapseSpeed * 100).toFixed(0)}%
                 </div>
-                <div className="text-[10px] text-red-400/50 mt-2 uppercase">COLLAPSE SPEED</div>
+                <div className="text-xs text-red-400/50 mt-2 uppercase">COLLAPSE SPEED</div>
               </div>
 
               {/* Volatility Shock */}
@@ -184,7 +184,7 @@ export function TacticalRedoutOverlay({ onDismiss, forcedMode = false }: Tactica
                 <div className="text-5xl font-black text-red-500 tabular-nums font-mono">
                   {(blackSwan.volatilityShockRate * 100).toFixed(0)}%
                 </div>
-                <div className="text-[10px] text-red-400/50 mt-2 uppercase">SHOCK RATE</div>
+                <div className="text-xs text-red-400/50 mt-2 uppercase">SHOCK RATE</div>
               </div>
             </div>
           </div>
@@ -212,7 +212,7 @@ export function TacticalRedoutOverlay({ onDismiss, forcedMode = false }: Tactica
                     {String(i + 1).padStart(2, '0')}
                   </div>
                   <span className="text-sm font-bold text-red-300 uppercase flex-1">{item.action}</span>
-                  <span className={`text-[9px] font-bold px-2 py-1 rounded ${
+                  <span className={`text-xs font-bold px-2 py-1 rounded ${
                     item.priority === 'CRITICAL' ? 'bg-red-500 text-white' : 'bg-amber-500 text-black'
                   }`}>
                     {item.priority}
@@ -225,12 +225,12 @@ export function TacticalRedoutOverlay({ onDismiss, forcedMode = false }: Tactica
 
         {/* Formula Display */}
         <div className="mt-6 text-center">
-          <div className="text-[10px] font-mono text-red-400/30 leading-relaxed">
+          <div className="text-xs font-mono text-red-400/30 leading-relaxed">
             BlackSwanRisk = (VolatilityShockRate * 0.25) + (CorrelationCollapseSpeed * 0.25) + (LiquidityDrainVelocity * 0.50)
           </div>
           <div className="flex items-center justify-center gap-2 mt-4">
             <Radio className="w-3 h-3 text-red-400 animate-pulse" />
-            <span className="text-[10px] font-mono text-red-400/50 uppercase tracking-widest">
+            <span className="text-xs font-mono text-red-400/50 uppercase tracking-widest">
               L1 NERVOUS SYSTEM // 60-SECOND REFRESH
             </span>
           </div>

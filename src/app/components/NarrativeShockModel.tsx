@@ -129,7 +129,7 @@ export function NarrativeShockModel() {
               Narrative Shock Transmission
             </h3>
             <p className={`text-xs ${
-              isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+              isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
             }`}>
               Reflexivity and positioning intelligence
             </p>
@@ -155,15 +155,15 @@ export function NarrativeShockModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             NARRATIVE SHOCK
           </div>
           <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(narrativeShockIndex))}`}>
             {narrativeShockIndex}
           </div>
-          <span className={`inline-block px-2 py-0.5 text-[10px] md:text-xs font-semibold rounded whitespace-nowrap ${
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
             getRiskLevel(narrativeShockIndex) === 'CRITICAL' || getRiskLevel(narrativeShockIndex) === 'HIGH' 
               ? 'bg-red-500/20 text-red-400' 
               : getRiskLevel(narrativeShockIndex) === 'ELEVATED' 
@@ -178,15 +178,15 @@ export function NarrativeShockModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             VELOCITY
           </div>
           <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(velocityScore))}`}>
             {velocityScore}
           </div>
-          <span className={`inline-block px-2 py-0.5 text-[10px] md:text-xs font-semibold rounded whitespace-nowrap ${
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
             getRiskLevel(velocityScore) === 'CRITICAL' || getRiskLevel(velocityScore) === 'HIGH' 
               ? 'bg-red-500/20 text-red-400' 
               : getRiskLevel(velocityScore) === 'ELEVATED' 
@@ -201,15 +201,15 @@ export function NarrativeShockModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             POSITIONING
           </div>
           <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(positioningImbalance))}`}>
             {positioningImbalance}
           </div>
-          <span className={`inline-block px-2 py-0.5 text-[10px] md:text-xs font-semibold rounded whitespace-nowrap ${
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
             getRiskLevel(positioningImbalance) === 'CRITICAL' || getRiskLevel(positioningImbalance) === 'HIGH' 
               ? 'bg-red-500/20 text-red-400' 
               : getRiskLevel(positioningImbalance) === 'ELEVATED' 
@@ -224,15 +224,15 @@ export function NarrativeShockModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             LIQUIDITY RISK
           </div>
           <div className={`text-xl md:text-2xl font-bold mb-1 ${getRiskColor(liquidityWithdrawalRisk)}`}>
             {liquidityWithdrawalRisk}
           </div>
-          <div className={`text-[10px] md:text-xs truncate ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'}`}>
+          <div className={`text-xs truncate ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}`}>
             Depth deteriorating
           </div>
         </div>
@@ -269,7 +269,7 @@ export function NarrativeShockModel() {
       <div className={`rounded-lg p-3 md:p-4 mb-4 md:mb-6 ${
         isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
       }`}>
-        <div className={`text-[10px] md:text-xs font-semibold mb-3 md:mb-4 ${
+        <div className={`text-xs font-semibold mb-3 md:mb-4 ${
           isDark || isHybrid ? 'text-gray-400' : 'text-gray-700'
         }`}>
           TRANSMISSION MODEL STAGES
@@ -279,7 +279,7 @@ export function NarrativeShockModel() {
             <div key={index} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStageStatusColor(stage.status)}`}></div>
-                <div className={`text-[11px] md:text-xs font-medium truncate ${
+                <div className={`text-xs font-medium truncate ${
                   isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                 }`}>
                   {stage.stage}
@@ -309,13 +309,13 @@ export function NarrativeShockModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
@@ -346,13 +346,13 @@ export function NarrativeShockModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
@@ -383,13 +383,13 @@ export function NarrativeShockModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
@@ -420,13 +420,13 @@ export function NarrativeShockModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>

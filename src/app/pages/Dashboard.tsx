@@ -36,10 +36,10 @@ export function Dashboard() {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 md:gap-6 mb-6 md:mb-10 border-b border-blue-900/30 pb-4 md:pb-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-             <div className="px-1.5 py-0.5 bg-blue-600 text-white text-[9px] font-mono font-bold rounded">
+             <div className="px-1.5 py-0.5 bg-blue-600 text-white text-xs font-mono font-bold rounded">
                 CORE_SYSTEM_ACTIVE
              </div>
-             <div className="text-[10px] text-slate-300 font-mono tracking-widest uppercase">
+             <div className="text-xs text-slate-300 font-mono tracking-widest uppercase">
                 Auth: Admin_Bobikcs
              </div>
           </div>
@@ -63,7 +63,7 @@ export function Dashboard() {
           {/* AI Status */}
           <div className="flex items-center gap-5 bg-blue-950/20 px-5 py-3 rounded-2xl border border-blue-500/20 backdrop-blur-sm">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] text-blue-400 font-mono uppercase leading-none mb-1">Neural Uplink</span>
+              <span className="text-xs text-blue-400 font-mono uppercase leading-none mb-1">Neural Uplink</span>
               <span className="text-sm font-bold text-white tracking-tight uppercase">Copilot Online</span>
             </div>
             <div className="relative flex items-center justify-center">
@@ -100,7 +100,7 @@ export function Dashboard() {
              </div>
              <div>
                 <h2 className="text-xl font-bold text-white tracking-tight uppercase italic">Systemic Risk Drivers</h2>
-                <p className="text-[10px] font-mono text-blue-400 uppercase">Real-time correlation matrix</p>
+                <p className="text-xs font-mono text-blue-400 uppercase">Real-time correlation matrix</p>
              </div>
           </div>
 
@@ -127,7 +127,7 @@ export function Dashboard() {
           
           <div className="space-y-3 md:space-y-5 flex-1">
             <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 md:p-4">
-              <span className="text-[9px] md:text-[10px] font-mono text-blue-400 block mb-1 uppercase tracking-tighter">Current Market State</span>
+              <span className="text-xs font-mono text-blue-400 block mb-1 uppercase tracking-tighter">Current Market State</span>
               <div className="text-xl md:text-2xl font-black text-white italic tracking-tight truncate">
                 {currentRegime.regime.toUpperCase()}
               </div>
@@ -135,11 +135,11 @@ export function Dashboard() {
             
             <div className="grid grid-cols-2 gap-2 md:gap-3">
               <div className="bg-white/5 p-2 md:p-3 rounded-lg overflow-hidden">
-                <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Confidence</div>
+                <div className="text-xs text-slate-300 uppercase font-mono font-medium">Confidence</div>
                 <div className="text-base md:text-lg font-bold text-green-500 font-mono tabular-nums">{currentRegime.confidence}%</div>
               </div>
               <div className="bg-white/5 p-2 md:p-3 rounded-lg overflow-hidden">
-                <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Risk Level</div>
+                <div className="text-xs text-slate-300 uppercase font-mono font-medium">Risk Level</div>
                 <div className={`text-base md:text-lg font-bold font-mono tabular-nums ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-500'}`}>
                   {currentRegime.riskLevel}%
                 </div>
@@ -162,7 +162,7 @@ export function Dashboard() {
             }`}>
               {snapshotLoading ? <span className="inline-block w-16 md:w-20 h-10 md:h-14 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
             </div>
-            <p className="text-[9px] font-mono font-medium text-slate-300 uppercase">30-day horizon survival probability</p>
+            <p className="text-xs font-mono font-medium text-slate-300 uppercase">30-day horizon survival probability</p>
           </div>
           <select className="w-full bg-slate-950 border border-white/10 text-white rounded-lg p-3 text-xs font-mono uppercase focus:border-blue-500 outline-none">
              <option>BOBIKCS_BALANCED_ALPHA</option>
@@ -187,7 +187,7 @@ export function Dashboard() {
               { label: 'VIX Terminal', val: currentRegime.volatilityIndex, trend: 'neutral' },
             ].map((m, i) => (
               <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2 min-h-[2rem]">
-                <span className="text-[11px] font-mono text-gray-200 uppercase">{m.label}</span>
+                <span className="text-xs font-mono text-gray-200 uppercase">{m.label}</span>
                 <span className={`text-base font-bold font-mono tabular-nums min-w-[4rem] text-right ${m.trend === 'up' ? 'text-green-500' : m.trend === 'down' ? 'text-red-500' : 'text-white'}`}>
                   {m.val ?? <span className="inline-block w-12 h-5 bg-gray-700 rounded animate-pulse" />}
                 </span>

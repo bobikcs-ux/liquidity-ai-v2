@@ -131,7 +131,7 @@ export function ConflictTransmissionModel() {
               Global Conflict Transmission
             </h3>
             <p className={`text-xs ${
-              isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+              isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
             }`}>
               Financial transmission intelligence layer
             </p>
@@ -157,15 +157,15 @@ export function ConflictTransmissionModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             CTRI
           </div>
           <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(ctri))}`}>
             {ctri}
           </div>
-          <span className={`inline-block px-2 py-0.5 text-[10px] md:text-xs font-semibold rounded whitespace-nowrap ${
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
             getRiskLevel(ctri) === 'CRITICAL' || getRiskLevel(ctri) === 'HIGH' 
               ? 'bg-red-500/20 text-red-400' 
               : getRiskLevel(ctri) === 'ELEVATED' 
@@ -180,15 +180,15 @@ export function ConflictTransmissionModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             LIQUIDITY IMPACT
           </div>
           <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(liquidityImpactProbability))}`}>
             {liquidityImpactProbability}%
           </div>
-          <span className={`inline-block px-2 py-0.5 text-[10px] md:text-xs font-semibold rounded whitespace-nowrap ${
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
             getRiskLevel(liquidityImpactProbability) === 'CRITICAL' || getRiskLevel(liquidityImpactProbability) === 'HIGH' 
               ? 'bg-red-500/20 text-red-400' 
               : getRiskLevel(liquidityImpactProbability) === 'ELEVATED' 
@@ -203,15 +203,15 @@ export function ConflictTransmissionModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             POLICY SHOCK
           </div>
           <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(policyShockProbability))}`}>
             {policyShockProbability}%
           </div>
-          <span className={`inline-block px-2 py-0.5 text-[10px] md:text-xs font-semibold rounded whitespace-nowrap ${
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
             getRiskLevel(policyShockProbability) === 'CRITICAL' || getRiskLevel(policyShockProbability) === 'HIGH' 
               ? 'bg-red-500/20 text-red-400' 
               : getRiskLevel(policyShockProbability) === 'ELEVATED' 
@@ -226,15 +226,15 @@ export function ConflictTransmissionModel() {
         <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-[10px] md:text-xs font-semibold mb-2 truncate ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             CREDIT CONTAGION
           </div>
           <div className={`text-xl md:text-2xl font-bold mb-1 ${getRiskColor(creditContagionRisk)}`}>
             {creditContagionRisk}
           </div>
-          <div className={`text-[10px] md:text-xs truncate ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'}`}>
+          <div className={`text-xs truncate ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}`}>
             EM funding stress
           </div>
         </div>
@@ -271,7 +271,7 @@ export function ConflictTransmissionModel() {
       <div className={`rounded-lg p-3 md:p-4 mb-4 md:mb-6 ${
         isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
       }`}>
-        <div className={`text-[10px] md:text-xs font-semibold mb-3 md:mb-4 ${
+        <div className={`text-xs font-semibold mb-3 md:mb-4 ${
           isDark || isHybrid ? 'text-gray-400' : 'text-gray-700'
         }`}>
           TRANSMISSION MODEL STAGES
@@ -281,7 +281,7 @@ export function ConflictTransmissionModel() {
             <div key={index} className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStageStatusColor(stage.status)}`}></div>
-                <div className={`text-[11px] md:text-xs font-medium truncate ${
+                <div className={`text-xs font-medium truncate ${
                   isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                 }`}>
                   {stage.stage}
@@ -311,13 +311,13 @@ export function ConflictTransmissionModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
@@ -348,13 +348,13 @@ export function ConflictTransmissionModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
@@ -385,13 +385,13 @@ export function ConflictTransmissionModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
@@ -422,13 +422,13 @@ export function ConflictTransmissionModel() {
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
                   <div className="flex-1 min-w-0">
-                    <div className={`text-[11px] md:text-xs font-medium mb-0.5 truncate ${
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-[10px] md:text-xs truncate ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
