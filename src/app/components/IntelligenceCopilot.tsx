@@ -294,8 +294,8 @@ export function IntelligenceCopilot() {
 
   return (
     <div 
-      className={`fixed bottom-6 right-6 rounded-2xl shadow-2xl transition-all z-50 ${
-        isExpanded ? 'w-[600px] h-[700px]' : 'w-[420px] h-[550px]'
+      className={`fixed bottom-4 right-4 left-4 sm:left-auto rounded-2xl shadow-2xl transition-all z-50 overflow-hidden ${
+        isExpanded ? 'sm:w-[600px] h-[80vh] sm:h-[700px]' : 'sm:w-[420px] h-[70vh] sm:h-[550px]'
       } ${
         isDark 
           ? 'bg-gray-900 border border-gray-700' 
@@ -348,15 +348,15 @@ export function IntelligenceCopilot() {
       {/* Command History */}
       <div 
         ref={historyRef}
-        className={`flex-1 overflow-y-auto p-4 space-y-3 ${
-          isExpanded ? 'h-[480px]' : 'h-[330px]'
+        className={`flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3 ${
+          isExpanded ? 'h-[calc(100%-180px)] sm:h-[480px]' : 'h-[calc(100%-180px)] sm:h-[330px]'
         }`}
       >
         {commandHistory.length === 0 ? (
-          <div className={`text-center py-8 ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-400'}`}>
+          <div className={`text-center py-8 px-4 ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-400'}`}>
             <Terminal className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-sm">Type /help to see available commands</p>
-            <p className="text-xs mt-1">or /scan to start a full analysis</p>
+            <p className="text-sm break-words">Type <span className="font-mono">/help</span> to see available commands</p>
+            <p className="text-xs mt-1 break-words">or <span className="font-mono">/scan</span> to start a full analysis</p>
           </div>
         ) : (
           commandHistory.map((result, idx) => (
@@ -368,7 +368,7 @@ export function IntelligenceCopilot() {
                 {result.timestamp.toLocaleTimeString()}
                 <span className="font-mono">{result.command}</span>
               </div>
-              <div className={`p-3 rounded-lg font-mono text-sm whitespace-pre-wrap ${
+              <div className={`p-3 rounded-lg font-mono text-sm whitespace-pre-wrap break-words overflow-x-hidden max-w-full ${
                 isDark ? 'bg-gray-800' : isHybrid ? 'bg-gray-700' : 'bg-gray-50'
               } ${getResultColor(result.type)}`}>
                 {result.output}

@@ -248,36 +248,36 @@ export function Reports() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto space-y-6 overflow-x-hidden">
       {/* Page Header */}
       <header className="mb-8">
-        <h1 className={`text-3xl font-bold mb-2 ${
+        <h1 className={`text-2xl md:text-3xl font-bold mb-2 ${
           isDark || isHybrid ? 'text-white' : 'text-gray-900'
         }`}>
           Reports
         </h1>
-        <p className={isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}>
+        <p className={`text-sm md:text-base break-words hyphens-auto ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}`}>
           Evidence-based PDF intelligence
         </p>
       </header>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-          <div className="text-sm text-gray-600 mb-1">Total Reports</div>
-          <div className="text-2xl font-bold text-gray-900">127</div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-3 md:p-4 max-w-full">
+          <div className="text-xs md:text-sm text-gray-600 mb-1">Total Reports</div>
+          <div className="text-xl md:text-2xl font-bold text-gray-900 tabular-nums">127</div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-          <div className="text-sm text-gray-600 mb-1">This Month</div>
-          <div className="text-2xl font-bold text-[#2563EB]">8</div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-3 md:p-4 max-w-full">
+          <div className="text-xs md:text-sm text-gray-600 mb-1">This Month</div>
+          <div className="text-xl md:text-2xl font-bold text-[#2563EB] tabular-nums">8</div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-          <div className="text-sm text-gray-600 mb-1">High Risk Alerts</div>
-          <div className="text-2xl font-bold text-red-600">3</div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-3 md:p-4 max-w-full">
+          <div className="text-xs md:text-sm text-gray-600 mb-1">High Risk Alerts</div>
+          <div className="text-xl md:text-2xl font-bold text-red-600 tabular-nums">3</div>
         </div>
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-          <div className="text-sm text-gray-600 mb-1">Downloads</div>
-          <div className="text-2xl font-bold text-gray-900">342</div>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-3 md:p-4 max-w-full">
+          <div className="text-xs md:text-sm text-gray-600 mb-1">Downloads</div>
+          <div className="text-xl md:text-2xl font-bold text-gray-900 tabular-nums">342</div>
         </div>
       </div>
 
@@ -286,24 +286,24 @@ export function Reports() {
         {reports.map((report) => (
           <div
             key={report.id}
-            className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+            className="bg-white rounded-3xl shadow-sm border border-gray-200 p-4 md:p-6 hover:shadow-md transition-shadow max-w-full overflow-hidden"
           >
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
               {/* Left Section - Report Info */}
-              <div className="flex gap-4 flex-1">
+              <div className="flex gap-3 md:gap-4 flex-1 min-w-0">
                 <div className="w-12 h-12 bg-[#EFF6FF] rounded-xl flex items-center justify-center flex-shrink-0">
                   <FileText className="w-6 h-6 text-[#2563EB]" />
                 </div>
                 
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-lg font-semibold text-gray-900">{report.title}</h2>
-                    <span className={`text-xs font-medium px-3 py-1 rounded-full border ${getRiskColor(report.riskLevel)}`}>
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+                    <h2 className="text-base md:text-lg font-semibold text-gray-900 break-words hyphens-auto max-w-full">{report.title}</h2>
+                    <span className={`text-xs font-medium px-3 py-1 rounded-full border flex-shrink-0 ${getRiskColor(report.riskLevel)}`}>
                       {report.riskLevel} Risk
                     </span>
                   </div>
                   
-                  <p className="text-sm text-gray-600 mb-3">{report.description}</p>
+                  <p className="text-xs md:text-sm text-gray-600 mb-3 break-words">{report.description}</p>
                   
                   <div className="flex items-center gap-4 text-xs font-medium text-gray-600">
                     <span className="flex items-center gap-1">
@@ -323,7 +323,7 @@ export function Reports() {
               </div>
 
               {/* Right Section - Actions */}
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end">
                 {/* Copy Link */}
                 <button 
                   onClick={() => handleCopyLink(report.id)}

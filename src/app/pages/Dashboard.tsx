@@ -23,7 +23,7 @@ export function Dashboard() {
   const yieldSpread = snapshot?.yield_spread?.toFixed(2) ?? '-0.23';
   const btcDominance = snapshot?.btc_dominance?.toFixed(1) ?? '57.4';
   
-  const cardStyle = `rounded-xl shadow-sm border p-4 md:p-6 min-h-[260px] w-full flex flex-col overflow-hidden transition-all duration-500 ${
+  const cardStyle = `rounded-xl shadow-sm border p-4 md:p-6 min-h-[260px] w-full max-w-full flex flex-col overflow-hidden transition-all duration-500 ${
     isDark ? 'bg-[#0b0f17] border-[#1f2937]' : 
     isHybrid ? 'bg-[#1e2536] border-gray-700' : 
     'bg-white border-gray-200'
@@ -134,13 +134,13 @@ export function Dashboard() {
             </div>
             
             <div className="grid grid-cols-2 gap-2 md:gap-3">
-              <div className="bg-white/5 p-2 md:p-3 rounded-lg overflow-hidden">
-                <div className="text-xs text-slate-300 uppercase font-mono font-medium">Confidence</div>
-                <div className="text-base md:text-lg font-bold text-green-500 font-mono tabular-nums">{currentRegime.confidence}%</div>
+              <div className={`p-2 md:p-3 rounded-lg overflow-hidden ${isDark || isHybrid ? 'bg-white/5' : 'bg-gray-100'}`}>
+                <div className={`text-xs uppercase font-mono font-medium ${isDark || isHybrid ? 'text-slate-300' : 'text-gray-900'}`}>Confidence</div>
+                <div className="text-base md:text-lg font-bold text-green-600 font-mono tabular-nums">{currentRegime.confidence}%</div>
               </div>
-              <div className="bg-white/5 p-2 md:p-3 rounded-lg overflow-hidden">
-                <div className="text-xs text-slate-300 uppercase font-mono font-medium">Risk Level</div>
-                <div className={`text-base md:text-lg font-bold font-mono tabular-nums ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-500'}`}>
+              <div className={`p-2 md:p-3 rounded-lg overflow-hidden ${isDark || isHybrid ? 'bg-white/5' : 'bg-gray-100'}`}>
+                <div className={`text-xs uppercase font-mono font-medium ${isDark || isHybrid ? 'text-slate-300' : 'text-gray-900'}`}>Risk Level</div>
+                <div className={`text-base md:text-lg font-bold font-mono tabular-nums ${currentRegime.riskLevel > 50 ? 'text-red-600' : 'text-green-600'}`}>
                   {currentRegime.riskLevel}%
                 </div>
               </div>
@@ -162,7 +162,7 @@ export function Dashboard() {
             }`}>
               {snapshotLoading ? <span className="inline-block w-16 md:w-20 h-10 md:h-14 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
             </div>
-            <p className="text-xs font-mono font-medium text-slate-300 uppercase">30-day horizon survival probability</p>
+            <p className={`text-xs font-mono font-medium uppercase ${isDark || isHybrid ? 'text-slate-300' : 'text-gray-900'}`}>30-day horizon survival probability</p>
           </div>
           <select className="w-full bg-slate-950 border border-white/10 text-white rounded-lg p-3 text-xs font-mono uppercase focus:border-blue-500 outline-none">
              <option>BOBIKCS_BALANCED_ALPHA</option>
@@ -186,10 +186,10 @@ export function Dashboard() {
               { label: 'Yield Curve', val: snapshotLoading ? null : `${yieldSpread}%`, trend: parseFloat(yieldSpread) < 0 ? 'down' : 'up' },
               { label: 'VIX Terminal', val: currentRegime.volatilityIndex, trend: 'neutral' },
             ].map((m, i) => (
-              <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2 min-h-[2rem]">
-                <span className="text-xs font-mono text-gray-200 uppercase">{m.label}</span>
-                <span className={`text-base font-bold font-mono tabular-nums min-w-[4rem] text-right ${m.trend === 'up' ? 'text-green-500' : m.trend === 'down' ? 'text-red-500' : 'text-white'}`}>
-                  {m.val ?? <span className="inline-block w-12 h-5 bg-gray-700 rounded animate-pulse" />}
+              <div key={i} className={`flex justify-between items-end border-b pb-2 min-h-[2rem] ${isDark || isHybrid ? 'border-white/5' : 'border-gray-200'}`}>
+                <span className={`text-xs font-mono uppercase ${isDark || isHybrid ? 'text-gray-200' : 'text-gray-900 font-semibold'}`}>{m.label}</span>
+                <span className={`text-base font-bold font-mono tabular-nums min-w-[4rem] text-right ${m.trend === 'up' ? 'text-green-600' : m.trend === 'down' ? 'text-red-600' : isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                  {m.val ?? <span className={`inline-block w-12 h-5 rounded animate-pulse ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`} />}
                 </span>
               </div>
             ))}
