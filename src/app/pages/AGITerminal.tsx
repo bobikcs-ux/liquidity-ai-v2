@@ -7,7 +7,7 @@
  */
 
 import React, { useMemo, useEffect, useState } from 'react';
-import { Brain, Shield, Activity, Radio, Target, Zap, AlertTriangle, Globe, Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { Brain, Shield, Activity, Radio, Target, Zap, AlertTriangle, Globe, Wifi, WifiOff, RefreshCw, Heart } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { useL1Data } from '../hooks/useL1Data';
@@ -226,25 +226,28 @@ function MarketEmotionPanel({ agiState }: { agiState: AGISystemState | null }) {
 export function AGITerminal() {
   const { uiTheme } = useAdaptiveTheme();
   const { latest: snapshot, loading } = useMarketSnapshot();
-  const { data: l1Data, displayValues, status: l1Status, isLoading: l1Loading } = useL1Data();
+  const { data: l1Data, displayValues, status: l1Status, isLoading: l1Loading, heartbeat, agiValues, forceRefresh } = useL1Data();
   const { isEmergencyMode, blackSwanRisk } = useTacticalRedout();
   const [showEmergencyOverlay, setShowEmergencyOverlay] = useState(false);
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
 
-  // Compute AGI system state
+  // Compute AGI system state using validated L1 values (never null/0)
   const agiState = useMemo(() => {
     if (!snapshot) return null;
+    
+    // Use AGI-validated values when available to ensure no nulls reach the engine
+    const yieldSpread = agiValues?.yieldCurve ?? snapshot.yield_spread ?? -0.23;
     
     return computeAGISystemState({
       survivalProbability: snapshot.survival_probability ?? 0.78,
       systemicRisk: snapshot.systemic_risk ?? 0.35,
-      yieldSpread: snapshot.yield_spread ?? -0.23,
+      yieldSpread,
       btcVolatility: snapshot.btc_volatility ?? 65,
       balanceSheetDelta: snapshot.balance_sheet_delta ?? -2.3,
       rateShock: snapshot.rate_shock ?? 15
     });
-  }, [snapshot]);
+  }, [snapshot, agiValues]);
 
   // Auto-show emergency overlay when risk exceeds threshold
   useEffect(() => {
@@ -309,6 +312,19 @@ export function AGITerminal() {
                 <span className="text-xs font-mono text-green-400 uppercase tracking-wider">
                   L1 REAL-TIME DATA
                 </span>
+                
+                {/* Heartbeat Indicator */}
+                <div className="flex items-center gap-1.5 ml-2" title={heartbeat.alive ? `Ping: ${heartbeat.latencyMs}ms` : 'No heartbeat detected'}>
+                  <Heart className={`w-3.5 h-3.5 ${
+                    heartbeat.alive 
+                      ? 'text-green-500 animate-pulse' 
+                      : 'text-red-500'
+                  }`} />
+                  <span className="text-xs font-mono text-gray-500">
+                    {heartbeat.alive ? `${heartbeat.latencyMs}ms` : 'OFFLINE'}
+                  </span>
+                </div>
+                
                 <div className={`ml-auto flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono ${
                   l1Status === 'LIVE' ? 'bg-green-500/20 text-green-400' :
                   l1Status === 'RECONNECTING' ? 'bg-amber-500/20 text-amber-400' :
@@ -354,6 +370,25 @@ export function AGITerminal() {
                   </div>
                 </div>
               </div>
+              
+              {/* AGI Validated Values & Force Refresh */}
+              <div className="mt-3 pt-3 border-t border-gray-800 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {agiValues?.valid ? (
+                    <span className="text-xs font-mono text-green-400">AGI_VALIDATED</span>
+                  ) : (
+                    <span className="text-xs font-mono text-amber-400">AGI_USING_FALLBACKS</span>
+                  )}
+                </div>
+                <button
+                  onClick={forceRefresh}
+                  disabled={l1Loading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono font-bold bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 transition-colors disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3 h-3 ${l1Loading ? 'animate-spin' : ''}`} />
+                  FORCE REFRESH
+                </button>
+              </div>
             </div>
             
             <NervousSystemPanel agiState={agiState} l1Status={l1Status} />
@@ -375,6 +410,20 @@ export function AGITerminal() {
         <div className="mt-8 p-4 bg-[#0a0f1a] border border-gray-800 rounded-xl">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
+              {/* Heartbeat Visual */}
+              <div className="flex items-center gap-2">
+                <Heart className={`w-4 h-4 ${
+                  heartbeat.alive 
+                    ? 'text-green-500 animate-pulse' 
+                    : 'text-red-500'
+                }`} style={{
+                  animation: heartbeat.alive ? 'pulse 1s ease-in-out infinite' : 'none'
+                }} />
+                <span className="text-xs font-mono text-gray-400">
+                  {heartbeat.alive ? `HEARTBEAT: ${heartbeat.latencyMs}ms` : 'NO HEARTBEAT'}
+                </span>
+              </div>
+              <div className="text-xs font-mono text-gray-600">|</div>
               <div className="flex items-center gap-2">
                 {l1Status === 'RECONNECTING' ? (
                   <RefreshCw className="w-3 h-3 text-amber-500 animate-spin" />
@@ -387,12 +436,12 @@ export function AGITerminal() {
                   l1Status === 'LIVE' ? 'text-green-400' : 
                   l1Status === 'RECONNECTING' ? 'text-amber-400' : 'text-red-400'
                 }`}>
-                  L1 NERVOUS SYSTEM: {l1Status}
+                  L1: {l1Status}
                 </span>
               </div>
               <div className="text-xs font-mono text-gray-600">|</div>
               <span className="text-xs font-mono text-gray-400">
-                LAST UPDATE: {l1Data?.lastUpdate?.toLocaleTimeString() ?? 'RECONNECTING...'}
+                SYNC: {l1Data?.lastUpdate?.toLocaleTimeString() ?? 'RECONNECTING...'}
               </span>
             </div>
             <div className="text-xs font-mono text-gray-500">
