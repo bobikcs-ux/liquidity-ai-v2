@@ -23,17 +23,17 @@ export function Dashboard() {
   const yieldSpread = snapshot?.yield_spread?.toFixed(2) ?? '-0.23';
   const btcDominance = snapshot?.btc_dominance?.toFixed(1) ?? '57.4';
   
-  const cardStyle = `rounded-xl shadow-sm border p-6 transition-all duration-500 ${
-    isDark ? 'bg-[#0a0f1a] border-blue-900/40' : 
+  const cardStyle = `rounded-xl shadow-sm border p-4 md:p-6 min-h-[260px] w-full flex flex-col overflow-hidden transition-all duration-500 ${
+    isDark ? 'bg-[#0b0f17] border-[#1f2937]' : 
     isHybrid ? 'bg-[#1e2536] border-gray-700' : 
     'bg-white border-gray-200'
   }`;
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto p-4 lg:p-8">
+    <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto px-4 py-4 md:py-8">
       
       {/* HEADER SECTION - ПЕРСОНАЛИЗИРАНО ЗАГЛАВИЕ */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10 border-b border-blue-900/30 pb-6">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 md:gap-6 mb-6 md:mb-10 border-b border-blue-900/30 pb-4 md:pb-6">
         <div className="space-y-2">
           <div className="flex items-center gap-2">
              <div className="px-1.5 py-0.5 bg-blue-600 text-white text-[9px] font-mono font-bold rounded">
@@ -43,10 +43,10 @@ export function Dashboard() {
                 Auth: Admin_Bobikcs
              </div>
           </div>
-          <h1 className={`text-4xl font-black tracking-tighter uppercase italic ${
+          <h1 className={`text-2xl md:text-4xl font-black tracking-tighter uppercase italic ${
             isDark || isHybrid ? 'text-white' : 'text-gray-900'
           }`} id="main-heading">
-            BOBIKCS <span className="text-blue-500 text-3xl not-italic font-light" aria-hidden="true">//</span> <span className="text-blue-500">INTELLIGENCE TERMINAL</span>
+            BOBIKCS <span className="text-blue-500 text-xl md:text-3xl not-italic font-light" aria-hidden="true">//</span> <span className="text-blue-500">INTELLIGENCE TERMINAL</span>
           </h1>
           <p className={`font-mono text-xs tracking-[0.2em] uppercase opacity-70 ${
             isDark || isHybrid ? 'text-blue-300' : 'text-gray-600'
@@ -83,7 +83,7 @@ export function Dashboard() {
 
       {/* SYSTEMIC DRIVERS PANEL - С ДВОЙНИЯ ТЕХНОЛОГИЧЕН ФОН */}
       <section 
-        className="rounded-3xl p-8 mb-8 relative border border-blue-500/20 overflow-hidden shadow-2xl"
+        className="rounded-xl md:rounded-3xl p-4 md:p-8 mb-4 md:mb-8 relative border border-blue-500/20 overflow-hidden shadow-2xl"
         style={{
           background: isDark || isHybrid 
             ? 'linear-gradient(135deg, #020617 0%, #081229 100%)' 
@@ -104,7 +104,8 @@ export function Dashboard() {
              </div>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* Responsive 2-column grid with proper gap spacing */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <ResourceShockEngine />
             <ConflictTransmissionModel />
             <EmploymentDisruptionLayer />
@@ -113,8 +114,8 @@ export function Dashboard() {
         </div>
       </section>
 
-      {/* Grid с основните карти (Metrics) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Grid с основните карти (Metrics) - Responsive layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
         {/* Regime Intelligence Card */}
         <div className={cardStyle}>
           <div className="flex items-center gap-3 mb-6">
@@ -124,22 +125,22 @@ export function Dashboard() {
             </h3>
           </div>
           
-          <div className="space-y-5">
-            <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4">
-              <span className="text-[10px] font-mono text-blue-400 block mb-1 uppercase tracking-tighter">Current Market State</span>
-              <div className="text-2xl font-black text-white italic tracking-tight">
+          <div className="space-y-3 md:space-y-5 flex-1">
+            <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 md:p-4">
+              <span className="text-[9px] md:text-[10px] font-mono text-blue-400 block mb-1 uppercase tracking-tighter">Current Market State</span>
+              <div className="text-xl md:text-2xl font-black text-white italic tracking-tight truncate">
                 {currentRegime.regime.toUpperCase()}
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white/5 p-3 rounded-lg">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
+              <div className="bg-white/5 p-2 md:p-3 rounded-lg overflow-hidden">
                 <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Confidence</div>
-                <div className="text-lg font-bold text-green-500 font-mono tabular-nums min-w-[3rem]">{currentRegime.confidence}%</div>
+                <div className="text-base md:text-lg font-bold text-green-500 font-mono tabular-nums">{currentRegime.confidence}%</div>
               </div>
-              <div className="bg-white/5 p-3 rounded-lg">
+              <div className="bg-white/5 p-2 md:p-3 rounded-lg overflow-hidden">
                 <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Risk Level</div>
-                <div className={`text-lg font-bold font-mono tabular-nums min-w-[3rem] ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-500'}`}>
+                <div className={`text-base md:text-lg font-bold font-mono tabular-nums ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-500'}`}>
                   {currentRegime.riskLevel}%
                 </div>
               </div>
@@ -155,11 +156,11 @@ export function Dashboard() {
               Survival Matrix
             </h3>
           </div>
-          <div className="text-center py-4">
-            <div className={`text-6xl font-black mb-2 font-mono tabular-nums min-h-[4rem] flex items-center justify-center ${
+          <div className="text-center py-2 md:py-4 flex-1 flex flex-col justify-center">
+            <div className={`text-4xl md:text-6xl font-black mb-2 font-mono tabular-nums min-h-[3rem] md:min-h-[4rem] flex items-center justify-center ${
               survivalProb >= 70 ? 'text-green-500' : survivalProb >= 50 ? 'text-amber-500' : 'text-red-500'
             }`}>
-              {snapshotLoading ? <span className="inline-block w-20 h-14 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
+              {snapshotLoading ? <span className="inline-block w-16 md:w-20 h-10 md:h-14 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
             </div>
             <p className="text-[9px] font-mono font-medium text-slate-300 uppercase">30-day horizon survival probability</p>
           </div>
@@ -197,7 +198,7 @@ export function Dashboard() {
       </div>
 
       {/* Stress signals & AI Copilot Row */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 md:gap-6">
         <div className={cardStyle}>
            <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
@@ -224,7 +225,7 @@ export function Dashboard() {
            </div>
         </div>
 
-        {/* Интеграция на AI Copilot */}
+        {/* Интег��ация на AI Copilot */}
         <div className="flex flex-col">
            <AICopilot />
         </div>
