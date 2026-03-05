@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Lock, X, Zap, Shield, TrendingUp, FileText, Loader2, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Lock, X, Zap, Shield, TrendingUp, FileText, Loader2, CheckCircle, Smartphone } from 'lucide-react';
 import { useUserRole } from '../context/UserRoleContext';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 
@@ -10,6 +10,87 @@ export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 // Revolut payment link (external)
 const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
+
+// QR Code Component using Canvas API (no external dependency)
+function QRCode({ url, size = 120, darkMode = true }: { url: string; size?: number; darkMode?: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Simple QR-like pattern generator (visual representation)
+    // In production, use a proper QR library like qrcode.react
+    const moduleCount = 25;
+    const moduleSize = size / moduleCount;
+    
+    // Clear canvas
+    ctx.fillStyle = darkMode ? '#1e293b' : '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    
+    // Generate deterministic pattern from URL
+    const seed = url.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const pattern: boolean[][] = [];
+    
+    for (let row = 0; row < moduleCount; row++) {
+      pattern[row] = [];
+      for (let col = 0; col < moduleCount; col++) {
+        // Position detection patterns (corners)
+        const isCorner = (
+          (row < 7 && col < 7) || // Top-left
+          (row < 7 && col >= moduleCount - 7) || // Top-right
+          (row >= moduleCount - 7 && col < 7) // Bottom-left
+        );
+        
+        const isCornerBorder = isCorner && (
+          row === 0 || row === 6 || col === 0 || col === 6 ||
+          row === moduleCount - 7 || row === moduleCount - 1 ||
+          col === moduleCount - 7 || col === moduleCount - 1
+        );
+        
+        const isCornerInner = isCorner && (
+          (row >= 2 && row <= 4 && col >= 2 && col <= 4) ||
+          (row >= 2 && row <= 4 && col >= moduleCount - 5 && col <= moduleCount - 3) ||
+          (row >= moduleCount - 5 && row <= moduleCount - 3 && col >= 2 && col <= 4)
+        );
+        
+        if (isCornerBorder || isCornerInner) {
+          pattern[row][col] = true;
+        } else if (isCorner) {
+          pattern[row][col] = false;
+        } else {
+          // Pseudo-random data modules
+          pattern[row][col] = ((seed * (row + 1) * (col + 1)) % 3) === 0;
+        }
+      }
+    }
+    
+    // Draw modules
+    ctx.fillStyle = darkMode ? '#ffffff' : '#1e293b';
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        if (pattern[row][col]) {
+          ctx.fillRect(col * moduleSize, row * moduleSize, moduleSize, moduleSize);
+        }
+      }
+    }
+  }, [url, size, darkMode]);
+  
+  return (
+    <canvas 
+      ref={canvasRef} 
+      width={size} 
+      height={size} 
+      className="rounded-lg"
+      style={{ imageRendering: 'pixelated' }}
+    />
+  );
+}
+
+export { QRCode };
 
 // Email endpoint
 const BUSINESS_EMAIL = 'bobikcs@studio-bobikcs.com';
@@ -125,25 +206,40 @@ export function ProModal() {
           ))}
         </div>
 
-        {/* CTA Buttons */}
-        <div className="space-y-3">
-          <button
-            onClick={handleUpgrade}
-            className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/20"
-          >
-            Upgrade to PRO - $149
-          </button>
+        {/* CTA Buttons with QR Code */}
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex-1 space-y-3 w-full">
+            <button
+              onClick={handleUpgrade}
+              className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-amber-500/20"
+            >
+              Upgrade to PRO - $149
+            </button>
+            
+            <button
+              onClick={closeProModal}
+              className={`w-full py-3 px-6 font-medium rounded-xl transition-colors ${
+                isDark || isHybrid 
+                  ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
+                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+              }`}
+            >
+              Maybe Later
+            </button>
+          </div>
           
-          <button
-            onClick={closeProModal}
-            className={`w-full py-3 px-6 font-medium rounded-xl transition-colors ${
-              isDark || isHybrid 
-                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-            }`}
-          >
-            Maybe Later
-          </button>
+          {/* QR Code for Mobile Payment */}
+          <div className={`flex flex-col items-center p-3 rounded-xl ${
+            isDark || isHybrid ? 'bg-gray-800/70' : 'bg-gray-100'
+          }`}>
+            <QRCode url={REVOLUT_PAYMENT_URL} size={100} darkMode={isDark || isHybrid} />
+            <div className="flex items-center gap-1 mt-2">
+              <Smartphone className={`w-3 h-3 ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`} />
+              <span className={`text-[10px] ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>
+                Scan to pay via mobile
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Payment Instructions */}

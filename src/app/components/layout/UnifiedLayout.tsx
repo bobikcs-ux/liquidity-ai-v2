@@ -20,6 +20,7 @@ import {
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 import { useUserRole } from '../../context/UserRoleContext';
+import { QRCode } from '../ProModal';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
@@ -133,7 +134,7 @@ export function UnifiedLayout() {
             
             <button 
               onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
-              aria-label={uiTheme === 'terminal' ? 'Switch to light theme' : 'Switch to terminal theme'}
+              aria-label={`Switch to ${uiTheme === 'terminal' ? 'light research' : 'dark terminal'} theme. Currently using ${uiTheme === 'terminal' ? 'Terminal' : uiTheme === 'hybrid' ? 'Hybrid' : 'Research'} mode.`}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
                 isDark ? 'bg-gray-800 hover:bg-gray-700' : isHybrid ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
               }`}
@@ -190,7 +191,7 @@ export function UnifiedLayout() {
               <span className={`font-medium tabular-nums min-w-[2.5rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 {snapshotLoading ? <span className="inline-block w-8 h-4 bg-gray-700 rounded animate-pulse" /> : systemicRisk}
               </span>
-              <span className={`min-w-[2.5rem] ${systemicRisk > 50 ? 'text-red-600' : 'text-green-600'}`}>
+              <span className={`min-w-[2.5rem] font-semibold ${systemicRisk > 50 ? 'text-red-600' : isDark || isHybrid ? 'text-emerald-400' : 'text-green-700'}`}>
                 {systemicRisk > 50 ? 'HIGH' : 'OK'}
               </span>
             </div>
@@ -200,7 +201,7 @@ export function UnifiedLayout() {
               <span className={`font-medium tabular-nums min-w-[3rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 {snapshotLoading ? <span className="inline-block w-10 h-4 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
               </span>
-              <span className={`min-w-[4rem] ${survivalProb >= 70 ? 'text-green-600' : survivalProb >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+              <span className={`min-w-[4rem] font-semibold ${survivalProb >= 70 ? (isDark || isHybrid ? 'text-emerald-400' : 'text-green-700') : survivalProb >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
                 {survivalProb >= 70 ? 'SAFE' : survivalProb >= 50 ? 'CAUTION' : 'RISK'}
               </span>
             </div>
@@ -339,29 +340,39 @@ export function UnifiedLayout() {
         
         {/* Footer */}
         <footer className={`mt-12 border-t py-8 transition-all duration-300 ${
-          sidebarCollapsed ? '' : ''
-        } ${
           isDark ? 'border-gray-800' : isHybrid ? 'border-gray-700' : 'border-gray-200'
         }`}>
           <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex flex-col md:flex-row items-center gap-4">
                 <div className={`text-sm ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>
                   &copy; 2026 Studio Bobikcs. All rights reserved.
                 </div>
-                {/* System Status Indicator */}
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                {/* System Status Indicator - fixed dimensions */}
+                <div className="flex items-center gap-2 min-w-[140px]" aria-label="System status: Live">
+                  <span className="relative flex h-2 w-2 flex-shrink-0">
+                    <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
                   </span>
-                  <span className={`text-xs font-medium ${isDark || isHybrid ? 'text-green-400' : 'text-green-600'}`}>
+                  <span className={`text-xs font-medium ${isDark || isHybrid ? 'text-emerald-400' : 'text-green-700'}`}>
                     System Status: LIVE
                   </span>
                 </div>
               </div>
+              
+              {/* Center - Share Terminal QR */}
+              <div className="hidden md:flex flex-col items-center gap-1">
+                <QRCode url={typeof window !== 'undefined' ? window.location.origin : 'https://bobikcs.terminal'} size={48} darkMode={isDark || isHybrid} />
+                <span className={`text-[9px] ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'}`}>
+                  Share Terminal
+                </span>
+              </div>
+              
               <div className={`text-sm font-medium text-center md:text-right ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'}`}>
                 <span className="font-mono tracking-wider">BOBIKCS // TERMINAL</span>
+                <span className={`block text-[10px] mt-1 ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'}`}>
+                  Professional Risk Intelligence Platform
+                </span>
               </div>
             </div>
           </div>

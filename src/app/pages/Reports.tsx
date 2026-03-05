@@ -5,8 +5,8 @@ import { useUserRole } from '../context/UserRoleContext';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { quickExport } from '../utils/exportPDF';
 
-// Stripe checkout URL
-const STRIPE_CHECKOUT_URL = 'https://checkout.stripe.com/pay/pro_plan';
+// Revolut payment link (external) - not used directly here, handled by ProModal
+const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
 
 // Consistent AI processing delay (2 seconds)
 const AI_PROCESSING_DELAY = 2000;
@@ -246,16 +246,16 @@ export function Reports() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Page Header */}
-      <div className="mb-8">
+      <header className="mb-8">
         <h1 className={`text-3xl font-bold mb-2 ${
           isDark || isHybrid ? 'text-white' : 'text-gray-900'
         }`}>
           Reports
         </h1>
-        <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
+        <p className={isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}>
           Evidence-based PDF intelligence
         </p>
-      </div>
+      </header>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -293,7 +293,7 @@ export function Reports() {
                 
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">{report.title}</h3>
+                    <h2 className="text-lg font-semibold text-gray-900">{report.title}</h2>
                     <span className={`text-xs font-medium px-3 py-1 rounded-full border ${getRiskColor(report.riskLevel)}`}>
                       {report.riskLevel} Risk
                     </span>
@@ -354,7 +354,7 @@ export function Reports() {
                   disabled={downloadingId === report.id}
                   className={`flex items-center gap-2 px-4 py-3 rounded-xl transition-colors font-medium ${
                     isReportLocked(report.type) 
-                      ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
                       : 'bg-[#2563EB] hover:bg-[#1d4ed8] text-white'
                   }`}
                 >
@@ -387,7 +387,7 @@ export function Reports() {
             <AlertCircle className="w-5 h-5 text-blue-600" />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Report Generation</h3>
+            <h2 className="font-semibold text-gray-900 mb-2">Report Generation</h2>
             <p className="text-sm text-gray-700 leading-relaxed">
               Intelligence reports are automatically generated based on regime changes, stress signals, and critical market events. 
               All reports include detailed methodology, data sources, confidence intervals, and actionable insights. 

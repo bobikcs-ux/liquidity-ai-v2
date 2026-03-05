@@ -44,8 +44,8 @@ export function Dashboard() {
           </div>
           <h1 className={`text-4xl font-black tracking-tighter uppercase italic ${
             isDark || isHybrid ? 'text-white' : 'text-gray-900'
-          }`}>
-            BOBIKCS <span className="text-blue-500 text-3xl not-italic font-light">//</span> <span className="text-blue-500">INTELLIGENCE TERMINAL</span>
+          }`} id="main-heading">
+            BOBIKCS <span className="text-blue-500 text-3xl not-italic font-light" aria-hidden="true">//</span> <span className="text-blue-500">INTELLIGENCE TERMINAL</span>
           </h1>
           <p className={`font-mono text-xs tracking-[0.2em] uppercase opacity-70 ${
             isDark || isHybrid ? 'text-blue-300' : 'text-gray-600'
@@ -93,7 +93,7 @@ export function Dashboard() {
              </div>
              <div>
                 <h2 className="text-xl font-bold text-white tracking-tight uppercase italic">Systemic Risk Drivers</h2>
-                <p className="text-[10px] font-mono text-blue-400/60 uppercase">Real-time correlation matrix</p>
+                <p className="text-[10px] font-mono text-blue-400 uppercase">Real-time correlation matrix</p>
              </div>
           </div>
 
@@ -111,10 +111,10 @@ export function Dashboard() {
         {/* Regime Intelligence Card */}
         <div className={cardStyle}>
           <div className="flex items-center gap-3 mb-6">
-            <TrendingUp className="w-5 h-5 text-blue-500" />
-            <h2 className={`text-sm font-black uppercase tracking-widest ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+            <TrendingUp className="w-5 h-5 text-blue-500" aria-hidden="true" />
+            <h3 className={`text-sm font-black uppercase tracking-widest ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
               Regime Intelligence
-            </h2>
+            </h3>
           </div>
           
           <div className="space-y-5">
@@ -143,10 +143,10 @@ export function Dashboard() {
         {/* Survival Matrix Card */}
         <div className={cardStyle}>
           <div className="flex items-center gap-3 mb-6">
-            <Activity className="w-5 h-5 text-green-500" />
-            <h2 className={`text-sm font-black uppercase tracking-widest ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+            <Activity className="w-5 h-5 text-green-500" aria-hidden="true" />
+            <h3 className={`text-sm font-black uppercase tracking-widest ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
               Survival Matrix
-            </h2>
+            </h3>
           </div>
           <div className="text-center py-4">
             <div className={`text-6xl font-black mb-2 font-mono tabular-nums min-h-[4rem] flex items-center justify-center ${
@@ -166,10 +166,10 @@ export function Dashboard() {
         {/* Macro Engine Card */}
         <div className={cardStyle}>
           <div className="flex items-center gap-3 mb-6">
-            <DollarSign className="w-5 h-5 text-amber-500" />
-            <h2 className={`text-sm font-black uppercase tracking-widest ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+            <DollarSign className="w-5 h-5 text-amber-500" aria-hidden="true" />
+            <h3 className={`text-sm font-black uppercase tracking-widest ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
               Macro Snapshot
-            </h2>
+            </h3>
           </div>
           <div className="space-y-3">
             {[
@@ -194,10 +194,10 @@ export function Dashboard() {
         <div className={cardStyle}>
            <div className="flex justify-between items-center mb-6">
               <div className="flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-500" />
-                <h2 className="text-sm font-black uppercase tracking-widest text-white">Systemic Stress</h2>
+                <AlertTriangle className="w-5 h-5 text-red-500" aria-hidden="true" />
+                <h3 className="text-sm font-black uppercase tracking-widest text-white">Systemic Stress</h3>
               </div>
-              <span className="text-[9px] font-mono text-blue-400 animate-pulse">● LIVE_FEED</span>
+              <span className="text-[9px] font-mono text-blue-400 animate-pulse" aria-label="Live feed active">LIVE_FEED</span>
            </div>
            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {[
