@@ -154,7 +154,7 @@ export function Reports() {
     return type !== 'daily';
   };
 
-  const handleReportAction = (report: typeof allReports[0], action: 'download' | 'external') => {
+  const handleReportAction = async (report: typeof allReports[0], action: 'download' | 'external') => {
     // Check if report type is locked (PRO-only)
     if (isReportLocked(report.type)) {
       openProModal(`${report.type.charAt(0).toUpperCase() + report.type.slice(1)} Reports`);
@@ -168,14 +168,18 @@ export function Reports() {
         // ProModal will be shown by incrementReportDownload
         return;
       }
-      setShowEmailModal(true);
-      return;
     }
     
+    // Proceed with download/open
     if (action === 'download') {
-      handleDownload(report.id);
+      await handleDownload(report.id);
     } else {
-      handleOpenExternal(report.id);
+      await handleOpenExternal(report.id);
+    }
+    
+    // Show email collection modal AFTER download for free users (lead capture)
+    if (report.type === 'daily' && !isPro) {
+      setShowEmailModal(true);
     }
   };
 

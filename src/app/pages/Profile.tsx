@@ -206,14 +206,33 @@ function InstitutionalInquiryModal({ isOpen, onClose }: { isOpen: boolean; onClo
 
 export function Profile() {
   const { uiTheme } = useAdaptiveTheme();
-  const { isPro, freeReportsDownloaded, copilotQuestionsAsked } = useUserRole();
+  const { isPro, freeReportsDownloaded, copilotQuestionsAsked, toggleAdminAccess } = useUserRole();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   const [showInstitutionalModal, setShowInstitutionalModal] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const tapTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleUpgrade = () => {
     // Open Revolut payment link in new tab
     window.open(REVOLUT_PAYMENT_URL, '_blank', 'noopener,noreferrer');
+  };
+  
+  // Hidden admin toggle: Triple-tap on avatar
+  const handleAvatarTap = () => {
+    setTapCount(prev => prev + 1);
+    
+    // Reset tap count after 1 second
+    if (tapTimeoutRef.current) {
+      clearTimeout(tapTimeoutRef.current);
+    }
+    tapTimeoutRef.current = setTimeout(() => setTapCount(0), 1000);
+    
+    // Trigger toggle on 5 rapid taps
+    if (tapCount >= 4) {
+      toggleAdminAccess();
+      setTapCount(0);
+    }
   };
   
   return (
@@ -247,13 +266,18 @@ export function Profile() {
       }`}>
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
-              isPro 
-                ? 'bg-gradient-to-br from-amber-500 to-amber-600' 
-                : 'bg-gradient-to-br from-[#2563EB] to-[#1d4ed8]'
-            }`}>
+            {/* Avatar - 5 rapid taps to toggle admin mode */}
+            <button 
+              onClick={handleAvatarTap}
+              className={`w-16 h-16 rounded-2xl flex items-center justify-center cursor-pointer transition-transform active:scale-95 ${
+                isPro 
+                  ? 'bg-gradient-to-br from-amber-500 to-amber-600' 
+                  : 'bg-gradient-to-br from-[#2563EB] to-[#1d4ed8]'
+              }`}
+              aria-label="User avatar"
+            >
               <User className="w-8 h-8 text-white" />
-            </div>
+            </button>
             <div>
               <h2 className={`text-xl font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 Sarah Thompson

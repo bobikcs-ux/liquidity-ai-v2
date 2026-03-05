@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 
 type UserRole = 'FREE' | 'PRO';
 
@@ -24,6 +24,8 @@ interface UserRoleContextType {
   // Stripe success tracking
   showConfetti: boolean;
   setShowConfetti: (show: boolean) => void;
+  // Admin toggle
+  toggleAdminAccess: () => void;
 }
 
 const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined);
@@ -31,36 +33,83 @@ const UserRoleContext = createContext<UserRoleContextType | undefined>(undefined
 const FREE_REPORT_LIMIT = 1;
 const FREE_COPILOT_LIMIT = 3;
 
+// Admin secret: Type "bobikcs" anywhere to toggle PRO status
+const ADMIN_SECRET = 'bobikcs';
+
 export function UserRoleProvider({ children }: { children: ReactNode }) {
-  const [userRole, setUserRoleState] = useState<UserRole>(() => {
-    // Check localStorage for PRO status (persisted after Stripe success)
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('userRole');
-      return (saved === 'PRO' ? 'PRO' : 'FREE') as UserRole;
-    }
-    return 'FREE';
-  });
+  // Start with FREE, then hydrate from localStorage in useEffect
+  const [userRole, setUserRoleState] = useState<UserRole>('FREE');
   const [showProModal, setShowProModal] = useState(false);
   const [proModalFeature, setProModalFeature] = useState('');
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   
   // Monetization tracking
-  const [freeReportsDownloaded, setFreeReportsDownloaded] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return parseInt(localStorage.getItem('freeReportsDownloaded') || '0', 10);
-    }
-    return 0;
-  });
+  const [freeReportsDownloaded, setFreeReportsDownloaded] = useState(0);
+  const [copilotQuestionsAsked, setCopilotQuestionsAsked] = useState(0);
   
-  const [copilotQuestionsAsked, setCopilotQuestionsAsked] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return parseInt(localStorage.getItem('copilotQuestionsAsked') || '0', 10);
-    }
-    return 0;
-  });
+  // Admin keyboard sequence tracker
+  const keySequenceRef = useRef('');
 
   const isPro = userRole === 'PRO';
+  
+  // Hydrate from localStorage on mount (client-side only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedRole = localStorage.getItem('userRole');
+      if (savedRole === 'PRO') {
+        setUserRoleState('PRO');
+      }
+      
+      const savedReports = localStorage.getItem('freeReportsDownloaded');
+      if (savedReports) {
+        setFreeReportsDownloaded(parseInt(savedReports, 10));
+      }
+      
+      const savedCopilot = localStorage.getItem('copilotQuestionsAsked');
+      if (savedCopilot) {
+        setCopilotQuestionsAsked(parseInt(savedCopilot, 10));
+      }
+    }
+  }, []);
+  
+  // Admin keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only track lowercase letters
+      if (e.key.length === 1 && /[a-z]/i.test(e.key)) {
+        keySequenceRef.current += e.key.toLowerCase();
+        
+        // Keep only last N characters (length of secret)
+        if (keySequenceRef.current.length > ADMIN_SECRET.length) {
+          keySequenceRef.current = keySequenceRef.current.slice(-ADMIN_SECRET.length);
+        }
+        
+        // Check if secret typed
+        if (keySequenceRef.current === ADMIN_SECRET) {
+          toggleAdminAccess();
+          keySequenceRef.current = '';
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [userRole]);
+  
+  // Toggle admin access function
+  const toggleAdminAccess = useCallback(() => {
+    const newRole = userRole === 'PRO' ? 'FREE' : 'PRO';
+    setUserRoleState(newRole);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('userRole', newRole);
+    }
+    // Show brief visual feedback
+    if (newRole === 'PRO') {
+      setShowConfetti(true);
+      setTimeout(() => setShowConfetti(false), 3000);
+    }
+  }, [userRole]);
 
   // Check URL for Stripe success param on mount
   useEffect(() => {
@@ -155,6 +204,7 @@ export function UserRoleProvider({ children }: { children: ReactNode }) {
         incrementCopilotQuestion,
         showConfetti,
         setShowConfetti,
+        toggleAdminAccess,
       }}
     >
       {children}
