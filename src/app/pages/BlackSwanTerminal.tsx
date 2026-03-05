@@ -157,9 +157,9 @@ export function BlackSwanTerminal() {
       {/* Main Risk Index Display */}
       <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6 md:p-8">
         <div className="text-center mb-6 md:mb-8">
-          <div className="text-xs md:text-sm font-semibold tracking-wider text-gray-400 mb-3">
-            BLACK SWAN RISK INDEX
-          </div>
+<div className="text-xs md:text-sm font-semibold tracking-wider text-gray-200 mb-3">
+            BLACK SWAN RISK INDEX
+          </div>
           <div className="text-6xl md:text-8xl font-bold text-red-500 mb-4 tracking-tight">
             {blackSwanIndex}
           </div>
@@ -172,9 +172,9 @@ export function BlackSwanTerminal() {
         
         {/* Systemic Stress Probability */}
         <div className="border-t border-blue-900/50 pt-6">
-          <h3 className="text-sm font-semibold tracking-wider text-gray-400 mb-4">
-            SYSTEMIC STRESS PROBABILITY
-          </h3>
+<h3 className="text-sm font-semibold tracking-wider text-gray-200 mb-4">
+            SYSTEMIC STRESS PROBABILITY
+          </h3>
           
           <div className="grid grid-cols-3 gap-4">
             {Object.entries(stressProbabilities).map(([period, probability]) => (
@@ -187,9 +187,9 @@ export function BlackSwanTerminal() {
                     : 'border-gray-700 bg-gray-900/30 hover:border-gray-600'
                 }`}
               >
-                <div className="text-xs text-gray-500 mb-1">
-                  {period === '7d' ? '7 Day' : period === '30d' ? '30 Day' : '90 Day'}
-                </div>
+<div className="text-xs font-medium text-slate-300 mb-1">
+                  {period === '7d' ? '7 Day' : period === '30d' ? '30 Day' : '90 Day'}
+                </div>
                 <div className={`text-3xl font-bold ${
                   probability >= 70 ? 'text-red-500' :
                   probability >= 50 ? 'text-amber-500' : 'text-gray-300'
@@ -206,9 +206,9 @@ export function BlackSwanTerminal() {
       <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <Zap className="w-5 h-5 text-red-500" />
-          <h3 className="text-sm font-semibold tracking-wider text-gray-400">
-            PRIMARY RISK DRIVERS
-          </h3>
+<h3 className="text-sm font-semibold tracking-wider text-gray-200">
+            PRIMARY RISK DRIVERS
+          </h3>
         </div>
         
         <div className="space-y-4">
@@ -235,7 +235,7 @@ export function BlackSwanTerminal() {
                   }`}>
                     {driver.impact}
                   </div>
-                  <div className="text-xs text-gray-500">Impact</div>
+                  <div className="text-xs font-medium text-slate-300">Impact</div>
                 </div>
               </div>
               
@@ -259,9 +259,9 @@ export function BlackSwanTerminal() {
         <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <Activity className="w-5 h-5 text-blue-400" />
-            <h3 className="text-sm font-semibold tracking-wider text-gray-400">
-              HISTORICAL ANALOG MATCHES
-            </h3>
+<h3 className="text-sm font-semibold tracking-wider text-gray-200">
+              HISTORICAL ANALOG MATCHES
+            </h3>
           </div>
           
           <div className="space-y-4">
@@ -270,7 +270,7 @@ export function BlackSwanTerminal() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="text-white font-semibold text-sm">{analog.event}</div>
-                    <div className="text-xs text-gray-500">{analog.year}</div>
+                    <div className="text-xs font-medium text-slate-300">{analog.year}</div>
                   </div>
                   <div className={`text-2xl font-bold ${
                     analog.similarity >= 70 ? 'text-red-500' :
@@ -295,7 +295,7 @@ export function BlackSwanTerminal() {
           <div className="mt-6 p-3 bg-blue-950/30 border border-blue-900/50 rounded-md">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-blue-400 flex-shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-300 leading-relaxed">
+              <p className="text-xs font-medium text-blue-200 leading-relaxed">
                 Historical pattern matching uses structural similarity analysis, not price correlation.
               </p>
             </div>
@@ -306,9 +306,9 @@ export function BlackSwanTerminal() {
         <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-6">
             <Brain className="w-5 h-5 text-purple-400" />
-            <h3 className="text-sm font-semibold tracking-wider text-gray-400">
-              SYSTEMIC RISK ANALYSIS
-            </h3>
+<h3 className="text-sm font-semibold tracking-wider text-gray-200">
+              SYSTEMIC RISK ANALYSIS
+            </h3>
           </div>
           
           <div className="space-y-4">
@@ -361,9 +361,9 @@ export function BlackSwanTerminal() {
       <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <Target className="w-5 h-5 text-amber-500" />
-          <h3 className="text-sm font-semibold tracking-wider text-gray-400">
-            INPUT SIGNAL LAYERS
-          </h3>
+<h3 className="text-sm font-semibold tracking-wider text-gray-200">
+            INPUT SIGNAL LAYERS
+          </h3>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -371,7 +371,7 @@ export function BlackSwanTerminal() {
             <div key={index} className="border border-gray-800 rounded-md p-4 bg-gray-900/30">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <div className="text-xs text-gray-500 mb-1">{signal.category}</div>
+                  <div className="text-xs font-medium text-slate-300 mb-1">{signal.category}</div>
                   <div className="text-sm font-semibold text-white">{signal.metric}</div>
                 </div>
                 <div className={`w-2 h-2 rounded-full mt-1 ${
@@ -388,9 +388,9 @@ export function BlackSwanTerminal() {
                 }`}>
                   {signal.value > 1 ? signal.value.toFixed(0) : signal.value.toFixed(2)}
                 </span>
-                <span className="text-xs text-gray-500">
-                  / {signal.threshold} threshold
-                </span>
+<span className="text-xs font-medium text-slate-300">
+                  / {signal.threshold} threshold
+                </span>
               </div>
             </div>
           ))}
@@ -401,9 +401,9 @@ export function BlackSwanTerminal() {
       <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-6">
           <Shield className="w-5 h-5 text-green-400" />
-          <h3 className="text-sm font-semibold tracking-wider text-gray-400">
-            SYSTEMIC STRESS HEAT MAP
-          </h3>
+<h3 className="text-sm font-semibold tracking-wider text-gray-200">
+            SYSTEMIC STRESS HEAT MAP
+          </h3>
         </div>
         
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -429,7 +429,7 @@ export function BlackSwanTerminal() {
                             'rgba(34, 197, 94, 0.3)',
               }}
             >
-              <div className="text-xs text-gray-400 mb-1">{item.asset}</div>
+              <div className="text-xs font-medium text-slate-200 mb-1">{item.asset}</div>
               <div className={`text-2xl font-bold ${
                 item.stress >= 80 ? 'text-red-500' :
                 item.stress >= 60 ? 'text-amber-500' : 'text-green-500'
@@ -443,7 +443,7 @@ export function BlackSwanTerminal() {
       
       {/* Disclaimer */}
       <div className="bg-gray-900/50 border border-gray-800 rounded-md p-4">
-        <p className="text-xs text-gray-500 leading-relaxed">
+        <p className="text-xs font-medium text-slate-300 leading-relaxed">
           ⚠️ This terminal detects systemic risk conditions and structural market stress. It does not predict 
           price movements or provide trading signals. For research and risk management purposes only. 
           Systemic risk intelligence should be used alongside independent risk assessment frameworks.

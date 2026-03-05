@@ -164,7 +164,7 @@ export function UnifiedLayout() {
             {/* Mobile Regime Status - Only shows on mobile */}
             <div className="flex md:hidden items-center gap-2">
               <div className={`w-2 h-2 rounded-full animate-pulse ${getRegimeColor()}`}></div>
-              <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>
+              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>
                 {currentRegime.regime.toUpperCase()}
               </span>
               <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
@@ -175,7 +175,7 @@ export function UnifiedLayout() {
             <div className={`hidden md:block w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
             
             <div className="flex items-center gap-2">
-              <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>SRI</span>
+              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>SRI</span>
               <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 {snapshotLoading ? '...' : systemicRisk}
               </span>
@@ -185,7 +185,7 @@ export function UnifiedLayout() {
             </div>
             <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
             <div className="flex items-center gap-2">
-              <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>Survival</span>
+              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>Survival</span>
               <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 {snapshotLoading ? '...' : `${survivalProb}%`}
               </span>
@@ -195,7 +195,7 @@ export function UnifiedLayout() {
             </div>
             <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
             <div className="flex items-center gap-2">
-              <span className={isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}>Yield</span>
+              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>Yield</span>
               <span className={`font-medium ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-white'}`}>
                 {snapshotLoading ? '...' : `${yieldSpread}%`}
               </span>
@@ -207,7 +207,7 @@ export function UnifiedLayout() {
                 <div className="w-px h-4 bg-gray-700"></div>
                 <div className="flex items-center gap-2">
                   <Zap className="w-3 h-3 text-red-500" />
-                  <span className="text-gray-400">Risk</span>
+                  <span className="text-gray-200">Risk</span>
                   <span className="font-medium text-red-400">{currentRegime.riskLevel}%</span>
                 </div>
               </>

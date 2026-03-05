@@ -38,7 +38,7 @@ export function Dashboard() {
              <div className="px-1.5 py-0.5 bg-blue-600 text-white text-[9px] font-mono font-bold rounded">
                 CORE_SYSTEM_ACTIVE
              </div>
-             <div className="text-[10px] text-gray-500 font-mono tracking-widest uppercase">
+             <div className="text-[10px] text-slate-300 font-mono tracking-widest uppercase">
                 Auth: Admin_Bobikcs
              </div>
           </div>
@@ -127,11 +127,11 @@ export function Dashboard() {
             
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/5 p-3 rounded-lg">
-                <div className="text-[9px] text-gray-500 uppercase font-mono">Confidence</div>
+                <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Confidence</div>
                 <div className="text-lg font-bold text-green-500 font-mono">{currentRegime.confidence}%</div>
               </div>
               <div className="bg-white/5 p-3 rounded-lg">
-                <div className="text-[9px] text-gray-500 uppercase font-mono">Risk Level</div>
+                <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Risk Level</div>
                 <div className={`text-lg font-bold font-mono ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-500'}`}>
                   {currentRegime.riskLevel}%
                 </div>
@@ -154,7 +154,7 @@ export function Dashboard() {
             }`}>
               {snapshotLoading ? '...' : `${survivalProb}%`}
             </div>
-            <p className="text-[9px] font-mono text-gray-500 uppercase">30-day horizon survival probability</p>
+            <p className="text-[9px] font-mono font-medium text-slate-300 uppercase">30-day horizon survival probability</p>
           </div>
           <select className="w-full bg-slate-950 border border-white/10 text-white rounded-lg p-3 text-xs font-mono uppercase focus:border-blue-500 outline-none">
              <option>BOBIKCS_BALANCED_ALPHA</option>
@@ -179,7 +179,7 @@ export function Dashboard() {
               { label: 'VIX Terminal', val: currentRegime.volatilityIndex, trend: 'neutral' },
             ].map((m, i) => (
               <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2">
-                <span className="text-[11px] font-mono text-gray-400 uppercase">{m.label}</span>
+                <span className="text-[11px] font-mono text-gray-200 uppercase">{m.label}</span>
                 <span className={`text-base font-bold font-mono ${m.trend === 'up' ? 'text-green-500' : m.trend === 'down' ? 'text-red-500' : 'text-white'}`}>
                   {m.val}
                 </span>
@@ -210,7 +210,7 @@ export function Dashboard() {
                   <div className={`w-1.5 h-1.5 rounded-full ${s.color} shadow-sm`}></div>
                   <div className="flex-1">
                     <div className="text-xs font-bold text-white uppercase leading-tight">{s.msg}</div>
-                    <div className="text-[9px] text-gray-500 font-mono mt-1">{s.time} // PRIORITY: {s.level}</div>
+                    <div className="text-[9px] text-slate-300 font-mono font-medium mt-1">{s.time} // PRIORITY: {s.level}</div>
                   </div>
                 </div>
               ))}

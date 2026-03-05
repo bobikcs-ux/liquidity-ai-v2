@@ -189,13 +189,13 @@ export function CapitalSurvival() {
                     : 'border-gray-700 bg-gray-900/50 hover:border-gray-600'
                 }`}
               >
-                <div className="text-sm text-gray-400 mb-1">
+                <div className="text-sm text-gray-200 mb-1">
                   {scenario === 'base' ? 'Base Case' : scenario === 'stress' ? 'Stress Scenario' : 'Crisis Scenario'}
                 </div>
                 <div className="text-2xl font-bold text-white">
                   {scenario === 'base' ? '87%' : scenario === 'stress' ? '64%' : '38%'}
                 </div>
-                <div className="text-xs text-gray-500">Survival Probability</div>
+                <div className="text-xs font-medium text-slate-300">Survival Probability</div>
               </button>
             ))}
           </div>
@@ -217,7 +217,7 @@ export function CapitalSurvival() {
             </div>
             
             <div className="mt-4 pt-4 border-t border-gray-800 flex items-center justify-between">
-              <span className="text-sm text-gray-400">Optimized Survival Probability</span>
+              <span className="text-sm text-gray-200">Optimized Survival Probability</span>
               <span className="text-xl font-bold text-green-500">+18.4%</span>
             </div>
           </div>
@@ -234,21 +234,21 @@ export function CapitalSurvival() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {survivalMetrics.map((metric, index) => (
             <div key={index} className="bg-gray-900/50 border border-gray-800 rounded-lg p-6">
-              <div className="text-sm text-gray-400 mb-4">{metric.timeframe}</div>
+              <div className="text-sm text-gray-200 mb-4">{metric.timeframe}</div>
               
               <div className="mb-4">
                 <div className={`text-5xl font-bold mb-2 ${getProbabilityColor(metric.probability)}`}>
                   {metric.probability}%
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs font-medium text-slate-300">
                   Confidence: {metric.confidence}%
                 </div>
               </div>
               
               <div className="space-y-2">
-                <div className="text-xs font-semibold text-gray-400 mb-2">KEY FACTORS</div>
+                <div className="text-xs font-semibold text-gray-200 mb-2">KEY FACTORS</div>
                 {metric.keyFactors.map((factor, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-xs text-gray-400">
+                  <div key={idx} className="flex items-start gap-2 text-xs text-slate-300">
                     <div className="w-1 h-1 bg-gray-600 rounded-full mt-1.5"></div>
                     {factor}
                   </div>
@@ -279,13 +279,13 @@ export function CapitalSurvival() {
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className="text-sm font-semibold text-gray-400">{strategy.category}</span>
+                    <span className="text-sm font-semibold text-gray-200">{strategy.category}</span>
                     <span className={`text-xs px-2 py-1 rounded font-semibold ${getPriorityColor(strategy.priority)}`}>
                       {strategy.priority.toUpperCase()}
                     </span>
                   </div>
                   <h3 className="text-lg font-bold text-white mb-2">{strategy.action}</h3>
-                  <p className="text-sm text-gray-400 mb-3">{strategy.rationale}</p>
+                  <p className="text-sm text-slate-300 mb-3">{strategy.rationale}</p>
                   <div className="flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-green-400" />
                     <span className="text-sm font-medium text-green-400">{strategy.impact}</span>
@@ -360,7 +360,7 @@ export function CapitalSurvival() {
           <div className="space-y-6">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Risk Tolerance Profile</span>
+                <span className="text-sm text-gray-200">Risk Tolerance Profile</span>
                 <span className="text-sm font-semibold text-white">{behavioralInsights.userRiskTolerance}</span>
               </div>
               <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -370,14 +370,14 @@ export function CapitalSurvival() {
             
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Preferred Defense Style</span>
+                <span className="text-sm text-gray-200">Preferred Defense Style</span>
                 <span className="text-sm font-semibold text-white">{behavioralInsights.preferredDefenseStyle}</span>
               </div>
             </div>
             
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">Historical Success Rate</span>
+                <span className="text-sm text-gray-200">Historical Success Rate</span>
                 <span className="text-2xl font-bold text-green-500">{behavioralInsights.historicalSuccessRate}%</span>
               </div>
               <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -390,7 +390,7 @@ export function CapitalSurvival() {
             
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-400">AI Adaptation Score</span>
+                <span className="text-sm text-gray-200">AI Adaptation Score</span>
                 <span className="text-2xl font-bold text-purple-500">{behavioralInsights.adaptationScore}%</span>
               </div>
               <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -404,7 +404,7 @@ export function CapitalSurvival() {
             <div className="pt-4 border-t border-gray-800">
               <div className="flex items-start gap-2">
                 <Sparkles className="w-4 h-4 text-purple-400 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-gray-400 leading-relaxed">
+                <p className="text-xs font-medium text-slate-300 leading-relaxed">
                   AI learns from your risk decisions and adapts recommendations over time. 
                   Current adaptation level: Advanced.
                 </p>
@@ -429,14 +429,14 @@ export function CapitalSurvival() {
             { period: '90 Days', risk: 67, status: 'Critical' },
           ].map((projection, index) => (
             <div key={index} className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-center">
-              <div className="text-xs text-gray-500 mb-2">{projection.period}</div>
+              <div className="text-xs font-medium text-slate-300 mb-2">{projection.period}</div>
               <div className={`text-3xl font-bold mb-1 ${
                 projection.risk >= 60 ? 'text-red-500' :
                 projection.risk >= 40 ? 'text-amber-500' : 'text-green-500'
               }`}>
                 {projection.risk}%
               </div>
-              <div className="text-xs text-gray-400">{projection.status}</div>
+              <div className="text-xs font-medium text-slate-300">{projection.status}</div>
             </div>
           ))}
         </div>
