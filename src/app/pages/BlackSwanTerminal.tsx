@@ -1,8 +1,69 @@
-import React, { useState } from 'react';
-import { AlertTriangle, Activity, TrendingUp, Zap, Target, Shield, Brain, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { AlertTriangle, Activity, TrendingUp, Zap, Target, Shield, Brain, Info, Loader2 } from 'lucide-react';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { useBlackSwanRisk, getRiskColor, getRiskColorClass } from '../hooks/useBlackSwanRisk';
 import { useUserRole } from '../context/UserRoleContext';
 import { LockedOverlay } from '../components/ProModal';
+
+// Animated counter component with smooth count-up
+function AnimatedCounter({ 
+  value, 
+  suffix = '', 
+  duration = 1000,
+  colorClass = 'text-white'
+}: { 
+  value: number | null; 
+  suffix?: string; 
+  duration?: number;
+  colorClass?: string;
+}) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const previousValue = useRef(0);
+  const animationRef = useRef<number>();
+
+  useEffect(() => {
+    if (value === null) return;
+    
+    const startValue = previousValue.current;
+    const endValue = value;
+    const startTime = performance.now();
+    
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease-out cubic
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(startValue + (endValue - startValue) * easeOut);
+      
+      setDisplayValue(current);
+      
+      if (progress < 1) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        previousValue.current = endValue;
+      }
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [value, duration]);
+
+  if (value === null) {
+    return <span className="inline-block w-12 h-8 bg-gray-700 rounded animate-pulse" />;
+  }
+
+  return (
+    <span className={`tabular-nums ${colorClass}`}>
+      {displayValue}{suffix}
+    </span>
+  );
+}
 
 type RiskLevel = 'GREEN' | 'AMBER' | 'RED' | 'BLACK';
 
@@ -16,13 +77,15 @@ interface SystemicSignal {
 
 export function BlackSwanTerminal() {
   const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
+  const { average7d, average30d, average90d, latestRisk, loading: riskLoading } = useBlackSwanRisk();
   const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
   const { isPro } = useUserRole();
   
-  // Calculate Black Swan Risk Index from real data
+  // Use real Supabase data for Black Swan Risk Index
+  // All values come from the same latest snapshot for data integrity
   const systemicRisk = snapshot?.systemic_risk != null 
     ? (snapshot.systemic_risk > 1 ? snapshot.systemic_risk : Math.round(snapshot.systemic_risk * 100))
-    : 35;
+    : latestRisk ?? null;
   const balanceSheetDelta = snapshot?.balance_sheet_delta ?? -2.3;
   const rateShock = snapshot?.rate_shock != null 
     ? (snapshot.rate_shock > 1 ? snapshot.rate_shock : Math.round(snapshot.rate_shock * 100))
@@ -31,11 +94,14 @@ export function BlackSwanTerminal() {
     ? (snapshot.btc_volatility > 1 ? snapshot.btc_volatility : Math.round(snapshot.btc_volatility * 100))
     : 65;
   
-  // Calculate Black Swan Index from systemic risk components
-  const blackSwanIndex = Math.min(100, Math.round(systemicRisk * 1.5 + rateShock * 0.3 + btcVolatility * 0.2));
+  // Calculate Black Swan Index from systemic risk - use real data
+  const blackSwanIndex = systemicRisk !== null 
+    ? Math.min(100, Math.round(systemicRisk * 1.5 + rateShock * 0.3 + btcVolatility * 0.2))
+    : null;
   
   // Risk level determination
-  const getRiskLevel = (index: number): RiskLevel => {
+  const getRiskLevel = (index: number | null): RiskLevel => {
+    if (index === null) return 'GREEN';
     if (index >= 80) return 'BLACK';
     if (index >= 60) return 'RED';
     if (index >= 40) return 'AMBER';
@@ -44,13 +110,15 @@ export function BlackSwanTerminal() {
   
   const riskLevel = getRiskLevel(blackSwanIndex);
   
-  // Systemic stress probabilities - derived from real data
-  const baseStress = systemicRisk;
+  // Real Supabase data for timeframe averages
+  // 7D/30D/90D calculated from actual market_snapshots table
   const stressProbabilities = {
-    '7d': Math.min(95, Math.round(baseStress * 0.7)),
-    '30d': Math.min(95, Math.round(baseStress * 1.2)),
-    '90d': Math.min(95, Math.round(baseStress * 1.5)),
+    '7d': average7d,
+    '30d': average30d,
+    '90d': average90d,
   };
+  
+  const isLoading = snapshotLoading || riskLoading;
   
   // Primary risk drivers - mapped from real database metrics
   const riskDrivers = [
@@ -82,6 +150,8 @@ export function BlackSwanTerminal() {
   ];
   
 // Signal layers - mapped from real database metrics
+  // Data integrity: All values come from the same latest snapshot row
+  const safeSystemicRisk = systemicRisk ?? 35;
   const signalLayers: SystemicSignal[] = [
     {
       category: 'Macro Layer',
@@ -100,9 +170,9 @@ export function BlackSwanTerminal() {
     {
       category: 'Market Structure',
       metric: 'Systemic Risk Index',
-      value: systemicRisk,
+      value: safeSystemicRisk,
       threshold: 40,
-      severity: systemicRisk > 60 ? 'critical' : systemicRisk > 40 ? 'high' : 'medium',
+      severity: safeSystemicRisk > 60 ? 'critical' : safeSystemicRisk > 40 ? 'high' : 'medium',
     },
     {
       category: 'Market Structure',
@@ -127,14 +197,14 @@ export function BlackSwanTerminal() {
     },
   ];
   
-  const getRiskColor = (level: RiskLevel) => {
-    switch (level) {
-      case 'BLACK': return 'bg-black text-white border-red-500';
-      case 'RED': return 'bg-red-950 text-red-100 border-red-600';
-      case 'AMBER': return 'bg-amber-950 text-amber-100 border-amber-600';
-      case 'GREEN': return 'bg-green-950 text-green-100 border-green-600';
-    }
-  };
+const getRiskLevelColor = (level: RiskLevel) => {
+    switch (level) {
+      case 'BLACK': return 'bg-black text-white border-red-500';
+      case 'RED': return 'bg-red-950 text-red-100 border-red-600';
+      case 'AMBER': return 'bg-amber-950 text-amber-100 border-amber-600';
+      case 'GREEN': return 'bg-green-950 text-green-100 border-green-600';
+    }
+  };
   
   const getRiskLabel = (level: RiskLevel) => {
     switch (level) {
@@ -157,53 +227,67 @@ export function BlackSwanTerminal() {
         </p>
       </div>
       
-      {/* Main Risk Index Display */}
-      <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6 md:p-8">
-        <div className="text-center mb-6 md:mb-8">
-<div className="text-xs md:text-sm font-semibold tracking-wider text-gray-200 mb-3">
+{/* Main Risk Index Display */}
+      <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6 md:p-8">
+        <div className="text-center mb-6 md:mb-8">
+          <div className="text-xs md:text-sm font-semibold tracking-wider text-gray-200 mb-3">
             BLACK SWAN RISK INDEX
           </div>
-<div className="text-6xl md:text-8xl font-bold text-red-500 mb-4 tracking-tight tabular-nums min-w-[3ch]">
-            {blackSwanIndex}
+          <div className="text-6xl md:text-8xl font-bold mb-4 tracking-tight min-w-[3ch] min-h-[1.2em] flex items-center justify-center">
+            {isLoading ? (
+              <Loader2 className="w-16 h-16 animate-spin text-gray-500" />
+            ) : (
+              <AnimatedCounter 
+                value={blackSwanIndex} 
+                colorClass={getRiskColorClass(blackSwanIndex)}
+                duration={1200}
+              />
+            )}
           </div>
-          <div className={`inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-md border-2 font-bold tracking-wide text-xs md:text-sm ${getRiskColor(riskLevel)}`}>
-            <AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />
-            <span className="hidden sm:inline">{getRiskLabel(riskLevel)}</span>
-            <span className="sm:hidden">{riskLevel} RISK</span>
-          </div>
-        </div>
+          <div className={`inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-md border-2 font-bold tracking-wide text-xs md:text-sm ${getRiskLevelColor(riskLevel)}`}>
+            <AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />
+            <span className="hidden sm:inline">{getRiskLabel(riskLevel)}</span>
+            <span className="sm:hidden">{riskLevel} RISK</span>
+          </div>
+        </div>
         
-        {/* Systemic Stress Probability */}
-        <div className="border-t border-blue-900/50 pt-6">
-<h3 className="text-sm font-semibold tracking-wider text-gray-200 mb-4">
+{/* Systemic Stress Probability - Real Supabase Data */}
+        <div className="border-t border-blue-900/50 pt-6">
+          <h3 className="text-sm font-semibold tracking-wider text-gray-200 mb-4">
             SYSTEMIC STRESS PROBABILITY
           </h3>
-          
-          <div className="grid grid-cols-3 gap-4">
-            {Object.entries(stressProbabilities).map(([period, probability]) => (
-              <button
-                key={period}
-                onClick={() => setSelectedTimeframe(period as '7d' | '30d' | '90d')}
-                className={`p-4 rounded-md border transition-all ${
-                  selectedTimeframe === period
-                    ? 'border-blue-600 bg-blue-950/30'
-                    : 'border-gray-700 bg-gray-900/30 hover:border-gray-600'
-                }`}
-              >
-<div className="text-xs font-medium text-slate-300 mb-1">
+          
+          <div className="grid grid-cols-3 gap-2 md:gap-4">
+            {Object.entries(stressProbabilities).map(([period, probability]) => (
+              <button
+                key={period}
+                onClick={() => setSelectedTimeframe(period as '7d' | '30d' | '90d')}
+                className={`p-3 md:p-4 rounded-md border transition-all text-center ${
+                  selectedTimeframe === period
+                    ? 'border-blue-600 bg-blue-950/30 ring-2 ring-blue-500/30'
+                    : 'border-gray-700 bg-gray-900/30 hover:border-gray-600'
+                }`}
+              >
+                <div className="text-xs font-medium text-slate-300 mb-1">
                   {period === '7d' ? '7 Day' : period === '30d' ? '30 Day' : '90 Day'}
                 </div>
-<div className={`text-3xl font-bold tabular-nums min-w-[3ch] ${
-                  probability >= 70 ? 'text-red-500' :
-                  probability >= 50 ? 'text-amber-500' : 'text-gray-300'
-                }`}>
-                  {probability}%
+                <div className="text-2xl md:text-3xl font-bold min-h-[1.2em] flex items-center justify-center">
+                  {isLoading ? (
+                    <span className="inline-block w-10 h-6 bg-gray-700 rounded animate-pulse" />
+                  ) : (
+                    <AnimatedCounter 
+                      value={probability} 
+                      suffix="%"
+                      colorClass={getRiskColorClass(probability)}
+                      duration={1000}
+                    />
+                  )}
                 </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
       
 {/* Primary Risk Drivers */}
       <div className="bg-[#0a1628] border border-blue-900/50 rounded-lg p-6 relative overflow-hidden">

@@ -294,7 +294,7 @@ export function IntelligenceCopilot() {
 
   return (
     <div 
-      className={`fixed bottom-4 right-4 left-4 sm:left-auto rounded-2xl shadow-2xl transition-all z-50 overflow-hidden ${
+      className={`fixed bottom-4 right-4 left-4 sm:left-auto px-4 sm:px-0 rounded-2xl shadow-2xl transition-all z-50 overflow-hidden w-full max-w-full sm:max-w-none ${
         isExpanded ? 'sm:w-[600px] h-[80vh] sm:h-[700px]' : 'sm:w-[420px] h-[70vh] sm:h-[550px]'
       } ${
         isDark 
@@ -368,9 +368,9 @@ export function IntelligenceCopilot() {
                 {result.timestamp.toLocaleTimeString()}
                 <span className="font-mono">{result.command}</span>
               </div>
-              <div className={`p-3 rounded-lg font-mono text-sm whitespace-pre-wrap break-words overflow-x-hidden max-w-full ${
+              <div className={`p-3 rounded-lg font-mono text-sm whitespace-pre-wrap break-words overflow-hidden w-full max-w-full ${
                 isDark ? 'bg-gray-800' : isHybrid ? 'bg-gray-700' : 'bg-gray-50'
-              } ${getResultColor(result.type)}`}>
+              } ${getResultColor(result.type)}`} style={{ wordBreak: 'break-word' }}>
                 {result.output}
               </div>
             </div>
@@ -484,12 +484,12 @@ export function IntelligenceCopilot() {
           </button>
         </form>
 
-        {/* Quick Action Buttons */}
-        <div className="flex gap-2 mt-3">
+        {/* Quick Action Buttons - Mobile safe with wrapping */}
+        <div className="flex flex-wrap gap-2 mt-3 w-full max-w-full">
           <button
             onClick={() => processCommand('/scan')}
             disabled={isScanning}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
               isDark 
                 ? 'bg-gray-800 hover:bg-gray-700 text-amber-400' 
                 : isHybrid
@@ -503,7 +503,7 @@ export function IntelligenceCopilot() {
           <button
             onClick={() => processCommand('/risk')}
             disabled={isScanning}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
               isDark 
                 ? 'bg-gray-800 hover:bg-gray-700 text-red-400' 
                 : isHybrid
@@ -517,7 +517,7 @@ export function IntelligenceCopilot() {
           <button
             onClick={() => processCommand('/liquidity')}
             disabled={isScanning}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
               isDark 
                 ? 'bg-gray-800 hover:bg-gray-700 text-blue-400' 
                 : isHybrid
@@ -531,7 +531,7 @@ export function IntelligenceCopilot() {
           <button
             onClick={() => processCommand('/export')}
             disabled={isScanning || !marketContext}
-            className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
               isDark 
                 ? 'bg-gray-800 hover:bg-gray-700 text-green-400' 
                 : isHybrid

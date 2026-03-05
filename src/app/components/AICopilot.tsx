@@ -133,7 +133,7 @@ export function AICopilot() {
   }
   
   return (
-    <div className="fixed bottom-24 lg:bottom-8 right-8 w-[380px] max-h-[600px] rounded-xl shadow-2xl overflow-hidden z-50 border"
+    <div className="fixed bottom-24 lg:bottom-8 right-4 left-4 sm:left-auto sm:right-8 w-auto sm:w-[380px] max-w-full max-h-[600px] rounded-xl shadow-2xl overflow-hidden z-50 border px-4 sm:px-0"
       style={{
         backgroundColor: isDark ? '#0F1419' : isHybrid ? '#1a1f2e' : '#ffffff',
         borderColor: isDark ? '#1e3a8a' : isHybrid ? '#334155' : '#e5e7eb',
@@ -291,7 +291,7 @@ export function AICopilot() {
                 <button
                   key={query.id}
                   onClick={() => setSelectedQuery(query)}
-                  className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                  className={`w-full max-w-full text-left p-4 rounded-xl border-2 transition-all overflow-hidden ${
                     isDark 
                       ? 'border-gray-700 hover:border-blue-600 bg-gray-900 hover:bg-gray-800' 
                       : isHybrid
@@ -299,21 +299,21 @@ export function AICopilot() {
                       : 'border-gray-200 hover:border-[#2563EB] bg-white hover:bg-gray-50'
                   }`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 w-full max-w-full">
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
                       isDark ? 'bg-blue-600' : isHybrid ? 'bg-blue-500' : 'bg-[#EFF6FF]'
                     }`}>
                       <Icon className={`w-4 h-4 ${isDark || isHybrid ? 'text-white' : 'text-[#2563EB]'}`} />
                     </div>
-                    <div>
-                      <div className={`font-medium text-sm mb-1 ${
+                    <div className="flex-1 min-w-0">
+                      <div className={`font-medium text-sm mb-1 break-words ${
                         isDark || isHybrid ? 'text-white' : 'text-gray-900'
-                      }`}>
+                      }`} style={{ whiteSpace: 'normal' }}>
                         {query.title}
                       </div>
-                      <div className={`text-xs ${
+                      <div className={`text-xs break-words ${
                         isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'
-                      }`}>
+                      }`} style={{ whiteSpace: 'normal' }}>
                         {query.description}
                       </div>
                     </div>

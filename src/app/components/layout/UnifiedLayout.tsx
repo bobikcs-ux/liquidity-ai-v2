@@ -83,6 +83,9 @@ export function UnifiedLayout() {
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   
+  // Check if regime is "stress" from latest snapshot
+  const isStressRegime = snapshot?.regime === 'stress' || currentRegime.regime === 'stress';
+  
   // Regime indicator color
   const getRegimeColor = () => {
     switch (currentRegime.regime) {
@@ -94,6 +97,11 @@ export function UnifiedLayout() {
         return 'bg-green-500';
     }
   };
+  
+  // Stress badge styles with pulse animation
+  const stressBadgeClass = isStressRegime 
+    ? 'bg-red-500/20 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.4)] animate-pulse' 
+    : '';
 
   return (
     <div className="min-h-[100dvh] transition-colors duration-500"
@@ -119,12 +127,12 @@ export function UnifiedLayout() {
           </div>
 
           {/* Current Regime Indicator - Hidden on mobile, centered on tablet/desktop */}
-          <div className={`hidden md:flex items-center justify-center gap-3 px-4 py-2 rounded-lg ${
+          <div className={`hidden md:flex items-center justify-center gap-3 px-4 py-2 rounded-lg transition-all ${
             isDark ? 'bg-gray-900/50' : isHybrid ? 'bg-gray-800/50' : 'bg-[#F0F9FF]'
-          }`}>
-            <div className={`w-2 h-2 rounded-full animate-pulse ${getRegimeColor()}`}></div>
+          } ${stressBadgeClass}`}>
+            <div className={`w-2 h-2 rounded-full ${isStressRegime ? 'animate-ping' : 'animate-pulse'} ${getRegimeColor()}`}></div>
             <span className={`text-sm font-medium ${
-              isDark || isHybrid ? 'text-white' : 'text-gray-900'
+              isStressRegime ? 'text-red-400' : isDark || isHybrid ? 'text-white' : 'text-gray-900'
             }`}>
               {currentRegime.regime.charAt(0).toUpperCase() + currentRegime.regime.slice(1)}
             </span>
@@ -284,12 +292,12 @@ export function UnifiedLayout() {
         }`}>
           <div className="flex items-center justify-center md:justify-start gap-6 text-xs whitespace-nowrap">
             {/* Mobile Regime Status - Only shows on mobile */}
-            <div className="flex md:hidden items-center gap-2">
-              <div className={`w-2 h-2 rounded-full animate-pulse ${getRegimeColor()}`}></div>
-              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>
+            <div className={`flex md:hidden items-center gap-2 px-2 py-1 rounded ${isStressRegime ? 'bg-red-500/10 border border-red-500/30' : ''}`}>
+              <div className={`w-2 h-2 rounded-full ${isStressRegime ? 'animate-ping' : 'animate-pulse'} ${getRegimeColor()}`}></div>
+              <span className={isStressRegime ? 'text-red-400 font-semibold' : isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>
                 {currentRegime.regime.toUpperCase()}
               </span>
-              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+              <span className={`font-medium ${isStressRegime ? 'text-red-300' : isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 {currentRegime.confidence}%
               </span>
             </div>
