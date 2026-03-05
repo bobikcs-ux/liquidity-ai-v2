@@ -15,7 +15,8 @@ import {
   Shield,
   Menu,
   ChevronLeft,
-  Crown
+  Crown,
+  Cpu
 } from 'lucide-react';
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
@@ -25,6 +26,7 @@ import { DataSourceStatusCompact } from '../DataSourceStatus';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
+  { path: '/agi-terminal', label: 'AGI Terminal', icon: Cpu },
   { path: '/intelligence', label: 'Intelligence', icon: Brain },
   { path: '/capital-survival', label: 'Capital AI', icon: Shield },
   { path: '/stress-lab', label: 'Stress Lab', icon: FlaskConical },

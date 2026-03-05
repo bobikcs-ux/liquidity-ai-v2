@@ -8,6 +8,7 @@ import { DataSources } from "./pages/DataSources";
 import { Profile } from "./pages/Profile";
 import { BlackSwanTerminal } from "./pages/BlackSwanTerminal";
 import { CapitalSurvival } from "./pages/CapitalSurvival";
+import { AGITerminal } from "./pages/AGITerminal";
 
 export const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ export const router = createBrowserRouter([
       {
         path: "capital-survival",
         element: <CapitalSurvival />,
+      },
+      {
+        path: "agi-terminal",
+        element: <AGITerminal />,
       },
       {
         path: "reports",
