@@ -49,9 +49,16 @@ export interface L1CachedValue {
 // ============================================================================
 
 const DEFAULT_YIELD_CURVE = -0.23; // Default fallback per spec
+const DEFAULT_BTC_DOMINANCE = 54.3; // Default fallback for BTC dominance
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 const CACHE_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+const HEARTBEAT_INTERVAL_MS = 15 * 1000; // 15 seconds
+
+// Heartbeat state
+let heartbeatActive = false;
+let lastHeartbeat: Date | null = null;
+let heartbeatPingMs: number | null = null;
 
 // In-memory cache for last known good values
 const valueCache: {
@@ -65,6 +72,69 @@ const valueCache: {
   btcPrice: null,
   fearGreed: null,
 };
+
+// ============================================================================
+// HEARTBEAT SYSTEM
+// ============================================================================
+
+export async function pingHeartbeat(): Promise<{ alive: boolean; pingMs: number }> {
+  const startTime = performance.now();
+  try {
+    // Quick ping to CoinGecko status endpoint
+    const response = await fetch('https://api.coingecko.com/api/v3/ping', {
+      signal: AbortSignal.timeout(5000),
+    });
+    const endTime = performance.now();
+    const pingMs = Math.round(endTime - startTime);
+    
+    if (response.ok) {
+      heartbeatActive = true;
+      lastHeartbeat = new Date();
+      heartbeatPingMs = pingMs;
+      return { alive: true, pingMs };
+    }
+    
+    heartbeatActive = false;
+    return { alive: false, pingMs };
+  } catch {
+    heartbeatActive = false;
+    return { alive: false, pingMs: 0 };
+  }
+}
+
+export function getHeartbeatStatus(): { 
+  active: boolean; 
+  lastPing: Date | null; 
+  latencyMs: number | null;
+} {
+  return {
+    active: heartbeatActive,
+    lastPing: lastHeartbeat,
+    latencyMs: heartbeatPingMs,
+  };
+}
+
+// ============================================================================
+// FORCE REFRESH
+// ============================================================================
+
+let forceRefreshFlag = false;
+
+export function triggerForceRefresh(): void {
+  forceRefreshFlag = true;
+  // Clear all caches to force fresh fetch
+  valueCache.btcDominance = null;
+  valueCache.yieldCurve = null;
+  valueCache.btcPrice = null;
+  valueCache.fearGreed = null;
+  console.log('[L1] Force refresh triggered - all caches cleared');
+}
+
+export function consumeForceRefresh(): boolean {
+  const flag = forceRefreshFlag;
+  forceRefreshFlag = false;
+  return flag;
+}
 
 // ============================================================================
 // RETRY LOGIC
@@ -131,6 +201,8 @@ interface CoinGeckoData {
   btcPrice: number | null;
   btcChange24h: number | null;
   btcDominance: number | null;
+  btcMarketCap: number | null;
+  totalMarketCap: number | null;
 }
 
 async function fetchBTCDataFromCoinGecko(): Promise<CoinGeckoData> {
@@ -162,11 +234,29 @@ async function fetchBTCDataFromCoinGecko(): Promise<CoinGeckoData> {
     })
   ]);
 
+  // Extract market cap data for fallback calculation
+  const btcMarketCap = globalResult?.data?.total_market_cap?.btc ?? null;
+  const totalMarketCap = globalResult?.data?.total_market_cap?.usd ?? null;
+  
+  // CRITICAL: Correctly access market_cap_percentage.btc
+  let btcDominance = globalResult?.data?.market_cap_percentage?.btc ?? null;
+  
+  // FALLBACK: If btcDominance is 0 or null, calculate from market caps
+  if ((btcDominance === null || btcDominance === 0) && btcMarketCap && totalMarketCap && totalMarketCap > 0) {
+    // Calculate: BTC Market Cap (in USD) / Total Market Cap (in USD) * 100
+    const btcPriceForCalc = priceResult?.bitcoin?.usd ?? 0;
+    if (btcPriceForCalc > 0 && btcMarketCap > 0) {
+      btcDominance = ((btcMarketCap * btcPriceForCalc) / totalMarketCap) * 100;
+      console.log('[L1] BTC Dominance calculated from market caps:', btcDominance);
+    }
+  }
+
   return {
     btcPrice: priceResult?.bitcoin?.usd ?? null,
     btcChange24h: priceResult?.bitcoin?.usd_24h_change ?? null,
-    // CRITICAL: Correctly access market_cap_percentage.btc
-    btcDominance: globalResult?.data?.market_cap_percentage?.btc ?? null,
+    btcDominance,
+    btcMarketCap,
+    totalMarketCap,
   };
 }
 
@@ -269,18 +359,28 @@ export async function fetchL1Data(): Promise<L1DataState> {
     errors.push(`FRED: Using default fallback (${DEFAULT_YIELD_CURVE}%)`);
   }
 
-  // Process BTC Dominance
+  // Process BTC Dominance with enhanced fallback chain
   let finalBtcDominance: number | null = null;
   if (coinGeckoData.btcDominance !== null && coinGeckoData.btcDominance > 0) {
+    // Primary: Direct from market_cap_percentage.btc
     finalBtcDominance = coinGeckoData.btcDominance;
     feedStatus.coingecko = 'LIVE';
     valueCache.btcDominance = { value: coinGeckoData.btcDominance, timestamp: new Date(), source: 'api' };
   } else if (supabaseSnapshot?.btc_dominance !== null && supabaseSnapshot?.btc_dominance !== undefined && supabaseSnapshot.btc_dominance > 0) {
+    // Fallback 1: Supabase cached value
     finalBtcDominance = supabaseSnapshot.btc_dominance;
+    feedStatus.coingecko = 'RECONNECTING';
     errors.push('BTC Dominance: Using Supabase cached value');
   } else if (valueCache.btcDominance && (Date.now() - valueCache.btcDominance.timestamp.getTime()) < CACHE_EXPIRY_MS) {
+    // Fallback 2: Memory cache
     finalBtcDominance = valueCache.btcDominance.value;
+    feedStatus.coingecko = 'RECONNECTING';
     errors.push('BTC Dominance: Using memory cached value');
+  } else {
+    // Fallback 3: Default value - NEVER return 0 or null to AGI Engine
+    finalBtcDominance = DEFAULT_BTC_DOMINANCE;
+    feedStatus.coingecko = 'OFFLINE';
+    errors.push(`BTC Dominance: Using default fallback (${DEFAULT_BTC_DOMINANCE}%)`);
   }
 
   // Process BTC Price
@@ -348,6 +448,65 @@ export async function fetchL1Data(): Promise<L1DataState> {
     lastUpdate: new Date(),
     feedStatus,
     errors,
+  };
+}
+
+// ============================================================================
+// AGI ENGINE VALIDATION GUARD
+// ============================================================================
+
+/**
+ * Validates L1 data before passing to AGI Engine
+ * NEVER passes 0.0%, null, or N/A to the AGI Engine
+ * Uses stale-while-revalidate pattern with guaranteed fallbacks
+ */
+export function validateForAGI(data: L1DataState): {
+  valid: boolean;
+  yieldCurve: number;
+  btcDominance: number;
+  btcPrice: number;
+  fearGreedIndex: number;
+  warnings: string[];
+} {
+  const warnings: string[] = [];
+  
+  // Yield Curve - guaranteed non-null
+  let yieldCurve = data.yieldCurve;
+  if (yieldCurve === null || yieldCurve === 0) {
+    yieldCurve = valueCache.yieldCurve?.value ?? DEFAULT_YIELD_CURVE;
+    warnings.push(`Yield curve using fallback: ${yieldCurve}%`);
+  }
+  
+  // BTC Dominance - guaranteed non-null and non-zero
+  let btcDominance = data.btcDominance;
+  if (btcDominance === null || btcDominance === 0 || btcDominance < 1) {
+    btcDominance = valueCache.btcDominance?.value ?? DEFAULT_BTC_DOMINANCE;
+    warnings.push(`BTC dominance using fallback: ${btcDominance}%`);
+  }
+  
+  // BTC Price - guaranteed positive
+  let btcPrice = data.btcPrice;
+  if (btcPrice === null || btcPrice === 0 || btcPrice < 100) {
+    btcPrice = valueCache.btcPrice?.value ?? 67500; // Reasonable fallback
+    warnings.push(`BTC price using fallback: $${btcPrice}`);
+  }
+  
+  // Fear & Greed Index - guaranteed in range
+  let fearGreedIndex = data.fearGreedIndex;
+  if (fearGreedIndex === null || fearGreedIndex < 0 || fearGreedIndex > 100) {
+    fearGreedIndex = valueCache.fearGreed?.value ?? 50; // Neutral fallback
+    warnings.push(`Fear/Greed using fallback: ${fearGreedIndex}`);
+  }
+  
+  const valid = warnings.length === 0;
+  
+  return {
+    valid,
+    yieldCurve,
+    btcDominance,
+    btcPrice,
+    fearGreedIndex,
+    warnings,
   };
 }
 

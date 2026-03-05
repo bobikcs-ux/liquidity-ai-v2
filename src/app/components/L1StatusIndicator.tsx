@@ -15,15 +15,17 @@ import { getStatusColor, getFeedStatusIcon } from '../services/l1DataNervousSyst
 interface L1StatusIndicatorProps {
   compact?: boolean;
   showFeeds?: boolean;
+  showHeartbeat?: boolean;
   className?: string;
 }
 
 export function L1StatusIndicator({ 
   compact = false, 
   showFeeds = true,
+  showHeartbeat = true,
   className = '' 
 }: L1StatusIndicatorProps) {
-  const { status, feedStatus, lastUpdate, isLoading, refresh } = useL1Data();
+  const { status, feedStatus, lastUpdate, isLoading, refresh, forceRefresh, heartbeat } = useL1Data();
 
   const statusColor = getStatusColor(status);
   const isReconnecting = status === 'RECONNECTING' || status === 'DEGRADED';
@@ -49,7 +51,7 @@ export function L1StatusIndicator({
 
   return (
     <div className={`rounded-lg border border-gray-700 bg-gray-900/50 p-3 ${className}`}>
-      {/* Header */}
+      {/* Header with Heartbeat */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-cyan-400" />
@@ -57,7 +59,20 @@ export function L1StatusIndicator({
             L1 Nervous System
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {/* Heartbeat Indicator */}
+          {showHeartbeat && (
+            <div className="flex items-center gap-1.5" title={heartbeat.alive ? `Latency: ${heartbeat.latencyMs}ms` : 'No heartbeat'}>
+              <div className={`w-2 h-2 rounded-full ${
+                heartbeat.alive 
+                  ? 'bg-green-500 animate-pulse shadow-[0_0_6px_rgba(34,197,94,0.6)]' 
+                  : 'bg-red-500'
+              }`} />
+              <span className="text-xs font-mono text-gray-500">
+                {heartbeat.alive ? `${heartbeat.latencyMs}ms` : 'OFFLINE'}
+              </span>
+            </div>
+          )}
           {isReconnecting && (
             <RefreshCw className={`w-3 h-3 animate-spin ${statusColor}`} />
           )}
@@ -89,10 +104,10 @@ export function L1StatusIndicator({
         </div>
       )}
 
-      {/* Last Update */}
-      <div className="flex items-center justify-between text-xs">
+      {/* Last Update & Controls */}
+      <div className="flex items-center justify-between text-xs gap-2">
         <span className="text-gray-500 font-mono">Last sync:</span>
-        <span className="text-gray-400 font-mono tabular-nums">
+        <span className="text-gray-400 font-mono tabular-nums flex-1">
           {lastUpdate 
             ? `${Math.round((Date.now() - lastUpdate.getTime()) / 1000)}s ago`
             : 'Never'
@@ -103,8 +118,18 @@ export function L1StatusIndicator({
           disabled={isLoading}
           className="p-1 rounded hover:bg-gray-700/50 transition-colors disabled:opacity-50"
           aria-label="Refresh L1 data"
+          title="Soft refresh"
         >
           <RefreshCw className={`w-3 h-3 text-gray-400 ${isLoading ? 'animate-spin' : ''}`} />
+        </button>
+        <button 
+          onClick={forceRefresh}
+          disabled={isLoading}
+          className="px-2 py-1 rounded text-xs font-mono bg-amber-600/20 text-amber-400 hover:bg-amber-600/30 transition-colors disabled:opacity-50"
+          aria-label="Force refresh all data"
+          title="Force refresh (clears all caches)"
+        >
+          FORCE
         </button>
       </div>
     </div>
