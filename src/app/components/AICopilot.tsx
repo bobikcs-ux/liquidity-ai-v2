@@ -115,6 +115,7 @@ export function AICopilot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
+        aria-label="Open Intelligence Copilot"
         className={`fixed bottom-24 lg:bottom-8 right-8 w-14 h-14 rounded-xl shadow-lg transition-all flex items-center justify-center group z-50 ${
           isDark 
             ? 'bg-blue-600 hover:bg-blue-500' 
@@ -162,6 +163,7 @@ export function AICopilot() {
             setIsOpen(false);
             setSelectedQuery(null);
           }}
+          aria-label="Close Intelligence Copilot"
           className={`p-2 rounded-lg transition-colors ${
             isDark || isHybrid 
               ? 'hover:bg-gray-800 text-gray-400' 

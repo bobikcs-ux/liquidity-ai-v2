@@ -116,6 +116,7 @@ export function ResourceShockEngine() {
         
         <button
           onClick={() => setShowDetails(!showDetails)}
+          aria-label={showDetails ? 'Collapse details' : 'Expand details'}
           className={`p-2 rounded-lg transition-colors ${
             isDark || isHybrid 
               ? 'hover:bg-gray-800 text-gray-400' 

@@ -222,6 +222,7 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
           <button
             onClick={fetchHistoricalData}
             disabled={isLoading}
+            aria-label={isLoading ? 'Refreshing data' : 'Refresh market data'}
             className={`p-2 rounded-lg transition-colors ${
               isDark || isHybrid ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
             }`}

@@ -123,6 +123,7 @@ export function UnifiedLayout() {
           <div className="hidden lg:flex items-center gap-3">
             <button 
               onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
+              aria-label={uiTheme === 'terminal' ? 'Switch to light theme' : 'Switch to terminal theme'}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
                 isDark ? 'bg-gray-800 hover:bg-gray-700' : isHybrid ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
               }`}
@@ -226,6 +227,7 @@ export function UnifiedLayout() {
         <div className="absolute -right-3 top-6 z-40">
           <button
             onClick={toggleSidebar}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all hover:scale-110 ${
               isDark ? 'bg-gray-800 border-blue-900 text-gray-300 hover:bg-gray-700' : 
               isHybrid ? 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600' : 

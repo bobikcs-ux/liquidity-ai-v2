@@ -314,6 +314,7 @@ export function IntelligenceCopilot() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
+            aria-label={isExpanded ? 'Collapse panel' : 'Expand panel'}
             className={`p-2 rounded-lg transition-colors ${
               isDark || isHybrid ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
             }`}
@@ -322,6 +323,7 @@ export function IntelligenceCopilot() {
           </button>
           <button
             onClick={() => setIsOpen(false)}
+            aria-label="Close intelligence panel"
             className={`p-2 rounded-lg transition-colors ${
               isDark || isHybrid ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
             }`}
@@ -457,6 +459,7 @@ export function IntelligenceCopilot() {
           <button
             type="submit"
             disabled={isScanning || !inputValue.trim()}
+            aria-label={isScanning ? 'Processing command' : 'Send command'}
             className={`px-4 py-2 rounded-xl transition-colors ${
               isScanning || !inputValue.trim()
                 ? 'bg-gray-600 cursor-not-allowed'

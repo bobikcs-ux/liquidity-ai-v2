@@ -10,6 +10,7 @@ export function ThemeDebugger() {
     return (
       <button
         onClick={() => setIsOpen(true)}
+        aria-label="Open Regime Simulator"
         className="fixed bottom-40 lg:bottom-24 right-8 w-12 h-12 bg-gray-900 rounded-full shadow-lg hover:bg-gray-800 transition-all flex items-center justify-center z-50"
       >
         <Settings className="w-5 h-5 text-white" />
@@ -26,6 +27,7 @@ export function ThemeDebugger() {
         </h3>
         <button
           onClick={() => setIsOpen(false)}
+          aria-label="Close Regime Simulator"
           className="p-1 hover:bg-gray-800 rounded-lg transition-colors"
         >
           <X className="w-4 h-4 text-gray-400" />
