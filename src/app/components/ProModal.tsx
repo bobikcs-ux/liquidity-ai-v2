@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { Lock, X, Zap, Shield, TrendingUp, FileText, Loader2, CheckCircle } from 'lucide-react';
 import { useUserRole } from '../context/UserRoleContext';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
@@ -12,322 +13,72 @@ export const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
 
 // Official production URL for all QR codes
-const PRODUCTION_URL = 'https://liquidity.bobikcs.com/';
+export const PRODUCTION_URL = 'https://liquidity.bobikcs.com/';
 
 // =============================================================================
-// INSTITUTIONAL QR CODE COMPONENT - Level H Error Correction (30%)
-// High-density terminal aesthetic with proper QR encoding
+// INSTITUTIONAL QR CODE COMPONENT
+// Uses qrcode.react with Level H (30%) error correction
+// Industrial/terminal aesthetic with emerald on black
 // =============================================================================
 
-interface QRCodeProps {
-  url?: string;
+interface InstitutionalQRProps {
+  value?: string;
   size?: number;
-  color?: string;
+  fgColor?: string;
   bgColor?: string;
   label?: string;
   className?: string;
 }
 
-// Reed-Solomon error correction tables for QR codes
-// Level H (High) = 30% error correction capacity
-const GF256_EXP = new Uint8Array(512);
-const GF256_LOG = new Uint8Array(256);
-
-// Initialize Galois Field tables for error correction
-(function initGF256() {
-  let x = 1;
-  for (let i = 0; i < 255; i++) {
-    GF256_EXP[i] = x;
-    GF256_LOG[x] = i;
-    x = x << 1;
-    if (x & 0x100) x ^= 0x11d;
-  }
-  for (let i = 255; i < 512; i++) {
-    GF256_EXP[i] = GF256_EXP[i - 255];
-  }
-})();
-
-// Galois Field multiplication
-function gfMul(a: number, b: number): number {
-  if (a === 0 || b === 0) return 0;
-  return GF256_EXP[GF256_LOG[a] + GF256_LOG[b]];
-}
-
-// Generate error correction codewords
-function generateECC(data: number[], eccCount: number): number[] {
-  const generator: number[] = [1];
-  for (let i = 0; i < eccCount; i++) {
-    const newGen: number[] = new Array(generator.length + 1).fill(0);
-    for (let j = 0; j < generator.length; j++) {
-      newGen[j] ^= generator[j];
-      newGen[j + 1] ^= gfMul(generator[j], GF256_EXP[i]);
-    }
-    generator.length = 0;
-    generator.push(...newGen);
-  }
-  
-  const ecc = new Array(eccCount).fill(0);
-  for (const byte of data) {
-    const lead = byte ^ ecc[0];
-    for (let i = 0; i < eccCount - 1; i++) {
-      ecc[i] = ecc[i + 1] ^ gfMul(lead, generator[i + 1]);
-    }
-    ecc[eccCount - 1] = gfMul(lead, generator[eccCount]);
-  }
-  return ecc;
-}
-
-// Encode URL to QR data with Level H error correction
-function encodeURL(url: string): number[] {
-  const bytes: number[] = [];
-  // Mode indicator: Byte mode (0100)
-  bytes.push(0x40);
-  // Character count (8 bits for version 5)
-  bytes.push(url.length);
-  // URL bytes
-  for (let i = 0; i < url.length; i++) {
-    bytes.push(url.charCodeAt(i));
-  }
-  // Terminator
-  bytes.push(0);
-  return bytes;
-}
-
-// Generate QR matrix with Level H error correction (Version 5, 37x37)
-function generateQRMatrixLevelH(inputUrl?: string): boolean[][] {
-  const url = inputUrl || PRODUCTION_URL;
-  const size = 37; // Version 5 QR code for Level H with URLs
-  const matrix: boolean[][] = Array(size).fill(null).map(() => Array(size).fill(false));
-  const reserved: boolean[][] = Array(size).fill(null).map(() => Array(size).fill(false));
-  
-  // Draw and reserve finder patterns
-  const drawFinderPattern = (cx: number, cy: number) => {
-    for (let dy = -4; dy <= 4; dy++) {
-      for (let dx = -4; dx <= 4; dx++) {
-        const x = cx + dx;
-        const y = cy + dy;
-        if (x < 0 || x >= size || y < 0 || y >= size) continue;
-        reserved[y][x] = true;
-        const maxD = Math.max(Math.abs(dx), Math.abs(dy));
-        matrix[y][x] = maxD !== 3 && maxD !== 4;
-      }
-    }
-  };
-  
-  drawFinderPattern(3, 3);      // Top-left
-  drawFinderPattern(size - 4, 3); // Top-right
-  drawFinderPattern(3, size - 4); // Bottom-left
-  
-  // Draw timing patterns
-  for (let i = 8; i < size - 8; i++) {
-    reserved[6][i] = true;
-    reserved[i][6] = true;
-    matrix[6][i] = i % 2 === 0;
-    matrix[i][6] = i % 2 === 0;
-  }
-  
-  // Draw alignment patterns for Version 5
-  const alignPositions = [6, 30];
-  for (const ay of alignPositions) {
-    for (const ax of alignPositions) {
-      // Skip if overlapping with finder patterns
-      if ((ax < 9 && ay < 9) || (ax > size - 10 && ay < 9) || (ax < 9 && ay > size - 10)) continue;
-      for (let dy = -2; dy <= 2; dy++) {
-        for (let dx = -2; dx <= 2; dx++) {
-          const x = ax + dx;
-          const y = ay + dy;
-          reserved[y][x] = true;
-          const maxD = Math.max(Math.abs(dx), Math.abs(dy));
-          matrix[y][x] = maxD !== 1;
-        }
-      }
-    }
-  }
-  
-  // Reserve format info areas
-  for (let i = 0; i < 9; i++) {
-    reserved[8][i] = true;
-    reserved[i][8] = true;
-    reserved[8][size - 1 - i] = true;
-    reserved[size - 1 - i][8] = true;
-  }
-  // Dark module
-  matrix[size - 8][8] = true;
-  reserved[size - 8][8] = true;
-  
-  // Reserve version info (Version 5 doesn't need it, but mark area)
-  
-  // Encode data with Level H ECC
-  const dataBytes = encodeURL(url);
-  const eccBytes = generateECC(dataBytes, 26); // Level H needs more ECC
-  const allBytes = [...dataBytes, ...eccBytes];
-  
-  // Convert to bits
-  const bits: boolean[] = [];
-  for (const byte of allBytes) {
-    for (let i = 7; i >= 0; i--) {
-      bits.push((byte >> i & 1) === 1);
-    }
-  }
-  
-  // Add padding bits to fill capacity
-  while (bits.length < 864) { // Version 5 Level H data capacity
-    bits.push(false);
-  }
-  
-  // Place data in zigzag pattern
-  let bitIndex = 0;
-  let upward = true;
-  
-  for (let right = size - 1; right >= 0; right -= 2) {
-    if (right === 6) right = 5; // Skip timing column
-    
-    const colRange = upward ? 
-      Array.from({ length: size }, (_, i) => size - 1 - i) :
-      Array.from({ length: size }, (_, i) => i);
-    
-    for (const row of colRange) {
-      for (const col of [right, right - 1]) {
-        if (col < 0) continue;
-        if (!reserved[row][col] && bitIndex < bits.length) {
-          matrix[row][col] = bits[bitIndex++];
-        }
-      }
-    }
-    upward = !upward;
-  }
-  
-  // Apply mask pattern 0 (checkerboard) for best contrast
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      if (!reserved[y][x] && (x + y) % 2 === 0) {
-        matrix[y][x] = !matrix[y][x];
-      }
-    }
-  }
-  
-  // Add format information (Level H, Mask 0)
-  const formatBits = [1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0]; // H, mask 0
-  
-  // Place format bits around top-left finder
-  for (let i = 0; i < 6; i++) {
-    matrix[8][i] = formatBits[i];
-  }
-  matrix[8][7] = formatBits[6];
-  matrix[8][8] = formatBits[7];
-  matrix[7][8] = formatBits[8];
-  for (let i = 9; i < 15; i++) {
-    matrix[14 - i][8] = formatBits[i];
-  }
-  
-  // Place format bits around other finders
-  for (let i = 0; i < 8; i++) {
-    matrix[8][size - 1 - i] = formatBits[i];
-  }
-  for (let i = 0; i < 7; i++) {
-    matrix[size - 7 + i][8] = formatBits[8 + i];
-  }
-  
-  return matrix;
-}
-
-// Institutional QR Code Component - Pure SVG, No Canvas
-export function QRCode({ 
-  url,
-  size = 80, 
-  color = '#10b981', // emerald-500
-  bgColor = 'transparent',
+// Production-grade QR code component using qrcode.react
+export function InstitutionalQR({ 
+  value = PRODUCTION_URL,
+  size = 80,
+  fgColor = '#10b981', // emerald-500
+  bgColor = '#000000', // black background for contrast
   label = '[ NODE: LIQUIDITY.BOBIKCS.COM ]',
   className = ''
-}: QRCodeProps) {
-  const matrix = useMemo(() => generateQRMatrixLevelH(url || PRODUCTION_URL), [url]);
-  
+}: InstitutionalQRProps) {
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      {/* SVG QR Code - Crystal clear at any resolution */}
+    <div className={`flex flex-col items-center gap-3 ${className}`}>
+      {/* QR Code with industrial wrapper */}
       <div 
-        className="relative"
         style={{
-          padding: '4px',
-          border: `1px solid ${color}40`,
+          padding: '12px',
           background: bgColor,
+          display: 'inline-block',
         }}
       >
-        <svg 
-          width={size} 
-          height={size} 
-          viewBox={`0 0 ${matrix.length} ${matrix.length}`}
-          style={{ 
-            display: 'block',
-            shapeRendering: 'crispEdges',
-          }}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Background */}
-          <rect width={matrix.length} height={matrix.length} fill={bgColor} />
-          
-          {/* QR modules - sharp square pixels */}
-          {matrix.map((row, y) =>
-            row.map((cell, x) =>
-              cell ? (
-                <rect
-                  key={`${x}-${y}`}
-                  x={x}
-                  y={y}
-                  width={1}
-                  height={1}
-                  fill={color}
-                />
-              ) : null
-            )
-          )}
-        </svg>
-        
-        {/* Corner brackets - industrial style */}
-        <div className="absolute -top-px -left-px w-3 h-3 border-t-2 border-l-2" style={{ borderColor: color }} />
-        <div className="absolute -top-px -right-px w-3 h-3 border-t-2 border-r-2" style={{ borderColor: color }} />
-        <div className="absolute -bottom-px -left-px w-3 h-3 border-b-2 border-l-2" style={{ borderColor: color }} />
-        <div className="absolute -bottom-px -right-px w-3 h-3 border-b-2 border-r-2" style={{ borderColor: color }} />
+        <QRCodeSVG
+          value={value}
+          size={size}
+          level="H" // High error correction (30%)
+          includeMargin={true}
+          bgColor={bgColor}
+          fgColor={fgColor}
+        />
       </div>
-      
-      {/* Industrial label */}
+
+      {/* Industrial monospace label */}
       {label && (
-        <span 
-          className="mt-2 font-mono text-[7px] uppercase tracking-[0.2em]"
-          style={{ color, opacity: 0.8 }}
+        <div
+          style={{
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            letterSpacing: '0.25em',
+            color: fgColor,
+            opacity: 0.85,
+          }}
         >
           {label}
-        </span>
+        </div>
       )}
     </div>
   );
 }
 
-// Generate SVG string for PDF export - High resolution
-export function generateQRCodeSVG(
-  inputUrl?: string, 
-  size: number = 100, 
-  color: string = '#10b981'
-): string {
-  const matrix = generateQRMatrixLevelH(inputUrl || PRODUCTION_URL);
-  
-  let paths = '';
-  matrix.forEach((row, y) => {
-    row.forEach((cell, x) => {
-      if (cell) {
-        paths += `<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`;
-      }
-    });
-  });
-  
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${matrix.length} ${matrix.length}" style="shape-rendering: crispEdges;">
-<rect width="${matrix.length}" height="${matrix.length}" fill="transparent"/>
-${paths}
-</svg>`;
-}
-
-// Export the matrix generator for external use
-export { generateQRMatrixLevelH, PRODUCTION_URL };
+// Alias for backwards compatibility
+export const QRCode = InstitutionalQR;
 
 // Email endpoint
 const BUSINESS_EMAIL = 'bobikcs@studio-bobikcs.com';
@@ -465,13 +216,13 @@ export function ProModal() {
             </button>
           </div>
           
-          {/* QR Code - Industrial Style, Level H */}
+          {/* QR Code - Industrial Style, Level H Error Correction */}
           <div className="flex flex-col items-center">
-            <QRCode 
-              url={REVOLUT_PAYMENT_URL} 
+            <InstitutionalQR 
+              value={REVOLUT_PAYMENT_URL} 
               size={72} 
-              color={isDark || isHybrid ? '#fbbf24' : '#d97706'}
-              bgColor="transparent"
+              fgColor={isDark || isHybrid ? '#fbbf24' : '#d97706'}
+              bgColor={isDark || isHybrid ? '#1f2937' : '#111827'}
               label="[ PAYMENT GATEWAY ]"
             />
           </div>
