@@ -385,24 +385,24 @@ export function IntelligenceCopilot() {
           }`}>
             <div className="grid grid-cols-2 gap-2 text-xs mb-2">
               <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                BTC: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
+                BTC: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                   ${marketContext.btcPrice.toLocaleString()}
                 </span>
               </div>
               <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                Fear/Greed: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
+                Fear/Greed: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                   {marketContext.fearGreedValue}
                 </span>
               </div>
               <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                Yield Curve: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
+                Yield Curve: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                   {marketContext.yieldCurve && marketContext.yieldCurve !== 'N/A' 
                     ? `${marketContext.yieldCurve}%` 
                     : 'N/A'}
                 </span>
               </div>
               <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                BTC Dom: <span className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
+                BTC Dom: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                   {marketContext.btcDominance.toFixed(1)}%
                 </span>
               </div>

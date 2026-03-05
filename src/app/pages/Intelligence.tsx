@@ -65,7 +65,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">{regime.charAt(0).toUpperCase() + regime.slice(1)} → Neutral</span>
-                <span className="text-sm font-semibold text-gray-900">{regimeTransitions.toNeutral}%</span>
+                <span className="text-sm font-semibold text-gray-900 tabular-nums min-w-[2.5rem] text-right">{regimeTransitions.toNeutral}%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-amber-500" style={{ width: `${regimeTransitions.toNeutral}%` }}></div>
@@ -75,7 +75,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">{regime.charAt(0).toUpperCase() + regime.slice(1)} → Stress</span>
-                <span className="text-sm font-semibold text-gray-900">{regimeTransitions.toStress}%</span>
+                <span className="text-sm font-semibold text-gray-900 tabular-nums min-w-[2.5rem] text-right">{regimeTransitions.toStress}%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-red-500" style={{ width: `${regimeTransitions.toStress}%` }}></div>
@@ -85,7 +85,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Maintain Current</span>
-                <span className="text-sm font-semibold text-gray-900">{regimeTransitions.maintain}%</span>
+                <span className="text-sm font-semibold text-gray-900 tabular-nums min-w-[2.5rem] text-right">{regimeTransitions.maintain}%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-green-500" style={{ width: `${regimeTransitions.maintain}%` }}></div>
@@ -127,7 +127,7 @@ export function Intelligence() {
                     ></div>
                   </div>
                 </div>
-                <span className="ml-4 text-sm font-semibold text-gray-900">{item.similarity}%</span>
+                <span className="ml-4 text-sm font-semibold text-gray-900 tabular-nums min-w-[2.5rem] text-right">{item.similarity}%</span>
               </div>
             ))}
           </div>
@@ -147,8 +147,8 @@ export function Intelligence() {
           </div>
 
           <div className="text-center py-8">
-            <div className={`text-5xl font-bold mb-2 ${btcVolatility > 60 ? 'text-red-600' : btcVolatility > 40 ? 'text-amber-600' : 'text-green-600'}`}>
-              {snapshotLoading ? '...' : `${btcVolatility}%`}
+            <div className={`text-5xl font-bold mb-2 tabular-nums min-h-[3.5rem] flex items-center justify-center ${btcVolatility > 60 ? 'text-red-600' : btcVolatility > 40 ? 'text-amber-600' : 'text-green-600'}`}>
+              {snapshotLoading ? <span className="inline-block w-16 h-12 bg-gray-200 rounded animate-pulse" /> : `${btcVolatility}%`}
             </div>
             <p className="text-sm text-gray-600">BTC Volatility Index</p>
           </div>
@@ -156,15 +156,15 @@ export function Intelligence() {
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">Systemic Risk</span>
-              <span className="font-semibold text-gray-900">{systemicRisk}%</span>
+              <span className="font-semibold text-gray-900 tabular-nums min-w-[3rem] text-right">{systemicRisk}%</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">Survival Prob</span>
-              <span className="font-semibold text-gray-900">{survivalProb}%</span>
+              <span className="font-semibold text-gray-900 tabular-nums min-w-[3rem] text-right">{survivalProb}%</span>
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-600">Regime</span>
-              <span className="font-semibold text-gray-900">{regime.toUpperCase()}</span>
+              <span className="font-semibold text-gray-900 min-w-[4rem] text-right">{regime.toUpperCase()}</span>
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">SPX / BTC</span>
-                <span className="text-sm font-semibold text-gray-900">0.73</span>
+                <span className="text-sm font-semibold text-gray-900 tabular-nums min-w-[3rem] text-right">0.73</span>
               </div>
               <div className="text-xs font-medium text-gray-600">20-day rolling</div>
             </div>
@@ -190,7 +190,7 @@ export function Intelligence() {
             <div className="pt-3 border-t border-gray-100">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Bonds / Equities</span>
-                <span className="text-sm font-semibold text-gray-900">-0.42</span>
+                <span className="text-sm font-semibold text-gray-900 tabular-nums min-w-[3rem] text-right">-0.42</span>
               </div>
               <div className="text-xs font-medium text-gray-600">Normal diversification</div>
             </div>
@@ -198,7 +198,7 @@ export function Intelligence() {
             <div className="pt-3 border-t border-gray-100">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Gold / USD</span>
-                <span className="text-sm font-semibold text-gray-900">-0.68</span>
+                <span className="text-sm font-semibold text-gray-900 tabular-nums min-w-[3rem] text-right">-0.68</span>
               </div>
               <div className="text-xs font-medium text-gray-600">Inverse relationship intact</div>
             </div>
@@ -230,7 +230,7 @@ export function Intelligence() {
                   <div className="text-sm text-gray-900 mb-0.5">{item.source}</div>
                   <div className="text-xs font-medium text-gray-600">7-day average</div>
                 </div>
-                <div className={`text-lg font-semibold ${
+                <div className={`text-lg font-semibold tabular-nums min-w-[5rem] text-right ${
                   item.trend === 'up' ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {item.amount}
@@ -242,7 +242,7 @@ export function Intelligence() {
           <div className="mt-6 pt-6 border-t border-gray-100">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-gray-900">Net Flow</span>
-              <span className="text-xl font-bold text-green-600">+$198B</span>
+              <span className="text-xl font-bold text-green-600 tabular-nums min-w-[5rem] text-right">+$198B</span>
             </div>
           </div>
         </div>
@@ -260,7 +260,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Regime Model</span>
-                <span className="text-sm font-semibold text-green-600">94%</span>
+                <span className="text-sm font-semibold text-green-600 tabular-nums min-w-[2.5rem] text-right">94%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-green-500" style={{ width: '94%' }}></div>
@@ -270,7 +270,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Volatility Model</span>
-                <span className="text-sm font-semibold text-green-600">89%</span>
+                <span className="text-sm font-semibold text-green-600 tabular-nums min-w-[2.5rem] text-right">89%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-green-500" style={{ width: '89%' }}></div>
@@ -280,7 +280,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Correlation Model</span>
-                <span className="text-sm font-semibold text-amber-600">76%</span>
+                <span className="text-sm font-semibold text-amber-600 tabular-nums min-w-[2.5rem] text-right">76%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-amber-500" style={{ width: '76%' }}></div>
@@ -290,7 +290,7 @@ export function Intelligence() {
             <div>
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-gray-600">Crash Detection</span>
-                <span className="text-sm font-semibold text-green-600">91%</span>
+                <span className="text-sm font-semibold text-green-600 tabular-nums min-w-[2.5rem] text-right">91%</span>
               </div>
               <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                 <div className="h-full bg-green-500" style={{ width: '91%' }}></div>

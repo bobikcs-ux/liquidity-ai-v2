@@ -138,7 +138,7 @@ export function ResourceShockEngine() {
           }`}>
             GLOBAL RESOURCE STRESS INDEX
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(grsi))}`}>
+          <div className={`text-4xl font-bold mb-1 tabular-nums min-w-[3ch] ${getRiskColor(getRiskLevel(grsi))}`}>
             {grsi}
           </div>
           <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(grsi))}`}>
@@ -155,7 +155,7 @@ export function ResourceShockEngine() {
           }`}>
             ENERGY SHOCK VELOCITY
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(energyShockVelocity))}`}>
+          <div className={`text-4xl font-bold mb-1 tabular-nums min-w-[3ch] ${getRiskColor(getRiskLevel(energyShockVelocity))}`}>
             {energyShockVelocity}
           </div>
           <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(energyShockVelocity))}`}>
@@ -172,7 +172,7 @@ export function ResourceShockEngine() {
           }`}>
             POLICY REACTION PROBABILITY
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(policyReactionProbability))}`}>
+          <div className={`text-4xl font-bold mb-1 tabular-nums min-w-[3ch] ${getRiskColor(getRiskLevel(policyReactionProbability))}`}>
             {policyReactionProbability}%
           </div>
           <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(policyReactionProbability))}`}>
@@ -240,7 +240,7 @@ export function ResourceShockEngine() {
           </p>
         </div>
         <div className="text-right">
-          <div className="text-3xl font-bold text-red-500">{survivalImpact}%</div>
+          <div className="text-3xl font-bold text-red-500 tabular-nums min-w-[4ch]">{survivalImpact}%</div>
         </div>
       </div>
       
@@ -275,7 +275,7 @@ export function ResourceShockEngine() {
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -312,7 +312,7 @@ export function ResourceShockEngine() {
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -349,7 +349,7 @@ export function ResourceShockEngine() {
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -386,7 +386,7 @@ export function ResourceShockEngine() {
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>

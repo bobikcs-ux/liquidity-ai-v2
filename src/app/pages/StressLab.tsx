@@ -83,7 +83,7 @@ export function StressLab() {
               />
               <div className="flex justify-between items-center mt-2">
                 <span className="text-xs font-medium text-gray-600">10%</span>
-                <span className="text-lg font-bold text-[#2563EB]">{customShock}%</span>
+                <span className="text-lg font-bold text-[#2563EB] tabular-nums min-w-[3ch]">{customShock}%</span>
                 <span className="text-xs font-medium text-gray-600">50%</span>
               </div>
             </div>
@@ -100,7 +100,7 @@ export function StressLab() {
           {/* Survival Probability - Large Display */}
           <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-sm border border-gray-200 p-8 text-center">
             <div className="text-sm font-medium text-gray-600 mb-4">Portfolio Survival Probability</div>
-            <div className={`text-8xl font-bold mb-4 ${
+            <div className={`text-8xl font-bold mb-4 tabular-nums min-w-[4ch] ${
               currentResults.survival >= 75 ? 'text-green-600' :
               currentResults.survival >= 50 ? 'text-amber-600' : 'text-red-600'
             }`}>
@@ -130,7 +130,7 @@ export function StressLab() {
                 </div>
                 <h3 className="font-semibold text-gray-900">Drawdown</h3>
               </div>
-              <div className="text-4xl font-bold text-red-600 mb-2">-{currentResults.drawdown}%</div>
+              <div className="text-4xl font-bold text-red-600 mb-2 tabular-nums min-w-[4ch]">-{currentResults.drawdown}%</div>
               <p className="text-sm text-gray-600">Peak portfolio decline</p>
             </div>
 
@@ -142,7 +142,7 @@ export function StressLab() {
                 </div>
                 <h3 className="font-semibold text-gray-900">Recovery</h3>
               </div>
-              <div className="text-4xl font-bold text-amber-600 mb-2">{currentResults.recovery}</div>
+              <div className="text-4xl font-bold text-amber-600 mb-2 tabular-nums min-w-[3ch]">{currentResults.recovery}</div>
               <p className="text-sm text-gray-600">Days to break-even</p>
             </div>
 
@@ -154,7 +154,7 @@ export function StressLab() {
                 </div>
                 <h3 className="font-semibold text-gray-900">Confidence</h3>
               </div>
-              <div className="text-4xl font-bold text-[#2563EB] mb-2">{currentResults.confidence}%</div>
+              <div className="text-4xl font-bold text-[#2563EB] mb-2 tabular-nums min-w-[3ch]">{currentResults.confidence}%</div>
               <p className="text-sm text-gray-600">Model certainty</p>
             </div>
           </div>
@@ -192,11 +192,11 @@ export function StressLab() {
                   <div className="flex items-center gap-4">
                     <span className="text-sm">
                       <span className="text-gray-600">Survival:</span>{' '}
-                      <span className="font-semibold text-green-600">{item.survival}%</span>
+                      <span className="font-semibold text-green-600 tabular-nums">{item.survival}%</span>
                     </span>
                     <span className="text-sm">
                       <span className="text-gray-600">DD:</span>{' '}
-                      <span className="font-semibold text-red-600">-{item.drawdown}%</span>
+                      <span className="font-semibold text-red-600 tabular-nums">-{item.drawdown}%</span>
                     </span>
                   </div>
                 </div>

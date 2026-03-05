@@ -160,9 +160,9 @@ export function BlackSwanTerminal() {
 <div className="text-xs md:text-sm font-semibold tracking-wider text-gray-200 mb-3">
             BLACK SWAN RISK INDEX
           </div>
-          <div className="text-6xl md:text-8xl font-bold text-red-500 mb-4 tracking-tight">
-            {blackSwanIndex}
-          </div>
+<div className="text-6xl md:text-8xl font-bold text-red-500 mb-4 tracking-tight tabular-nums min-w-[3ch]">
+            {blackSwanIndex}
+          </div>
           <div className={`inline-flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 rounded-md border-2 font-bold tracking-wide text-xs md:text-sm ${getRiskColor(riskLevel)}`}>
             <AlertTriangle className="w-4 h-4 md:w-5 md:h-5" />
             <span className="hidden sm:inline">{getRiskLabel(riskLevel)}</span>
@@ -190,12 +190,12 @@ export function BlackSwanTerminal() {
 <div className="text-xs font-medium text-slate-300 mb-1">
                   {period === '7d' ? '7 Day' : period === '30d' ? '30 Day' : '90 Day'}
                 </div>
-                <div className={`text-3xl font-bold ${
-                  probability >= 70 ? 'text-red-500' :
-                  probability >= 50 ? 'text-amber-500' : 'text-gray-300'
-                }`}>
-                  {probability}%
-                </div>
+<div className={`text-3xl font-bold tabular-nums min-w-[3ch] ${
+                  probability >= 70 ? 'text-red-500' :
+                  probability >= 50 ? 'text-amber-500' : 'text-gray-300'
+                }`}>
+                  {probability}%
+                </div>
               </button>
             ))}
           </div>
@@ -228,15 +228,15 @@ export function BlackSwanTerminal() {
                   </div>
                   <p className="text-sm text-gray-400">{driver.description}</p>
                 </div>
-                <div className="text-right ml-4">
-                  <div className={`text-2xl font-bold ${
-                    driver.impact >= 90 ? 'text-red-500' :
-                    driver.impact >= 70 ? 'text-amber-500' : 'text-gray-300'
-                  }`}>
-                    {driver.impact}
-                  </div>
-                  <div className="text-xs font-medium text-slate-300">Impact</div>
-                </div>
+<div className="text-right ml-4 min-w-[4rem]">
+                  <div className={`text-2xl font-bold tabular-nums ${
+                    driver.impact >= 90 ? 'text-red-500' :
+                    driver.impact >= 70 ? 'text-amber-500' : 'text-gray-300'
+                  }`}>
+                    {driver.impact}
+                  </div>
+                  <div className="text-xs font-medium text-slate-300">Impact</div>
+                </div>
               </div>
               
               <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
@@ -272,12 +272,12 @@ export function BlackSwanTerminal() {
                     <div className="text-white font-semibold text-sm">{analog.event}</div>
                     <div className="text-xs font-medium text-slate-300">{analog.year}</div>
                   </div>
-                  <div className={`text-2xl font-bold ${
-                    analog.similarity >= 70 ? 'text-red-500' :
-                    analog.similarity >= 50 ? 'text-amber-500' : 'text-gray-400'
-                  }`}>
-                    {analog.similarity}%
-                  </div>
+<div className={`text-2xl font-bold tabular-nums min-w-[3.5rem] text-right ${
+                    analog.similarity >= 70 ? 'text-red-500' :
+                    analog.similarity >= 50 ? 'text-amber-500' : 'text-gray-400'
+                  }`}>
+                    {analog.similarity}%
+                  </div>
                 </div>
                 <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
                   <div
@@ -341,7 +341,7 @@ export function BlackSwanTerminal() {
               <p className="text-sm text-gray-400 leading-relaxed">
                 Volatility surface steepening. Options skew expanding. Leverage in crypto derivatives 
                 exceeding pre-liquidation cascade levels observed in historical tail events.
-              </p>
+      ��       </p>
             </div>
             
             <div>
@@ -381,17 +381,17 @@ export function BlackSwanTerminal() {
                 }`}></div>
               </div>
               
-              <div className="flex items-baseline gap-2">
-                <span className={`text-xl font-bold ${
-                  signal.severity === 'critical' ? 'text-red-500' :
-                  signal.severity === 'high' ? 'text-amber-500' : 'text-gray-300'
-                }`}>
-                  {signal.value > 1 ? signal.value.toFixed(0) : signal.value.toFixed(2)}
-                </span>
-<span className="text-xs font-medium text-slate-300">
+<div className="flex items-baseline gap-2">
+                <span className={`text-xl font-bold tabular-nums min-w-[3rem] ${
+                  signal.severity === 'critical' ? 'text-red-500' :
+                  signal.severity === 'high' ? 'text-amber-500' : 'text-gray-300'
+                }`}>
+                  {signal.value > 1 ? signal.value.toFixed(0) : signal.value.toFixed(2)}
+                </span>
+                <span className="text-xs font-medium text-slate-300 tabular-nums">
                   / {signal.threshold} threshold
                 </span>
-              </div>
+              </div>
             </div>
           ))}
         </div>
@@ -430,12 +430,12 @@ export function BlackSwanTerminal() {
               }}
             >
               <div className="text-xs font-medium text-slate-200 mb-1">{item.asset}</div>
-              <div className={`text-2xl font-bold ${
-                item.stress >= 80 ? 'text-red-500' :
-                item.stress >= 60 ? 'text-amber-500' : 'text-green-500'
-              }`}>
-                {item.stress}
-              </div>
+<div className={`text-2xl font-bold tabular-nums ${
+                item.stress >= 80 ? 'text-red-500' :
+                item.stress >= 60 ? 'text-amber-500' : 'text-green-500'
+              }`}>
+                {item.stress}
+              </div>
             </div>
           ))}
         </div>

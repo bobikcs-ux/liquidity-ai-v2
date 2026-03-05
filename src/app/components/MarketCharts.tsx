@@ -239,7 +239,7 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
         <div>
           <p className={`text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>Yield Curve (10Y-2Y)</p>
           <div className="flex items-center gap-1">
-            <span className={`font-mono font-semibold ${latestYield < 0 ? 'text-red-500' : 'text-green-500'}`}>
+            <span className={`font-mono font-semibold tabular-nums min-w-[5rem] ${latestYield < 0 ? 'text-red-500' : 'text-green-500'}`}>
               {latestYield.toFixed(3)}%
             </span>
             {latestYield < 0 ? (
@@ -252,17 +252,17 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
         <div>
           <p className={`text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>BTC Price</p>
           <div className="flex items-center gap-1">
-            <span className={`font-mono font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+            <span className={`font-mono font-semibold tabular-nums min-w-[6rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
               ${latestPrice.toLocaleString()}
             </span>
-            <span className={`text-xs ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            <span className={`text-xs tabular-nums min-w-[3.5rem] ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
               {parseFloat(priceChange) >= 0 ? '+' : ''}{priceChange}%
             </span>
           </div>
         </div>
         <div>
           <p className={`text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>Fear & Greed</p>
-          <span className={`font-mono font-semibold ${
+          <span className={`font-mono font-semibold tabular-nums min-w-[4rem] ${
             latestFearGreed < 25 ? 'text-red-500' : latestFearGreed > 75 ? 'text-green-500' : 'text-amber-500'
           }`}>
             {latestFearGreed}/100

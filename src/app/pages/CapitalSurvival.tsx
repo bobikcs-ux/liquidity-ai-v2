@@ -192,10 +192,10 @@ export function CapitalSurvival() {
                 <div className="text-sm text-gray-200 mb-1">
                   {scenario === 'base' ? 'Base Case' : scenario === 'stress' ? 'Stress Scenario' : 'Crisis Scenario'}
                 </div>
-                <div className="text-2xl font-bold text-white">
+                <div className="text-2xl font-bold text-white tabular-nums min-w-[3ch]">
                   {scenario === 'base' ? '87%' : scenario === 'stress' ? '64%' : '38%'}
                 </div>
-                <div className="text-xs font-medium text-slate-300">Survival Probability</div>
+                <div className="text-xs font-medium text-slate-300 tabular-nums">Survival Probability</div>
               </button>
             ))}
           </div>
@@ -237,10 +237,10 @@ export function CapitalSurvival() {
               <div className="text-sm text-gray-200 mb-4">{metric.timeframe}</div>
               
               <div className="mb-4">
-                <div className={`text-5xl font-bold mb-2 ${getProbabilityColor(metric.probability)}`}>
+                <div className={`text-5xl font-bold mb-2 tabular-nums min-w-[4ch] ${getProbabilityColor(metric.probability)}`}>
                   {metric.probability}%
                 </div>
-                <div className="text-xs font-medium text-slate-300">
+                <div className="text-xs font-medium text-slate-300 tabular-nums">
                   Confidence: {metric.confidence}%
                 </div>
               </div>
@@ -328,7 +328,7 @@ export function CapitalSurvival() {
                       </span>
                     </div>
                   </div>
-                  <div className={`text-3xl font-bold ${
+                  <div className={`text-3xl font-bold tabular-nums min-w-[3.5rem] text-right ${
                     shock.probability >= 60 ? 'text-red-500' :
                     shock.probability >= 40 ? 'text-amber-500' : 'text-gray-400'
                   }`}>
@@ -378,7 +378,7 @@ export function CapitalSurvival() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-200">Historical Success Rate</span>
-                <span className="text-2xl font-bold text-green-500">{behavioralInsights.historicalSuccessRate}%</span>
+                <span className="text-2xl font-bold text-green-500 tabular-nums min-w-[3ch]">{behavioralInsights.historicalSuccessRate}%</span>
               </div>
               <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
                 <div 
@@ -391,7 +391,7 @@ export function CapitalSurvival() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-200">AI Adaptation Score</span>
-                <span className="text-2xl font-bold text-purple-500">{behavioralInsights.adaptationScore}%</span>
+                <span className="text-2xl font-bold text-purple-500 tabular-nums min-w-[3ch]">{behavioralInsights.adaptationScore}%</span>
               </div>
               <div className="relative h-2 bg-gray-800 rounded-full overflow-hidden">
                 <div 
@@ -430,7 +430,7 @@ export function CapitalSurvival() {
           ].map((projection, index) => (
             <div key={index} className="bg-gray-900/50 border border-gray-800 rounded-lg p-4 text-center">
               <div className="text-xs font-medium text-slate-300 mb-2">{projection.period}</div>
-              <div className={`text-3xl font-bold mb-1 ${
+              <div className={`text-3xl font-bold mb-1 tabular-nums ${
                 projection.risk >= 60 ? 'text-red-500' :
                 projection.risk >= 40 ? 'text-amber-500' : 'text-green-500'
               }`}>

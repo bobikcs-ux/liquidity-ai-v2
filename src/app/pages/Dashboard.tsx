@@ -128,11 +128,11 @@ export function Dashboard() {
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/5 p-3 rounded-lg">
                 <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Confidence</div>
-                <div className="text-lg font-bold text-green-500 font-mono">{currentRegime.confidence}%</div>
+                <div className="text-lg font-bold text-green-500 font-mono tabular-nums min-w-[3rem]">{currentRegime.confidence}%</div>
               </div>
               <div className="bg-white/5 p-3 rounded-lg">
                 <div className="text-[9px] text-slate-300 uppercase font-mono font-medium">Risk Level</div>
-                <div className={`text-lg font-bold font-mono ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-500'}`}>
+                <div className={`text-lg font-bold font-mono tabular-nums min-w-[3rem] ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-500'}`}>
                   {currentRegime.riskLevel}%
                 </div>
               </div>
@@ -149,10 +149,10 @@ export function Dashboard() {
             </h2>
           </div>
           <div className="text-center py-4">
-            <div className={`text-6xl font-black mb-2 font-mono ${
+            <div className={`text-6xl font-black mb-2 font-mono tabular-nums min-h-[4rem] flex items-center justify-center ${
               survivalProb >= 70 ? 'text-green-500' : survivalProb >= 50 ? 'text-amber-500' : 'text-red-500'
             }`}>
-              {snapshotLoading ? '...' : `${survivalProb}%`}
+              {snapshotLoading ? <span className="inline-block w-20 h-14 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
             </div>
             <p className="text-[9px] font-mono font-medium text-slate-300 uppercase">30-day horizon survival probability</p>
           </div>
@@ -173,15 +173,15 @@ export function Dashboard() {
           </div>
           <div className="space-y-3">
             {[
-              { label: 'BTC Dominance', val: snapshotLoading ? '...' : `${btcDominance}%`, trend: parseFloat(btcDominance) > 55 ? 'up' : 'neutral' },
-              { label: 'Survival Prob', val: snapshotLoading ? '...' : `${survivalProb}%`, trend: survivalProb >= 70 ? 'up' : survivalProb >= 50 ? 'neutral' : 'down' },
-              { label: 'Yield Curve', val: snapshotLoading ? '...' : `${yieldSpread}%`, trend: parseFloat(yieldSpread) < 0 ? 'down' : 'up' },
+              { label: 'BTC Dominance', val: snapshotLoading ? null : `${btcDominance}%`, trend: parseFloat(btcDominance) > 55 ? 'up' : 'neutral' },
+              { label: 'Survival Prob', val: snapshotLoading ? null : `${survivalProb}%`, trend: survivalProb >= 70 ? 'up' : survivalProb >= 50 ? 'neutral' : 'down' },
+              { label: 'Yield Curve', val: snapshotLoading ? null : `${yieldSpread}%`, trend: parseFloat(yieldSpread) < 0 ? 'down' : 'up' },
               { label: 'VIX Terminal', val: currentRegime.volatilityIndex, trend: 'neutral' },
             ].map((m, i) => (
-              <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2">
+              <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2 min-h-[2rem]">
                 <span className="text-[11px] font-mono text-gray-200 uppercase">{m.label}</span>
-                <span className={`text-base font-bold font-mono ${m.trend === 'up' ? 'text-green-500' : m.trend === 'down' ? 'text-red-500' : 'text-white'}`}>
-                  {m.val}
+                <span className={`text-base font-bold font-mono tabular-nums min-w-[4rem] text-right ${m.trend === 'up' ? 'text-green-500' : m.trend === 'down' ? 'text-red-500' : 'text-white'}`}>
+                  {m.val ?? <span className="inline-block w-12 h-5 bg-gray-700 rounded animate-pulse" />}
                 </span>
               </div>
             ))}

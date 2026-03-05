@@ -116,13 +116,13 @@ export default function HistoryPanel() {
                 <span className={isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'}>
                   {format(new Date(report.created_at), 'MMM dd, HH:mm')}
                 </span>
-                <span className={isDark ? 'text-green-400' : isHybrid ? 'text-green-300' : 'text-green-700'}>
+                <span className={`tabular-nums ${isDark ? 'text-green-400' : isHybrid ? 'text-green-300' : 'text-green-700'}`}>
                   BTC: ${Number(report.btc_price).toLocaleString()}
                 </span>
-                <span className={isDark ? 'text-yellow-500' : isHybrid ? 'text-yellow-400' : 'text-yellow-600'}>
+                <span className={`tabular-nums ${isDark ? 'text-yellow-500' : isHybrid ? 'text-yellow-400' : 'text-yellow-600'}`}>
                   FEAR: {report.fear_greed_value}
                 </span>
-                <span className={`font-bold text-right ${
+                <span className={`font-bold text-right tabular-nums ${
                   survivalScore >= 70 
                     ? (isDark ? 'text-green-400' : isHybrid ? 'text-green-300' : 'text-green-600')
                     : survivalScore >= 50 

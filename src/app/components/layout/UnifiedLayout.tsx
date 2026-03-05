@@ -112,7 +112,7 @@ export function UnifiedLayout() {
             }`}>
               {currentRegime.regime.charAt(0).toUpperCase() + currentRegime.regime.slice(1)}
             </span>
-            <span className={`text-sm ${
+            <span className={`text-sm tabular-nums min-w-[5rem] ${
               isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'
             }`}>
               {currentRegime.confidence}% confidence
@@ -177,28 +177,28 @@ export function UnifiedLayout() {
             
             <div className="flex items-center gap-2">
               <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>SRI</span>
-              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                {snapshotLoading ? '...' : systemicRisk}
+              <span className={`font-medium tabular-nums min-w-[2.5rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                {snapshotLoading ? <span className="inline-block w-8 h-4 bg-gray-700 rounded animate-pulse" /> : systemicRisk}
               </span>
-              <span className={systemicRisk > 50 ? 'text-red-600' : 'text-green-600'}>
+              <span className={`min-w-[2.5rem] ${systemicRisk > 50 ? 'text-red-600' : 'text-green-600'}`}>
                 {systemicRisk > 50 ? 'HIGH' : 'OK'}
               </span>
             </div>
             <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
             <div className="flex items-center gap-2">
               <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>Survival</span>
-              <span className={`font-medium ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                {snapshotLoading ? '...' : `${survivalProb}%`}
+              <span className={`font-medium tabular-nums min-w-[3rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                {snapshotLoading ? <span className="inline-block w-10 h-4 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
               </span>
-              <span className={survivalProb >= 70 ? 'text-green-600' : survivalProb >= 50 ? 'text-amber-600' : 'text-red-600'}>
+              <span className={`min-w-[4rem] ${survivalProb >= 70 ? 'text-green-600' : survivalProb >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
                 {survivalProb >= 70 ? 'SAFE' : survivalProb >= 50 ? 'CAUTION' : 'RISK'}
               </span>
             </div>
             <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
             <div className="flex items-center gap-2">
               <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>Yield</span>
-              <span className={`font-medium ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-white'}`}>
-                {snapshotLoading ? '...' : `${yieldSpread}%`}
+              <span className={`font-medium tabular-nums min-w-[3.5rem] ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-white'}`}>
+                {snapshotLoading ? <span className="inline-block w-12 h-4 bg-gray-700 rounded animate-pulse" /> : `${yieldSpread}%`}
               </span>
             </div>
             
@@ -209,7 +209,7 @@ export function UnifiedLayout() {
                 <div className="flex items-center gap-2">
                   <Zap className="w-3 h-3 text-red-500" />
                   <span className="text-gray-200">Risk</span>
-                  <span className="font-medium text-red-400">{currentRegime.riskLevel}%</span>
+                  <span className="font-medium tabular-nums min-w-[2.5rem] text-red-400">{currentRegime.riskLevel}%</span>
                 </div>
               </>
             )}
