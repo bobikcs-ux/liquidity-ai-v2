@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabase';
+
 // 1. Interface for market data
 export interface MarketContext {
   yieldCurve: string | null;
@@ -6,17 +8,58 @@ export interface MarketContext {
   btcPrice: number;
   btcChange: number;
   btcDominance: number;
+  survivalProbability?: number;
+  systemicRisk?: number;
+  regime?: string;
 }
 
-// 2. Main function to fetch all market data
+// 2. Main function to fetch all market data - tries Supabase first, then external APIs
 export const fetchAllMarketData = async (): Promise<MarketContext> => {
-  // Get API keys from environment
+  // Try to fetch from Supabase first (market_snapshots table)
+  if (supabase) {
+    try {
+      const { data: latestSnapshot, error } = await supabase
+        .from('market_snapshots')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!error && latestSnapshot) {
+        // Also fetch Fear & Greed from external API (not stored in DB)
+        let fearGreedValue = '50';
+        let fearGreedLabel = 'Neutral';
+        try {
+          const fngRes = await fetch('https://api.alternative.me/fng/').then(r => r.json());
+          fearGreedValue = fngRes.data?.[0]?.value || '50';
+          fearGreedLabel = fngRes.data?.[0]?.value_classification || 'Neutral';
+        } catch {
+          // Use defaults
+        }
+
+        return {
+          yieldCurve: latestSnapshot.yield_spread?.toFixed(2) || 'N/A',
+          fearGreedValue,
+          fearGreedLabel,
+          btcPrice: latestSnapshot.btc_price || 0,
+          btcChange: 0, // Not stored in DB, would need historical comparison
+          btcDominance: latestSnapshot.btc_dominance || 0,
+          survivalProbability: latestSnapshot.survival_probability,
+          systemicRisk: latestSnapshot.systemic_risk,
+          regime: latestSnapshot.regime,
+        };
+      }
+    } catch (err) {
+      console.warn('[v0] Supabase fetch failed, falling back to external APIs:', err);
+    }
+  }
+
+  // Fallback: fetch from external APIs directly
   const FRED_KEY = import.meta.env.VITE_FRED_API_KEY || 
     (typeof process !== 'undefined' && process.env.VITE_FRED_API_KEY);
   const COINGECKO_KEY = import.meta.env.NEXT_PUBLIC_COINGECKO_API_KEY || 
     (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_COINGECKO_API_KEY);
   
-  // CoinGecko headers with API key if available
   const cgHeaders: HeadersInit = { 'Accept': 'application/json' };
   if (COINGECKO_KEY) {
     cgHeaders['x-cg-demo-api-key'] = COINGECKO_KEY;
@@ -24,24 +67,20 @@ export const fetchAllMarketData = async (): Promise<MarketContext> => {
   
   try {
     const [fredRes, fngRes, cgGlobalRes, cgPriceRes] = await Promise.all([
-      // FRED (Macro) - Yield Curve 10Y-2Y
       FRED_KEY 
         ? fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key=${FRED_KEY}&file_type=json&limit=1&sort_order=desc`)
             .then(res => res.json())
-            .catch(() => ({ observations: [{ value: 'Loading...' }] }))
-        : Promise.resolve({ observations: [{ value: 'Loading...' }] }),
+            .catch(() => ({ observations: [{ value: 'N/A' }] }))
+        : Promise.resolve({ observations: [{ value: 'N/A' }] }),
       
-      // Alternative.me (Sentiment - Fear & Greed)
-      fetch(import.meta.env.VITE_FEAR_GREED_API_URL || 'https://api.alternative.me/fng/')
+      fetch('https://api.alternative.me/fng/')
         .then(res => res.json())
         .catch(() => ({ data: [{ value: '50', value_classification: 'Neutral' }] })),
       
-      // CoinGecko Global Data (BTC Dominance) with API key
       fetch('https://api.coingecko.com/api/v3/global', { headers: cgHeaders })
         .then(res => res.json())
         .catch(() => ({ data: { market_cap_percentage: { btc: 0 } } })),
       
-      // CoinGecko Price Data with API key
       fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true', { headers: cgHeaders })
         .then(res => res.json())
         .catch(() => ({ bitcoin: { usd: 0, usd_24h_change: 0 } }))
@@ -51,7 +90,7 @@ export const fetchAllMarketData = async (): Promise<MarketContext> => {
     const btcDominance = cgGlobalRes.data?.market_cap_percentage?.btc || 0;
     
     return {
-      yieldCurve: yieldValue && yieldValue !== '.' ? yieldValue : "Loading...",
+      yieldCurve: yieldValue && yieldValue !== '.' ? yieldValue : "N/A",
       fearGreedValue: fngRes.data?.[0]?.value || "50",
       fearGreedLabel: fngRes.data?.[0]?.value_classification || "Neutral",
       btcPrice: cgPriceRes.bitcoin?.usd || 0,
@@ -130,27 +169,42 @@ export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<stri
   }
 };
 
-// 5. Mock analysis fallback
+// 5. Mock analysis fallback - uses database values when available
 const generateMockAnalysis = (context: MarketContext): string => {
   const fearGreed = parseInt(context.fearGreedValue) || 50;
   const yieldValue = parseFloat(context.yieldCurve || '0');
   
-  let riskLevel = 'MODERATE';
-  let survivalProb = 78;
-  let liquidityState = 'Stable';
+  // Use database values if available, otherwise calculate
+  let survivalProb = context.survivalProbability != null 
+    ? Math.round(context.survivalProbability * 100) 
+    : 78;
   
-  if (fearGreed < 25 || yieldValue < -0.5) {
-    riskLevel = 'ELEVATED';
-    survivalProb = 62;
+  let riskLevel = context.regime?.toUpperCase() || 'MODERATE';
+  if (riskLevel === 'NORMAL') riskLevel = 'LOW';
+  if (riskLevel === 'CRISIS') riskLevel = 'ELEVATED';
+  
+  // Override with calculated values if no DB data
+  if (context.survivalProbability == null) {
+    if (fearGreed < 25 || yieldValue < -0.5) {
+      riskLevel = 'ELEVATED';
+      survivalProb = 62;
+    } else if (fearGreed > 75) {
+      riskLevel = 'EUPHORIA WARNING';
+      survivalProb = 71;
+    } else if (fearGreed > 50 && yieldValue > 0) {
+      riskLevel = 'LOW';
+      survivalProb = 89;
+    }
+  }
+  
+  let liquidityState = 'Stable';
+  if (context.systemicRisk != null) {
+    liquidityState = context.systemicRisk > 0.5 ? 'Tightening' : 
+                     context.systemicRisk > 0.3 ? 'Cautious' : 'Healthy';
+  } else if (fearGreed < 25 || yieldValue < -0.5) {
     liquidityState = 'Tightening';
   } else if (fearGreed > 75) {
-    riskLevel = 'EUPHORIA WARNING';
-    survivalProb = 71;
     liquidityState = 'Overextended';
-  } else if (fearGreed > 50 && yieldValue > 0) {
-    riskLevel = 'LOW';
-    survivalProb = 89;
-    liquidityState = 'Healthy';
   }
 
   return `
@@ -159,6 +213,7 @@ const generateMockAnalysis = (context: MarketContext): string => {
 • **Risk Level:** ${riskLevel}
 • **Survival Probability:** ${survivalProb}%
 • **Liquidity State:** ${liquidityState}
+${context.systemicRisk != null ? `• **Systemic Risk:** ${Math.round(context.systemicRisk * 100)}%` : ''}
 
 **Market Conditions:**
 - Yield Curve: ${context.yieldCurve}${yieldValue < 0 ? ' (INVERTED - Recession Signal)' : ''}
@@ -167,11 +222,11 @@ const generateMockAnalysis = (context: MarketContext): string => {
 - BTC Dominance: ${context.btcDominance.toFixed(1)}%
 
 **Final Warning:**
-${riskLevel === 'ELEVATED' 
-  ? '⚠️ Defensive positioning recommended. Reduce leverage and increase hedges.'
+${riskLevel === 'ELEVATED' || riskLevel === 'CRISIS'
+  ? 'Defensive positioning recommended. Reduce leverage and increase hedges.'
   : riskLevel === 'EUPHORIA WARNING'
-  ? '⚠️ Market complacency detected. Consider profit-taking and protective puts.'
-  : '✓ Continue monitoring. No immediate action required.'}
+  ? 'Market complacency detected. Consider profit-taking and protective puts.'
+  : 'Continue monitoring. No immediate action required.'}
   `.trim();
 };
 
