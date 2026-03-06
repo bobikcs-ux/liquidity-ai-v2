@@ -27,6 +27,8 @@ import {
 import { useSovereignIntelligence, getSRIColor, getAlertLevelColor, getRegimeColor } from '../hooks/useSovereignIntelligence';
 import type { SovereignView, SovereignRiskSignal } from '../types/sovereign';
 import { BRICSWidget } from './BRICSWidget';
+import { JapanMacroWidget } from './JapanMacroWidget';
+import { IndiaFiscalWidget } from './IndiaFiscalWidget';
 
 // ============================================================================
 // SOVEREIGN DESIGN TOKENS
@@ -505,6 +507,24 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
         {/* BRICS Intelligence Layer */}
         <div className="mt-8 pt-8 border-t border-amber-500/20">
           <BRICSWidget />
+        </div>
+
+        {/* Asian Intelligence Layer - Japan & India */}
+        <div className="mt-8 pt-8 border-t border-amber-500/20">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-orange-500 rounded-none flex items-center justify-center">
+              <Activity className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">ASIAN INTELLIGENCE LAYER</h3>
+              <p className="text-xs text-gray-500 font-mono">Japan e-Stat // India GST Portal</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <JapanMacroWidget />
+            <IndiaFiscalWidget />
+          </div>
         </div>
       </div>
     </div>
