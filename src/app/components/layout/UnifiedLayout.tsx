@@ -56,10 +56,21 @@ export function UnifiedLayout() {
   const { currentRegime, uiTheme, setManualOverride } = useAdaptiveTheme();
   const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const { isPro } = useUserRole();
+  
+  // Mounted state to prevent hydration mismatch on theme toggle
+  const [mounted, setMounted] = React.useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(() => {
+    if (typeof window === 'undefined') return false;
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
   });
+  
+  // Set mounted after hydration
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Format values from Supabase snapshot
   const systemicRisk = snapshot?.systemic_risk != null 
@@ -111,7 +122,7 @@ export function UnifiedLayout() {
 
   return (
     <div className="min-h-[100dvh] transition-colors duration-500"
-      style={{ backgroundColor: isDark ? '#0F1419' : isHybrid ? '#1a1f2e' : '#F8F9FA' }}
+      style={{ backgroundColor: isDark ? '#09090b' : isHybrid ? '#0c0c0f' : '#F8F9FA' }}
     >
       {/* Global Status Bar - Thin fixed header for institutional terminal feel */}
       {(isDark || isHybrid) && (
@@ -119,25 +130,25 @@ export function UnifiedLayout() {
       )}
       
       {/* Top Bar - Adjusts position based on GlobalStatusBar presence */}
-      <div className={`border-b fixed left-0 right-0 z-40 transition-colors duration-500 ${
+      <div className={`border-b fixed left-0 right-0 z-[100] transition-colors duration-500 ${
         (isDark || isHybrid) ? 'top-[36px]' : 'top-0'
       } ${
-        isDark ? 'bg-[#1a2332] border-blue-900' : isHybrid ? 'bg-[#242b3d] border-gray-700' : 'bg-white border-gray-200'
+        isDark ? 'bg-zinc-950 border-amber-900/30' : isHybrid ? 'bg-zinc-950 border-amber-900/20' : 'bg-white border-gray-200'
       }`}>
         <div className="px-4 lg:px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-              isDark ? 'bg-blue-600' : isHybrid ? 'bg-blue-500' : 'bg-[#2563EB]'
-            }`}>
-              <TrendingUp className="w-5 h-5 text-white" />
+{/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                isDark || isHybrid ? 'bg-amber-500/20 border border-amber-500/30' : 'bg-[#2563EB]'
+              }`}>
+                <TrendingUp className={`w-5 h-5 ${isDark || isHybrid ? 'text-amber-500' : 'text-white'}`} />
+              </div>
+              <span className={`text-xl font-semibold ${
+                isDark || isHybrid ? 'text-amber-500' : 'text-gray-900'
+              }`}>
+                Liquidity.ai
+              </span>
             </div>
-            <span className={`text-xl font-semibold ${
-              isDark || isHybrid ? 'text-white' : 'text-gray-900'
-            }`}>
-              Liquidity.ai
-            </span>
-          </div>
 
           {/* Current Regime Indicator - Hidden on mobile, centered on tablet/desktop */}
           <div className={`hidden md:flex items-center justify-center gap-3 px-4 py-2 rounded-lg transition-all ${
@@ -158,44 +169,46 @@ export function UnifiedLayout() {
 
           {/* Mobile Hamburger Menu */}
           <div className="lg:hidden flex items-center gap-2">
-            {/* Theme Toggle */}
-            <button 
-              onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
-              aria-label={`Switch to ${uiTheme === 'terminal' ? 'light' : 'dark'} theme`}
-              className={`flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${
-                isDark ? 'bg-gray-800 hover:bg-gray-700' : isHybrid ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
-              }`}
-            >
-              {uiTheme === 'terminal' ? (
-                <Sun className={`w-5 h-5 ${isDark ? 'text-amber-400' : 'text-gray-600'}`} />
-              ) : (
-                <Moon className="w-5 h-5 text-gray-600" />
-              )}
-            </button>
+            {/* Theme Toggle - Protected with mounted state */}
+            {mounted && (
+              <button 
+                onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
+                aria-label={`Switch to ${uiTheme === 'terminal' ? 'light' : 'dark'} theme`}
+                className={`flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${
+                  isDark || isHybrid ? 'bg-zinc-900 hover:bg-zinc-800 border border-amber-900/30' : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+              >
+                {uiTheme === 'terminal' ? (
+                  <Sun className="w-5 h-5 text-amber-500" />
+                ) : (
+                  <Moon className="w-5 h-5 text-gray-600" />
+                )}
+              </button>
+            )}
             
             {/* Hamburger Menu Drawer */}
             <Drawer>
               <DrawerTrigger asChild>
                 <button 
                   className={`flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${
-                    isDark ? 'bg-gray-800 hover:bg-gray-700' : isHybrid ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+                    isDark || isHybrid ? 'bg-zinc-900 hover:bg-zinc-800 border border-amber-900/30' : 'bg-gray-100 hover:bg-gray-200'
                   }`}
                   aria-label="Open navigation menu"
                 >
-                  <Menu className={`w-5 h-5 ${isDark || isHybrid ? 'text-white' : 'text-gray-700'}`} />
+                  <Menu className={`w-5 h-5 ${isDark || isHybrid ? 'text-amber-500' : 'text-gray-700'}`} />
                 </button>
               </DrawerTrigger>
-              <DrawerContent className={`${
-                isDark ? 'bg-[#1a2332] border-blue-900' : isHybrid ? 'bg-[#242b3d] border-gray-700' : 'bg-white border-gray-200'
+              <DrawerContent className={`z-[120] ${
+                isDark || isHybrid ? 'bg-zinc-950 border-amber-900/30' : 'bg-white border-gray-200'
               }`}>
-                <DrawerHeader className={`border-b ${isDark ? 'border-blue-900/50' : isHybrid ? 'border-gray-700' : 'border-gray-200'}`}>
+                <DrawerHeader className={`border-b ${isDark || isHybrid ? 'border-amber-900/30' : 'border-gray-200'}`}>
                   <div className="flex items-center justify-between">
-                    <DrawerTitle className={isDark || isHybrid ? 'text-white' : 'text-gray-900'}>
-                      Navigation
+                    <DrawerTitle className={isDark || isHybrid ? 'text-amber-500 font-mono tracking-wider' : 'text-gray-900'}>
+                      NAVIGATION
                     </DrawerTitle>
                     <DrawerClose asChild>
                       <button 
-                        className={`p-2 rounded-lg ${isDark || isHybrid ? 'hover:bg-gray-800 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
+                        className={`p-2 rounded-lg ${isDark || isHybrid ? 'hover:bg-zinc-900 text-amber-500/70 hover:text-amber-500' : 'hover:bg-gray-100 text-gray-500'}`}
                         aria-label="Close menu"
                       >
                         <X className="w-5 h-5" />
@@ -205,7 +218,7 @@ export function UnifiedLayout() {
                 </DrawerHeader>
                 <div className="p-4 space-y-2 max-h-[70vh] overflow-y-auto">
                   {/* All nav items */}
-                  {navItems.map((item) => {
+                  {(navItems || []).map((item) => {
                     const Icon = item.icon;
                     const active = isActive(item.path);
                     
@@ -213,17 +226,19 @@ export function UnifiedLayout() {
                       <DrawerClose key={item.path} asChild>
                         <Link
                           to={item.path}
+                          aria-label={`Navigate to ${item.label}`}
+                          aria-current={active ? 'page' : undefined}
                           className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all touch-manipulation min-h-[56px] ${
                             active
                               ? isDark || isHybrid
-                                ? 'bg-blue-600 text-white'
+                                ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30'
                                 : 'bg-[#2563EB] text-white'
                               : isDark || isHybrid
-                              ? 'text-gray-300 hover:bg-gray-800 active:bg-gray-700'
+                              ? 'text-zinc-400 hover:bg-zinc-900 hover:text-amber-500 active:bg-zinc-800'
                               : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
                           }`}
                         >
-                          <Icon className="w-6 h-6 flex-shrink-0" />
+                          <Icon className={`w-6 h-6 flex-shrink-0 ${active && (isDark || isHybrid) ? 'text-amber-500' : ''}`} />
                           <span className="font-medium text-base">{item.label}</span>
                         </Link>
                       </DrawerClose>
@@ -234,17 +249,19 @@ export function UnifiedLayout() {
                   <DrawerClose asChild>
                     <Link
                       to="/data-sources"
+                      aria-label="Navigate to Data Sources"
+                      aria-current={isActive('/data-sources') ? 'page' : undefined}
                       className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all touch-manipulation min-h-[56px] ${
                         isActive('/data-sources')
                           ? isDark || isHybrid
-                            ? 'bg-blue-600 text-white'
+                            ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30'
                             : 'bg-[#2563EB] text-white'
                           : isDark || isHybrid
-                          ? 'text-gray-300 hover:bg-gray-800 active:bg-gray-700'
+                          ? 'text-zinc-400 hover:bg-zinc-900 hover:text-amber-500 active:bg-zinc-800'
                           : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
                       }`}
                     >
-                      <Database className="w-6 h-6 flex-shrink-0" />
+                      <Database className={`w-6 h-6 flex-shrink-0 ${isActive('/data-sources') && (isDark || isHybrid) ? 'text-amber-500' : ''}`} />
                       <span className="font-medium text-base">Data Sources</span>
                     </Link>
                   </DrawerClose>
@@ -257,43 +274,46 @@ export function UnifiedLayout() {
           <div className="hidden lg:flex items-center gap-3">
             {/* PRO Badge (shown when user is PRO) */}
             {isPro && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-white">
-                <Crown className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950">
+                <Crown className="w-4 h-4 text-zinc-950" />
                 <span className="text-xs font-semibold">PRO MEMBER</span>
               </div>
             )}
             
-            <button 
-              onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
-              aria-label={`Switch to ${uiTheme === 'terminal' ? 'light research' : 'dark terminal'} theme. Currently using ${uiTheme === 'terminal' ? 'Terminal' : uiTheme === 'hybrid' ? 'Hybrid' : 'Research'} mode.`}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
-                isDark ? 'bg-gray-800 hover:bg-gray-700' : isHybrid ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'
-              }`}
-            >
-              {uiTheme === 'terminal' ? (
-                <Sun className={`w-4 h-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`} />
-              ) : (
-                <Moon className={`w-4 h-4 text-gray-600`} />
-              )}
-              <span className={`text-xs font-medium ${
-                isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
-              }`}>
-                {uiTheme === 'terminal' ? 'Terminal' : uiTheme === 'hybrid' ? 'Hybrid' : 'Research'}
-              </span>
-            </button>
+            {/* Theme Toggle - Protected with mounted state */}
+            {mounted && (
+              <button 
+                onClick={() => setManualOverride(uiTheme === 'terminal' ? 'light' : 'terminal')}
+                aria-label={`Switch to ${uiTheme === 'terminal' ? 'light research' : 'dark terminal'} theme. Currently using ${uiTheme === 'terminal' ? 'Terminal' : uiTheme === 'hybrid' ? 'Hybrid' : 'Research'} mode.`}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
+                  isDark || isHybrid ? 'bg-zinc-900 hover:bg-zinc-800 border border-amber-900/30' : 'bg-gray-50 hover:bg-gray-100'
+                }`}
+              >
+                {uiTheme === 'terminal' ? (
+                  <Sun className="w-4 h-4 text-amber-500" />
+                ) : (
+                  <Moon className="w-4 h-4 text-gray-600" />
+                )}
+                <span className={`text-xs font-medium font-mono ${
+                  isDark || isHybrid ? 'text-amber-500/80' : 'text-gray-600'
+                }`}>
+                  {uiTheme === 'terminal' ? 'TERMINAL' : uiTheme === 'hybrid' ? 'HYBRID' : 'RESEARCH'}
+                </span>
+              </button>
+            )}
             
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
-              isDark || isHybrid ? 'bg-gray-800' : 'bg-gray-50'
+              isDark || isHybrid ? 'bg-zinc-900 border border-emerald-900/30' : 'bg-gray-50'
             }`}>
-              <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
-                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                <svg className="w-3 h-3 text-zinc-950" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               </div>
-              <span className={`text-xs font-medium ${
-                isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
+              <span className={`text-xs font-medium font-mono ${
+                isDark || isHybrid ? 'text-emerald-500/80' : 'text-gray-600'
               }`}>
-                Verified
+                VERIFIED
               </span>
             </div>
           </div>
@@ -301,7 +321,7 @@ export function UnifiedLayout() {
 
         {/* Macro Ticker - Centered on mobile */}
         <div className={`border-t px-4 lg:px-6 py-2 overflow-x-auto ${
-          isDark ? 'border-blue-900/50 bg-gray-900/30' : isHybrid ? 'border-gray-700 bg-gray-800/30' : 'border-gray-100 bg-gray-50'
+          isDark || isHybrid ? 'border-amber-900/20 bg-zinc-950/50' : 'border-gray-100 bg-gray-50'
         }`}>
           <div className="flex items-center justify-center md:justify-start gap-6 text-xs whitespace-nowrap">
             {/* Mobile Regime Status - Only shows on mobile */}
@@ -360,21 +380,20 @@ export function UnifiedLayout() {
       </div>
 
       {/* Desktop Sidebar - Adjusts position based on GlobalStatusBar presence */}
-      <aside className={`hidden lg:block fixed left-0 bottom-0 border-r z-30 transition-all duration-300 ${
+      <aside className={`hidden lg:block fixed left-0 bottom-0 border-r z-[90] transition-all duration-300 ${
         (isDark || isHybrid) ? 'top-[140px]' : 'top-[104px]'
       } ${
         sidebarCollapsed ? 'w-20' : 'w-64'
       } ${
-        isDark ? 'bg-[#1a2332] border-blue-900' : isHybrid ? 'bg-[#242b3d] border-gray-700' : 'bg-white border-gray-200'
+        isDark || isHybrid ? 'bg-zinc-950 border-amber-900/20' : 'bg-white border-gray-200'
       }`}>
         {/* Toggle Button */}
-        <div className="absolute -right-3 top-6 z-40">
+        <div className="absolute -right-3 top-6 z-[100]">
           <button
             onClick={toggleSidebar}
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all hover:scale-110 ${
-              isDark ? 'bg-gray-800 border-blue-900 text-gray-300 hover:bg-gray-700' : 
-              isHybrid ? 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600' : 
+              isDark || isHybrid ? 'bg-zinc-900 border-amber-900/30 text-amber-500 hover:bg-zinc-800 hover:border-amber-500/50' : 
               'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'
             }`}
           >
@@ -442,7 +461,7 @@ export function UnifiedLayout() {
       } ${
         sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
       } ${
-        isDark ? 'bg-[#0F1419]' : isHybrid ? 'bg-[#1a1f2e]' : 'bg-[#F8F9FA]'
+        isDark || isHybrid ? 'bg-zinc-950' : 'bg-[#F8F9FA]'
       }`}>
         <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10 py-6">
           <Outlet />
@@ -450,7 +469,7 @@ export function UnifiedLayout() {
         
         {/* Footer */}
         <footer className={`mt-12 border-t py-8 transition-all duration-300 ${
-          isDark ? 'border-gray-800' : isHybrid ? 'border-gray-700' : 'border-gray-200'
+          isDark || isHybrid ? 'border-amber-900/20' : 'border-gray-200'
         }`}>
           <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -479,9 +498,9 @@ export function UnifiedLayout() {
                 />
               </div>
               
-              <div className={`text-sm font-medium text-center md:text-right ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'}`}>
-                <span className="font-mono tracking-wider">BOBIKCS // TERMINAL</span>
-                <span className={`block text-[10px] mt-1 ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'}`}>
+              <div className={`text-sm font-medium text-center md:text-right ${isDark || isHybrid ? 'text-amber-500/80' : 'text-gray-700'}`}>
+                <span className="font-mono tracking-wider">BOBIKCS // CITADEL</span>
+                <span className={`block text-[10px] mt-1 ${isDark || isHybrid ? 'text-zinc-500' : 'text-gray-400'}`}>
                   Professional Risk Intelligence Platform
                 </span>
               </div>
