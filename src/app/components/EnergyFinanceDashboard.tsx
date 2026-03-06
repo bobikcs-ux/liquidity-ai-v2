@@ -562,7 +562,7 @@ export function EnergyFinanceDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
             <MetricCard 
               label="WTI Crude" 
-              value={energyData?.price.toFixed(2) ?? '--'} 
+              value={energyData?.price != null ? energyData.price.toFixed(2) : '--'} 
               unit="USD/bbl"
               change={energyData?.priceChange}
               trend={energyData && energyData.priceChange > 0 ? 'up' : energyData && energyData.priceChange < 0 ? 'down' : 'neutral'}
@@ -570,7 +570,7 @@ export function EnergyFinanceDashboard() {
             />
             <MetricCard 
               label="Brent Crude" 
-              value={(energyData?.price ? energyData.price + 3.2 : 0).toFixed(2) ?? '--'} 
+              value={energyData?.price != null ? (energyData.price + 3.2).toFixed(2) : '--'} 
               unit="USD/bbl"
               change={energyData ? energyData.priceChange + 0.3 : undefined}
               trend={energyData && energyData.priceChange > 0 ? 'up' : 'down'}
