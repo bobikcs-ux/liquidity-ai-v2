@@ -7,8 +7,20 @@
  */
 
 import React, { useMemo, useState } from 'react';
-import { Shield, AlertTriangle, Zap, ChevronRight, Target, TrendingDown, DollarSign, Activity, X } from 'lucide-react';
+import { Shield, AlertTriangle, Zap, ChevronRight, Target, TrendingDown, DollarSign, Activity, X, type LucideIcon } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+
+// Safe Icon Component - Prevents UI crash if icon is missing
+interface SafeIconProps {
+  icon?: LucideIcon | null;
+  className?: string;
+  fallback?: React.ReactNode;
+}
+
+const SafeIcon: React.FC<SafeIconProps> = ({ icon: Icon, className = '', fallback = null }) => {
+  if (!Icon) return <span className={className}>{fallback}</span>;
+  return <Icon className={className} />;
+};
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { 
   computeAGISystemState, 

@@ -19,8 +19,25 @@ import {
   Cpu,
   X,
   MoreHorizontal,
-  Activity
+  Activity,
+  DollarSign,
+  Globe,
+  ArrowUp,
+  ArrowDown,
+  type LucideIcon,
 } from 'lucide-react';
+
+// Safe Icon Component - Prevents UI crash if icon is missing
+interface SafeIconProps {
+  icon?: LucideIcon | null;
+  className?: string;
+  fallback?: React.ReactNode;
+}
+
+const SafeIcon: React.FC<SafeIconProps> = ({ icon: Icon, className = '', fallback = null }) => {
+  if (!Icon) return <span className={className}>{fallback}</span>;
+  return <Icon className={className} />;
+};
 import {
   Drawer,
   DrawerClose,

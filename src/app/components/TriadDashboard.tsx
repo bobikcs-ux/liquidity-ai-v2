@@ -25,7 +25,24 @@ import {
   Zap,
   Ship,
   Target,
+  DollarSign,
+  ArrowUp,
+  ArrowDown,
+  Percent,
+  type LucideIcon,
 } from 'lucide-react';
+
+// Safe Icon Component - Prevents UI crash if icon is missing
+interface SafeIconProps {
+  icon?: LucideIcon | null;
+  className?: string;
+  fallback?: React.ReactNode;
+}
+
+const SafeIcon: React.FC<SafeIconProps> = ({ icon: Icon, className = '', fallback = null }) => {
+  if (!Icon) return <span className={className}>{fallback}</span>;
+  return <Icon className={className} />;
+};
 import { useTriadIntelligence, useDataFreshness } from '../hooks/useTriadIntelligence';
 import { CapitalFlightDetector } from './CapitalFlightDetector';
 import type {

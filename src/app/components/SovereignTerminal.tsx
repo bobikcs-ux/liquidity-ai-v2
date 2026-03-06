@@ -25,6 +25,11 @@ import {
   Loader2,
   Globe,
   X,
+  DollarSign,
+  Fuel,
+  Bitcoin,
+  BarChart3,
+  type LucideIcon,
 } from 'lucide-react';
 import { useSovereignIntelligence, getSRIColor, getAlertLevelColor, getRegimeColor } from '../hooks/useSovereignIntelligence';
 import type { SovereignView, SovereignRiskSignal } from '../types/sovereign';
@@ -33,6 +38,20 @@ import { JapanMacroWidget } from './JapanMacroWidget';
 import { IndiaFiscalWidget } from './IndiaFiscalWidget';
 import { EuropeWidget } from './EuropeWidget';
 import { AustraliaWidget } from './AustraliaWidget';
+
+// ============================================================================
+// SAFE ICON COMPONENT - Prevents UI crash if icon is missing
+// ============================================================================
+interface SafeIconProps {
+  icon?: LucideIcon | null;
+  className?: string;
+  fallback?: React.ReactNode;
+}
+
+const SafeIcon: React.FC<SafeIconProps> = ({ icon: Icon, className = '', fallback = null }) => {
+  if (!Icon) return <span className={className}>{fallback}</span>;
+  return <Icon className={className} />;
+};
 
 // ============================================================================
 // SOVEREIGN DESIGN TOKENS
