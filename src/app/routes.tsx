@@ -10,6 +10,7 @@ import { BlackSwanTerminal } from "./pages/BlackSwanTerminal";
 import { CapitalSurvival } from "./pages/CapitalSurvival";
 import { AGITerminal } from "./pages/AGITerminal";
 import { EnergyFinance } from "./pages/EnergyFinance";
+import { Sovereign } from "./pages/Sovereign";
 
 export const router = createBrowserRouter([
   {
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
       {
         path: "energy-finance",
         element: <EnergyFinance />,
+      },
+      {
+        path: "sovereign",
+        element: <Sovereign />,
       },
     ],
   },

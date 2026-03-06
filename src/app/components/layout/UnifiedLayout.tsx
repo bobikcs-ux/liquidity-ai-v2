@@ -39,6 +39,7 @@ const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
   { path: '/agi-terminal', label: 'AGI Terminal', icon: Cpu },
   { path: '/intelligence', label: 'Intelligence', icon: Brain },
+  { path: '/sovereign', label: 'Sovereign', icon: Crown },
   { path: '/capital-survival', label: 'Capital AI', icon: Shield },
   { path: '/stress-lab', label: 'Stress Lab', icon: FlaskConical },
   { path: '/black-swan', label: 'Black Swan', icon: AlertTriangle },
