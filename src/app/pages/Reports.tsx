@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { FileText, Download, AlertCircle, ExternalLink, Link2, Loader2 } from 'lucide-react';
+import { FileText, Download, AlertCircle, ExternalLink, Link2, Loader2, Globe } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useUserRole } from '../context/UserRoleContext';
 import { useMarketSnapshot, GLOBAL_FEAR_GREED_VALUE, GLOBAL_FEAR_GREED_LABEL } from '../hooks/useMarketSnapshot';
 import { quickExport } from '../utils/exportPDF';
+import { IntelligenceArchive } from '../components/IntelligenceArchive';
 
 // Revolut payment link (external) - not used directly here, handled by ProModal
 const REVOLUT_PAYMENT_URL = 'https://revolut.me/studiobobikcs/149usd';
@@ -434,6 +435,24 @@ export function Reports() {
         >
           Next
         </button>
+      </div>
+
+      {/* World Bank Intelligence Archive */}
+      <div className="pt-8 border-t border-gray-200">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+            <Globe className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <h2 className={`text-lg font-bold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+              World Bank Intelligence Archive
+            </h2>
+            <p className={`text-sm ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>
+              Filter by country to view regional reports
+            </p>
+          </div>
+        </div>
+        <IntelligenceArchive />
       </div>
     </div>
   );
