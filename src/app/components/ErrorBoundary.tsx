@@ -203,4 +203,5 @@ export function ErrorBoundaryWrapper({
   );
 }
 
+export { ErrorBoundary };
 export default ErrorBoundary;

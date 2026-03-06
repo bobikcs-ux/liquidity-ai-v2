@@ -184,7 +184,7 @@ export function useSovereignIntelligence() {
     const pollInterval = setInterval(fetchSovereignData, 30000);
 
     // Set up Supabase realtime subscription for signals (only if supabase is available)
-    let signalsChannel: ReturnType<typeof supabase.channel> | null = null;
+    let signalsChannel: any = null;
     
     if (supabase) {
       signalsChannel = supabase
