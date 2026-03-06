@@ -305,7 +305,7 @@ export function IntelligenceArchive({ data, className = '' }: IntelligenceArchiv
                   <span>{option.label}</span>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
                     selectedCountry === option.value
-                      ? 'bg-white/20 text-white'
+                      ? 'bg-zinc-700 text-white'
                       : isDark || isHybrid 
                         ? 'bg-gray-700 text-gray-400' 
                         : 'bg-gray-100 text-gray-500'

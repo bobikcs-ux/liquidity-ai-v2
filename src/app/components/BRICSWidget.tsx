@@ -155,7 +155,7 @@ const PowerShiftGauge = memo(function PowerShiftGauge({
           className="absolute left-0 top-0 h-full bg-gradient-to-r from-amber-600 to-[#B8A892] transition-all duration-500"
           style={{ width: `${Math.min(ratio / 2, 1) * 100}%` }}
         />
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/50" />
+        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-zinc-500/30" />
       </div>
 
       {/* Trend Indicator */}

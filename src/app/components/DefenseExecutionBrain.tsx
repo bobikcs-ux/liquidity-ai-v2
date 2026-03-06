@@ -48,7 +48,7 @@ function StrategicPivotOverlay({
         <div className="relative p-6 border-b border-red-500/30 bg-gradient-to-r from-red-950/50 to-transparent">
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-zinc-800 text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>

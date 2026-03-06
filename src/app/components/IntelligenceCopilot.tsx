@@ -1,292 +1,160 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
-  Zap, Loader2, Terminal, Send, Clock, AlertTriangle, 
-  TrendingUp, Shield, Brain, ChevronUp, ChevronDown, X, FileDown
+  Loader2, Terminal, Send, Clock, Brain, ChevronUp, ChevronDown, X, 
+  AlertCircle, CheckCircle2
 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
-import { useUserRole } from '../context/UserRoleContext';
-import { runMasterScan, MarketContext, analyzeBlackSwanRisk, fetchAllMarketData } from '../services/masterIntelligence';
-import { saveMarketReport, logSystemEvent } from '../services/supabaseService';
-import { quickExport } from '../utils/exportPDF';
-import HistoryPanel from './HistoryPanel';
 
-// Command types for the dual-core system
-type CommandType = 
-  | 'scan' 
-  | 'risk' 
-  | 'liquidity' 
-  | 'correlation' 
-  | 'forecast' 
-  | 'export'
-  | 'help' 
-  | 'clear'
-  | 'status';
-
-interface CommandResult {
-  command: string;
-  output: string;
+// Message types for the AI chat
+interface ChatMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
   timestamp: Date;
-  type: 'success' | 'error' | 'info' | 'warning';
+  status?: 'success' | 'error' | 'pending';
 }
 
-// Command definitions with descriptions
-const COMMANDS: Record<CommandType, { description: string; usage: string }> = {
-  scan: { description: 'Run full Black Swan market scan', usage: '/scan' },
-  risk: { description: 'Quick risk assessment', usage: '/risk' },
-  liquidity: { description: 'Check liquidity conditions', usage: '/liquidity' },
-  correlation: { description: 'Analyze cross-asset correlations', usage: '/correlation' },
-  forecast: { description: 'Generate 24h risk forecast', usage: '/forecast' },
-  export: { description: 'Export last analysis as PDF', usage: '/export' },
-  help: { description: 'Show available commands', usage: '/help' },
-  clear: { description: 'Clear command history', usage: '/clear' },
-  status: { description: 'Check system health', usage: '/status' },
+// Design tokens - Sovereign Sand palette
+const DESIGN = {
+  sovereignSand: '#A3937B',
+  sovereignSandLight: '#B8A892',
+  matrixGreen: '#00FF41',
+  bgPrimary: '#0a0a0a',
+  bgPanel: '#111111',
+  textPrimary: '#d4d4d8', // zinc-300
+  textMuted: '#71717a',
+  border: 'rgba(163, 147, 123, 0.15)',
 };
 
 export function IntelligenceCopilot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [masterAnalysis, setMasterAnalysis] = useState<string | null>(null);
-  const [marketContext, setMarketContext] = useState<MarketContext | null>(null);
-  const [commandHistory, setCommandHistory] = useState<CommandResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [systemStatus, setSystemStatus] = useState<'INIT' | 'ACTIVE' | 'FAIL' | 'OFFLINE'>('INIT');
   const inputRef = useRef<HTMLInputElement>(null);
-  const historyRef = useRef<HTMLDivElement>(null);
-  const { currentRegime, uiTheme } = useAdaptiveTheme();
-  const { incrementCopilotQuestion, isPro, copilotQuestionsAsked } = useUserRole();
-
+  const messagesRef = useRef<HTMLDivElement>(null);
+  const { uiTheme } = useAdaptiveTheme();
+  
   const isDark = uiTheme === 'dark' || uiTheme === 'terminal';
-  const isHybrid = uiTheme === 'hybrid';
 
-  // Auto-scroll to bottom of history
+  // Auto-scroll to bottom of messages
   useEffect(() => {
-    if (historyRef.current) {
-      historyRef.current.scrollTop = historyRef.current.scrollHeight;
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
-  }, [commandHistory]);
+  }, [messages]);
 
-  // Filter suggestions based on input
-  const filteredCommands = Object.entries(COMMANDS).filter(([cmd]) =>
-    cmd.startsWith(inputValue.replace('/', '').toLowerCase())
-  );
-
-  // Process commands
-  const processCommand = useCallback(async (input: string) => {
-    const cmd = input.toLowerCase().replace('/', '').trim() as CommandType;
-    
-    // Check if command counts against limit (help, clear, status don't count)
-    const freeCommands: CommandType[] = ['help', 'clear', 'status'];
-    const countsAgainstLimit = !freeCommands.includes(cmd);
-    
-    // Enforce limit for free users
-    if (countsAgainstLimit && !incrementCopilotQuestion()) {
-      // ProModal will be shown by incrementCopilotQuestion
-      return;
+  // System initialization test on first open
+  useEffect(() => {
+    if (isOpen && systemStatus === 'INIT') {
+      testSystemInit();
     }
-    
-    const addResult = (output: string, type: CommandResult['type'] = 'success') => {
-      setCommandHistory(prev => [...prev, {
-        command: input,
-        output,
-        timestamp: new Date(),
-        type,
-      }]);
-    };
+  }, [isOpen, systemStatus]);
 
-    switch (cmd) {
-      case 'help':
-        const helpText = Object.entries(COMMANDS)
-          .map(([cmd, info]) => `${info.usage} - ${info.description}`)
-          .join('\n');
-        addResult(`Available Commands:\n${helpText}`, 'info');
-        break;
+  // Test SYSTEM_INIT
+  const testSystemInit = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ systemInit: 'SYSTEM_INIT' }),
+      });
 
-      case 'clear':
-        setCommandHistory([]);
-        break;
-
-      case 'status':
-        addResult(
-          `System Status: OPERATIONAL\nRegime: ${currentRegime?.toUpperCase() || 'UNKNOWN'}\nTheme: ${uiTheme}\nAPI: ${import.meta.env.VITE_GOOGLE_AI_KEY ? 'Connected' : 'Mock Mode'}`,
-          'info'
-        );
-        break;
-
-      case 'scan':
-        setIsScanning(true);
-        addResult('Initiating full market scan...', 'info');
-        try {
-          const { context, analysis } = await runMasterScan();
-          setMarketContext(context);
-          setMasterAnalysis(analysis);
-          
-          // Save to Supabase
-          const saved = await saveMarketReport(context, analysis);
-          await logSystemEvent('info', 'IntelligenceCopilot', 'Full scan completed', { saved });
-          
-          addResult(analysis, 'success');
-        } catch (error) {
-          const errMsg = error instanceof Error ? error.message : 'Unknown error';
-          await logSystemEvent('error', 'IntelligenceCopilot', 'Scan failed', { error: errMsg });
-          addResult(`Scan failed: ${errMsg}`, 'error');
-        } finally {
-          setIsScanning(false);
-        }
-        break;
-
-      case 'risk':
-        setIsScanning(true);
-        addResult('Calculating risk metrics...', 'info');
-        try {
-          const context = await fetchAllMarketData();
-          const fearGreed = parseInt(context.fearGreedValue) || 50;
-          const yieldValue = parseFloat(context.yieldCurve || '0');
-          
-          let riskScore = 50;
-          if (fearGreed < 25) riskScore += 25;
-          else if (fearGreed > 75) riskScore -= 15;
-          if (yieldValue < 0) riskScore += 20;
-          
-          const riskLevel = riskScore > 70 ? 'HIGH' : riskScore > 50 ? 'MODERATE' : 'LOW';
-          
-          addResult(
-            `Risk Assessment:\n- Score: ${riskScore}/100\n- Level: ${riskLevel}\n- Fear/Greed: ${fearGreed}\n- Yield Curve: ${context.yieldCurve}`,
-            riskScore > 70 ? 'warning' : 'success'
-          );
-        } catch (error) {
-          addResult('Risk calculation failed', 'error');
-        } finally {
-          setIsScanning(false);
-        }
-        break;
-
-      case 'liquidity':
-        setIsScanning(true);
-        addResult('Analyzing liquidity conditions...', 'info');
-        try {
-          const context = await fetchAllMarketData();
-          const btcDom = context.btcDominance;
-          const liquidityState = btcDom > 55 ? 'Risk-Off (BTC Dominance High)' : btcDom < 45 ? 'Risk-On (Altcoin Season)' : 'Neutral';
-          
-          addResult(
-            `Liquidity Analysis:\n- BTC Dominance: ${btcDom.toFixed(1)}%\n- State: ${liquidityState}\n- BTC Price: $${context.btcPrice.toLocaleString()}\n- 24h Change: ${context.btcChange.toFixed(2)}%`,
-            'success'
-          );
-        } catch (error) {
-          addResult('Liquidity check failed', 'error');
-        } finally {
-          setIsScanning(false);
-        }
-        break;
-
-      case 'correlation':
-        addResult(
-          'Cross-Asset Correlation (Estimated):\n- BTC/SPY: +0.42\n- BTC/GOLD: +0.18\n- BTC/DXY: -0.35\n- ETH/BTC: +0.91',
-          'info'
-        );
-        break;
-
-      case 'forecast':
-        setIsScanning(true);
-        addResult('Generating 24h risk forecast...', 'info');
-        try {
-          const context = await fetchAllMarketData();
-          const analysis = await analyzeBlackSwanRisk(context);
-          setMarketContext(context);
-          addResult(`24H FORECAST:\n${analysis}`, 'success');
-        } catch (error) {
-          addResult('Forecast generation failed', 'error');
-        } finally {
-          setIsScanning(false);
-        }
-        break;
-
-      case 'export':
-        if (!marketContext || !masterAnalysis) {
-          addResult('No analysis to export. Run /scan first.', 'warning');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'ACTIVE') {
+          setSystemStatus('ACTIVE');
+          setMessages([{
+            role: 'system',
+            content: `GEMINI INTELLIGENCE CORE ОНЛАЙН\n\nТаблици заредени: t63, t76, t81, t94, t95\nРежим: СТРАТЕГ\n\nГотов за въпроси.`,
+            timestamp: new Date(),
+            status: 'success'
+          }]);
         } else {
-          setIsScanning(true);
-          addResult('Refreshing data and generating PDF report...', 'info');
-          try {
-            // Refetch latest data before export to ensure freshness
-            const freshContext = await fetchAllMarketData();
-            // Small delay to ensure UI updates
-            await new Promise(resolve => setTimeout(resolve, 100));
-            setMarketContext(freshContext);
-            
-            const exported = await quickExport(freshContext, masterAnalysis);
-            if (exported) {
-              addResult('PDF report generated with latest data. Check your print dialog.', 'success');
-            } else {
-              addResult('PDF export failed. Please allow popups and try again.', 'error');
-            }
-          } catch (error) {
-            addResult('Failed to refresh data for export. Using cached data.', 'warning');
-            const exported = await quickExport(marketContext, masterAnalysis);
-            if (exported) {
-              addResult('PDF report generated. Check your print dialog.', 'success');
-            }
-          } finally {
-            setIsScanning(false);
-          }
+          setSystemStatus('FAIL');
         }
-        break;
-
-      default:
-        addResult(`Unknown command: ${input}\nType /help for available commands.`, 'error');
+      } else {
+        setSystemStatus('FAIL');
+      }
+    } catch (error) {
+      console.error('[v0] System init failed:', error);
+      setSystemStatus('FAIL');
+      setMessages([{
+        role: 'system',
+        content: 'SYSTEM_INIT FAIL - Няма връзка с Gemini API',
+        timestamp: new Date(),
+        status: 'error'
+      }]);
+    } finally {
+      setIsLoading(false);
     }
-  }, [currentRegime, uiTheme, incrementCopilotQuestion]);
+  };
+
+  // Send message to Gemini
+  const sendMessage = useCallback(async (userMessage: string) => {
+    if (!userMessage.trim() || isLoading) return;
+
+    // Add user message
+    const userMsg: ChatMessage = {
+      role: 'user',
+      content: userMessage,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, userMsg]);
+    setInputValue('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      const data = await response.json();
+
+      const assistantMsg: ChatMessage = {
+        role: 'assistant',
+        content: data.response || data.fallback || 'Няма отговор',
+        timestamp: new Date(),
+        status: data.status === 'ACTIVE' ? 'success' : data.status === 'FALLBACK' ? 'success' : 'error'
+      };
+      setMessages(prev => [...prev, assistantMsg]);
+
+    } catch (error) {
+      console.error('[v0] Chat error:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Грешка при комуникация с AI. Моля, опитайте отново.',
+        timestamp: new Date(),
+        status: 'error'
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoading]);
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputValue.trim() || isScanning) return;
-    
-    processCommand(inputValue);
-    setInputValue('');
-    setShowSuggestions(false);
-  };
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
-    setShowSuggestions(value.startsWith('/') && value.length > 0);
-  };
-
-  // Select suggestion
-  const selectSuggestion = (cmd: string) => {
-    setInputValue(`/${cmd}`);
-    setShowSuggestions(false);
-    inputRef.current?.focus();
-  };
-
-  // Get result type color
-  const getResultColor = (type: CommandResult['type']) => {
-    switch (type) {
-      case 'success': return isDark || isHybrid ? 'text-green-400' : 'text-green-600';
-      case 'error': return isDark || isHybrid ? 'text-red-400' : 'text-red-600';
-      case 'warning': return isDark || isHybrid ? 'text-amber-400' : 'text-amber-600';
-      case 'info': return isDark || isHybrid ? 'text-blue-400' : 'text-blue-600';
-    }
+    sendMessage(inputValue);
   };
 
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-6 right-6 p-4 rounded-2xl shadow-2xl transition-all hover:scale-105 z-50 ${
-          isDark 
-            ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white' 
-            : isHybrid
-            ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white'
-        }`}
+        className="fixed bottom-6 right-6 p-4 rounded-2xl shadow-2xl transition-all hover:scale-105 z-50"
+        style={{ 
+          background: `linear-gradient(135deg, ${DESIGN.sovereignSand} 0%, ${DESIGN.sovereignSandLight} 100%)`,
+          border: `1px solid ${DESIGN.border}`
+        }}
       >
         <div className="flex items-center gap-2">
-          <Brain className="w-6 h-6" />
-          <span className="font-semibold">AI Intelligence</span>
+          <Brain className="w-6 h-6 text-black" />
+          <span className="font-semibold text-black">Gemini Intelligence</span>
         </div>
       </button>
     );
@@ -294,254 +162,212 @@ export function IntelligenceCopilot() {
 
   return (
     <div 
-      className={`fixed bottom-4 right-4 left-4 sm:left-auto px-4 sm:px-0 rounded-2xl shadow-2xl transition-all z-50 overflow-hidden w-full max-w-full sm:max-w-none ${
+      className={`fixed bottom-4 right-4 left-4 sm:left-auto rounded-2xl shadow-2xl transition-all z-50 overflow-hidden ${
         isExpanded ? 'sm:w-[600px] h-[80vh] sm:h-[700px]' : 'sm:w-[420px] h-[70vh] sm:h-[550px]'
-      } ${
-        isDark 
-          ? 'bg-gray-900 border border-gray-700' 
-          : isHybrid
-          ? 'bg-gray-800 border border-gray-600'
-          : 'bg-white border border-gray-200'
       }`}
+      style={{ 
+        background: DESIGN.bgPrimary,
+        border: `1px solid ${DESIGN.border}`
+      }}
     >
       {/* Header */}
-      <div className={`flex items-center justify-between p-4 border-b ${
-        isDark ? 'border-gray-700' : isHybrid ? 'border-gray-600' : 'border-gray-200'
-      }`}>
+      <div 
+        className="flex items-center justify-between p-4"
+        style={{ borderBottom: `1px solid ${DESIGN.border}` }}
+      >
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-xl ${
-            isDark ? 'bg-amber-600' : isHybrid ? 'bg-amber-500' : 'bg-amber-100'
-          }`}>
-            <Terminal className={`w-5 h-5 ${isDark || isHybrid ? 'text-white' : 'text-amber-600'}`} />
+          <div 
+            className="p-2 rounded-xl"
+            style={{ background: `${DESIGN.sovereignSand}20`, border: `1px solid ${DESIGN.sovereignSand}40` }}
+          >
+            <Terminal className="w-5 h-5" style={{ color: DESIGN.sovereignSand }} />
           </div>
           <div>
-            <h3 className={`font-bold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-              Black Swan Intelligence
+            <h3 className="font-bold font-mono text-sm" style={{ color: DESIGN.sovereignSand }}>
+              GEMINI INTELLIGENCE
             </h3>
-            <p className={`text-xs font-medium ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-500'}`}>
-              {isPro ? 'PRO - Unlimited Access' : `FREE - ${Math.max(0, 3 - copilotQuestionsAsked)}/3 queries left`}
-            </p>
+            <div className="flex items-center gap-2">
+              {systemStatus === 'ACTIVE' && (
+                <span className="flex items-center gap-1 text-xs font-mono" style={{ color: DESIGN.matrixGreen }}>
+                  <CheckCircle2 className="w-3 h-3" /> ОНЛАЙН
+                </span>
+              )}
+              {systemStatus === 'FAIL' && (
+                <span className="flex items-center gap-1 text-xs font-mono text-red-500">
+                  <AlertCircle className="w-3 h-3" /> FAIL
+                </span>
+              )}
+              {systemStatus === 'INIT' && (
+                <span className="flex items-center gap-1 text-xs font-mono" style={{ color: DESIGN.textMuted }}>
+                  <Loader2 className="w-3 h-3 animate-spin" /> INIT...
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            aria-label={isExpanded ? 'Collapse panel' : 'Expand panel'}
-            className={`p-2 rounded-lg transition-colors ${
-              isDark || isHybrid ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
-            }`}
+            className="p-2 rounded-lg transition-colors hover:bg-zinc-900"
+            style={{ color: DESIGN.textMuted }}
           >
             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            aria-label="Close intelligence panel"
-            className={`p-2 rounded-lg transition-colors ${
-              isDark || isHybrid ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'
-            }`}
+            className="p-2 rounded-lg transition-colors hover:bg-zinc-900"
+            style={{ color: DESIGN.textMuted }}
           >
             <X className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Command History */}
+      {/* Messages */}
       <div 
-        ref={historyRef}
-        className={`flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3 ${
-          isExpanded ? 'h-[calc(100%-180px)] sm:h-[480px]' : 'h-[calc(100%-180px)] sm:h-[330px]'
+        ref={messagesRef}
+        className={`flex-1 overflow-y-auto p-4 space-y-4 ${
+          isExpanded ? 'h-[calc(100%-140px)]' : 'h-[calc(100%-140px)]'
         }`}
+        style={{ background: DESIGN.bgPrimary }}
       >
-        {commandHistory.length === 0 ? (
-          <div className={`text-center py-8 px-4 ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-400'}`}>
-            <Terminal className="w-12 h-12 mx-auto mb-3 opacity-50" />
-            <p className="text-sm break-words">Type <span className="font-mono">/help</span> to see available commands</p>
-            <p className="text-xs mt-1 break-words">or <span className="font-mono">/scan</span> to start a full analysis</p>
+        {messages.length === 0 && systemStatus === 'INIT' ? (
+          <div className="text-center py-12">
+            <Loader2 className="w-8 h-8 mx-auto mb-3 animate-spin" style={{ color: DESIGN.sovereignSand }} />
+            <p className="text-sm font-mono" style={{ color: DESIGN.textMuted }}>
+              Инициализация на Gemini Intelligence...
+            </p>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="text-center py-12">
+            <Terminal className="w-12 h-12 mx-auto mb-3 opacity-50" style={{ color: DESIGN.sovereignSand }} />
+            <p className="text-sm font-mono" style={{ color: DESIGN.textMuted }}>
+              Задайте въпрос за енергийни пазари, shipping или crack spreads
+            </p>
           </div>
         ) : (
-          commandHistory.map((result, idx) => (
-            <div key={idx} className="space-y-1">
-              <div className={`text-xs font-medium flex items-center gap-2 ${
-                isDark || isHybrid ? 'text-slate-300' : 'text-gray-400'
-              }`}>
-                <Clock className="w-3 h-3" />
-                {result.timestamp.toLocaleTimeString()}
-                <span className="font-mono">{result.command}</span>
-              </div>
-              <div className={`p-3 rounded-lg font-mono text-sm whitespace-pre-wrap break-words overflow-hidden w-full max-w-full ${
-                isDark ? 'bg-gray-800' : isHybrid ? 'bg-gray-700' : 'bg-gray-50'
-              } ${getResultColor(result.type)}`} style={{ wordBreak: 'break-word' }}>
-                {result.output}
+          messages.map((msg, idx) => (
+            <div 
+              key={idx} 
+              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div 
+                className={`max-w-[85%] rounded-xl p-3 ${
+                  msg.role === 'user' 
+                    ? 'rounded-br-sm' 
+                    : 'rounded-bl-sm'
+                }`}
+                style={{ 
+                  background: msg.role === 'user' 
+                    ? `${DESIGN.sovereignSand}20` 
+                    : DESIGN.bgPanel,
+                  border: `1px solid ${msg.role === 'user' ? DESIGN.sovereignSand + '40' : DESIGN.border}`,
+                }}
+              >
+                {msg.role !== 'user' && (
+                  <div className="flex items-center gap-2 mb-2">
+                    <span 
+                      className="text-xs font-mono uppercase tracking-wider"
+                      style={{ color: msg.status === 'error' ? '#ef4444' : DESIGN.sovereignSand }}
+                    >
+                      {msg.role === 'system' ? 'СИСТЕМА' : 'GEMINI'}
+                    </span>
+                    <span className="text-xs font-mono" style={{ color: DESIGN.textMuted }}>
+                      {msg.timestamp.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )}
+                <p 
+                  className="text-sm font-mono whitespace-pre-wrap leading-relaxed"
+                  style={{ 
+                    color: msg.role === 'user' 
+                      ? DESIGN.sovereignSandLight 
+                      : msg.status === 'error' 
+                        ? '#ef4444' 
+                        : DESIGN.textPrimary 
+                  }}
+                >
+                  {msg.content}
+                </p>
+                {msg.role === 'user' && (
+                  <div className="flex justify-end mt-1">
+                    <span className="text-xs font-mono" style={{ color: DESIGN.textMuted }}>
+                      {msg.timestamp.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           ))
         )}
 
-        {isScanning && (
-          <div className={`flex items-center gap-2 p-3 rounded-lg ${
-            isDark ? 'bg-gray-800' : isHybrid ? 'bg-gray-700' : 'bg-gray-50'
-          }`}>
-            <Loader2 className={`w-4 h-4 animate-spin ${isDark || isHybrid ? 'text-amber-400' : 'text-amber-500'}`} />
-            <span className={`text-sm ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}`}>
-              Processing...
-            </span>
-          </div>
-        )}
-
-        {/* Market Context Display */}
-        {marketContext && masterAnalysis && (
-          <div className={`mt-4 p-3 rounded-lg ${
-            isDark ? 'bg-amber-900/20 border border-amber-700/50' : 
-            isHybrid ? 'bg-amber-900/30 border border-amber-600/50' : 
-            'bg-amber-50 border border-amber-200'
-          }`}>
-            <div className="grid grid-cols-2 gap-2 text-xs mb-2">
-              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                BTC: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                  ${marketContext.btcPrice.toLocaleString()}
-                </span>
-              </div>
-              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                Fear/Greed: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                  {marketContext.fearGreedValue}
-                </span>
-              </div>
-              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                Yield Curve: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                  {marketContext.yieldCurve && marketContext.yieldCurve !== 'N/A' 
-                    ? `${marketContext.yieldCurve}%` 
-                    : 'N/A'}
-                </span>
-              </div>
-              <div className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-                BTC Dom: <span className={`tabular-nums ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                  {marketContext.btcDominance.toFixed(1)}%
+        {isLoading && (
+          <div className="flex justify-start">
+            <div 
+              className="rounded-xl rounded-bl-sm p-3"
+              style={{ background: DESIGN.bgPanel, border: `1px solid ${DESIGN.border}` }}
+            >
+              <div className="flex items-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin" style={{ color: DESIGN.sovereignSand }} />
+                <span className="text-sm font-mono" style={{ color: DESIGN.textMuted }}>
+                  Gemini анализира...
                 </span>
               </div>
             </div>
           </div>
         )}
-
-        {/* History Panel (collapsed by default) */}
-        {isExpanded && <HistoryPanel />}
       </div>
 
-      {/* Command Input */}
-      <div className={`p-4 border-t ${isDark ? 'border-gray-700' : isHybrid ? 'border-gray-600' : 'border-gray-200'}`}>
-        {/* Suggestions */}
-        {showSuggestions && filteredCommands.length > 0 && (
-          <div className={`mb-2 rounded-lg overflow-hidden ${
-            isDark ? 'bg-gray-800' : isHybrid ? 'bg-gray-700' : 'bg-gray-50'
-          }`}>
-            {filteredCommands.map(([cmd, info]) => (
-              <button
-                key={cmd}
-                onClick={() => selectSuggestion(cmd)}
-                className={`w-full text-left px-3 py-2 text-sm flex justify-between items-center ${
-                  isDark ? 'hover:bg-gray-700' : isHybrid ? 'hover:bg-gray-600' : 'hover:bg-gray-100'
-                }`}
-              >
-                <span className={`font-mono ${isDark || isHybrid ? 'text-amber-400' : 'text-amber-600'}`}>
-                  /{cmd}
-                </span>
-                <span className={`text-xs font-medium ${isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}`}>
-                  {info.description}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-
+      {/* Input */}
+      <div 
+        className="p-4"
+        style={{ borderTop: `1px solid ${DESIGN.border}`, background: DESIGN.bgPrimary }}
+      >
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             ref={inputRef}
             type="text"
             value={inputValue}
-            onChange={handleInputChange}
-            placeholder="Type /scan or /help..."
-            disabled={isScanning}
-            className={`flex-1 px-4 py-2 rounded-xl text-sm font-mono ${
-              isDark 
-                ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500' 
-                : isHybrid
-                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
-                : 'bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400'
-            } border focus:outline-none focus:ring-2 focus:ring-amber-500`}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Задайте въпрос на български..."
+            disabled={isLoading || systemStatus === 'FAIL'}
+            className="flex-1 px-4 py-3 rounded-xl text-sm font-mono focus:outline-none focus:ring-2 disabled:opacity-50"
+            style={{ 
+              background: DESIGN.bgPanel,
+              border: `1px solid ${DESIGN.border}`,
+              color: DESIGN.textPrimary,
+            }}
           />
           <button
             type="submit"
-            disabled={isScanning || !inputValue.trim()}
-            aria-label={isScanning ? 'Processing command' : 'Send command'}
-            className={`px-4 py-2 rounded-xl transition-colors ${
-              isScanning || !inputValue.trim()
-                ? 'bg-gray-600 cursor-not-allowed'
-                : isDark || isHybrid
-                ? 'bg-amber-600 hover:bg-amber-500'
-                : 'bg-amber-500 hover:bg-amber-600'
-            } text-white`}
+            disabled={isLoading || !inputValue.trim() || systemStatus === 'FAIL'}
+            className="px-4 py-3 rounded-xl transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ 
+              background: DESIGN.sovereignSand,
+              color: '#000'
+            }}
           >
-            {isScanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </form>
-
-        {/* Quick Action Buttons - Mobile safe with wrapping */}
-        <div className="flex flex-wrap gap-2 mt-3 w-full max-w-full">
-          <button
-            onClick={() => processCommand('/scan')}
-            disabled={isScanning}
-            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
-              isDark 
-                ? 'bg-gray-800 hover:bg-gray-700 text-amber-400' 
-                : isHybrid
-                ? 'bg-gray-700 hover:bg-gray-600 text-amber-400'
-                : 'bg-amber-50 hover:bg-amber-100 text-amber-700'
-            }`}
-          >
-            <Zap className="w-3 h-3 inline mr-1" />
-            Scan
-          </button>
-          <button
-            onClick={() => processCommand('/risk')}
-            disabled={isScanning}
-            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
-              isDark 
-                ? 'bg-gray-800 hover:bg-gray-700 text-red-400' 
-                : isHybrid
-                ? 'bg-gray-700 hover:bg-gray-600 text-red-400'
-                : 'bg-red-50 hover:bg-red-100 text-red-700'
-            }`}
-          >
-            <AlertTriangle className="w-3 h-3 inline mr-1" />
-            Risk
-          </button>
-          <button
-            onClick={() => processCommand('/liquidity')}
-            disabled={isScanning}
-            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
-              isDark 
-                ? 'bg-gray-800 hover:bg-gray-700 text-blue-400' 
-                : isHybrid
-                ? 'bg-gray-700 hover:bg-gray-600 text-blue-400'
-                : 'bg-blue-50 hover:bg-blue-100 text-blue-700'
-            }`}
-          >
-            <TrendingUp className="w-3 h-3 inline mr-1" />
-            Liquidity
-          </button>
-          <button
-            onClick={() => processCommand('/export')}
-            disabled={isScanning || !marketContext}
-            className={`flex-1 min-w-[70px] py-2 px-2 rounded-lg text-xs font-medium transition-colors whitespace-normal text-center ${
-              isDark 
-                ? 'bg-gray-800 hover:bg-gray-700 text-green-400' 
-                : isHybrid
-                ? 'bg-gray-700 hover:bg-gray-600 text-green-400'
-                : 'bg-green-50 hover:bg-green-100 text-green-700'
-            } ${!marketContext ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <FileDown className="w-3 h-3 inline mr-1" />
-            Export
-          </button>
+        
+        {/* Quick actions */}
+        <div className="flex flex-wrap gap-2 mt-3">
+          {['WTI цена?', 'Crack spread?', 'Bab el-Mandeb?', 'US Inventory?'].map((q) => (
+            <button
+              key={q}
+              onClick={() => sendMessage(q)}
+              disabled={isLoading || systemStatus === 'FAIL'}
+              className="px-3 py-1.5 rounded-lg text-xs font-mono transition-all hover:opacity-80 disabled:opacity-50"
+              style={{ 
+                background: `${DESIGN.sovereignSand}15`,
+                border: `1px solid ${DESIGN.sovereignSand}30`,
+                color: DESIGN.sovereignSandLight
+              }}
+            >
+              {q}
+            </button>
+          ))}
         </div>
       </div>
     </div>

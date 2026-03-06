@@ -274,11 +274,11 @@ const VolatilityCell = memo(function VolatilityCell({ cell }: { cell: CurrencyVo
 
   return (
     <div 
-      className="aspect-square flex items-center justify-center text-[8px] font-mono border border-[rgba(255,255,255,0.05)]"
+      className="aspect-square flex items-center justify-center text-[8px] font-mono border border-zinc-800/30"
       style={{ backgroundColor: colors[cell.level] }}
       title={`${cell.pair}: ${cell.volatility.toFixed(2)}%`}
     >
-      <span className="text-white/60">{cell.pair.split('/')[0]}</span>
+      <span className="text-zinc-400">{cell.pair.split('/')[0]}</span>
     </div>
   );
 });
@@ -315,7 +315,7 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
       </div>
 
       {/* World Map with Hotspots (Simplified) */}
-      <div className="relative h-40 mb-4 bg-[#0a0a0a] border border-[rgba(255,255,255,0.05)] overflow-hidden">
+      <div className="relative h-40 mb-4 bg-[#0a0a0a] border border-zinc-800/30 overflow-hidden">
         <div className="absolute inset-0 ios-grid-overlay opacity-30" />
         
         {/* Hotspot dots */}

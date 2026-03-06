@@ -118,7 +118,7 @@ export function TacticalRedoutOverlay({ onDismiss, forcedMode = false }: Tactica
           
           <button 
             onClick={handleDismiss}
-            className="p-3 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
+            className="p-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white transition-colors"
           >
             <X className="w-6 h-6" />
           </button>

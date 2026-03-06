@@ -68,7 +68,7 @@ const MetricCard = memo(function MetricCard({
       case 'positive': return 'shadow-[0_0_20px_rgba(52,211,153,0.15)]';
       case 'negative': return 'shadow-[0_0_20px_rgba(248,113,113,0.15)]';
       case 'warning': return 'shadow-[0_0_20px_rgba(251,191,36,0.15)]';
-      default: return 'shadow-[0_0_20px_rgba(255,255,255,0.05)]';
+      default: return 'shadow-[0_0_20px_rgba(163,147,123,0.08)]';
     }
   };
 
@@ -280,8 +280,8 @@ export const CitadelEnergyDashboard = memo(function CitadelEnergyDashboard() {
         className="fixed inset-0 pointer-events-none opacity-[0.03]"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+linear-gradient(rgba(163,147,123,0.03) 1px, transparent 1px),
+linear-gradient(90deg, rgba(163,147,123,0.03) 1px, transparent 1px)
           `,
           backgroundSize: '40px 40px'
         }}

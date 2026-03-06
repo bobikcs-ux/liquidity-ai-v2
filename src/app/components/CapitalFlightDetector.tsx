@@ -368,7 +368,7 @@ const IndicatorRow = memo(function IndicatorRow({
   };
 
   return (
-    <div className="flex items-center gap-4 py-2 px-3 border border-zinc-800/50 hover:bg-[rgba(255,255,255,0.04)] transition-colors">
+    <div className="flex items-center gap-4 py-2 px-3 border border-zinc-800/50 hover:bg-zinc-900 transition-colors">
       <div className="flex-1">
         <div className="text-xs font-mono text-white">{indicator.name}</div>
         <div className="text-xs font-mono text-[#6b6b6b]">{indicator.description}</div>
@@ -390,7 +390,7 @@ const IndicatorRow = memo(function IndicatorRow({
         </div>
       </div>
 
-      <div className={`text-xs font-mono uppercase px-2 py-1 ${signalColors[indicator.signal]} bg-[rgba(255,255,255,0.05)]`}>
+      <div className={`text-xs font-mono uppercase px-2 py-1 ${signalColors[indicator.signal]} bg-zinc-800/50`}>
         {indicator.signal}
       </div>
     </div>
