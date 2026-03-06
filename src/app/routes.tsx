@@ -12,6 +12,7 @@ import { AGITerminal } from "./pages/AGITerminal";
 import { EnergyFinance } from "./pages/EnergyFinance";
 import { Sovereign } from "./pages/Sovereign";
 import { Citadel } from "./pages/Citadel";
+import { Triad } from "./pages/Triad";
 
 export const router = createBrowserRouter([
   {
@@ -69,6 +70,10 @@ export const router = createBrowserRouter([
       {
         path: "citadel",
         element: <Citadel />,
+      },
+      {
+        path: "triad",
+        element: <Triad />,
       },
     ],
   },

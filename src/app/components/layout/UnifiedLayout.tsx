@@ -38,6 +38,7 @@ import { GlobalStatusBar } from '../GlobalStatusBar';
 
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
+  { path: '/triad', label: 'Triad', icon: TrendingUp },
   { path: '/agi-terminal', label: 'AGI Terminal', icon: Cpu },
   { path: '/intelligence', label: 'Intelligence', icon: Brain },
   { path: '/sovereign', label: 'Sovereign', icon: Crown },
@@ -47,7 +48,7 @@ const navItems = [
   { path: '/black-swan', label: 'Black Swan', icon: AlertTriangle },
   { path: '/energy-finance', label: 'Energy', icon: Zap },
   { path: '/reports', label: 'Reports', icon: FileText },
-  { path: '/profile', label: 'Profile', icon: User },
+  { path: '/data-sources', label: 'Data', icon: Database },
 ];
 
 export function UnifiedLayout() {
@@ -394,28 +395,35 @@ export function UnifiedLayout() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
+                className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 relative group ${
                   active
                     ? isDark || isHybrid
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'bg-[#2563EB] text-white shadow-md'
+                      ? 'bg-[rgba(212,175,55,0.15)] text-[#d4af37] border-l-2 border-[#d4af37] shadow-[inset_0_0_20px_rgba(212,175,55,0.1),0_0_15px_rgba(212,175,55,0.2)] rounded-r-lg'
+                      : 'bg-[#2563EB] text-white shadow-md rounded-xl'
                     : isDark || isHybrid
-                    ? 'text-gray-300 hover:bg-gray-800'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'text-gray-400 hover:text-[#d4af37] hover:bg-[rgba(212,175,55,0.05)] hover:border-l-2 hover:border-[rgba(212,175,55,0.3)] rounded-r-lg border-l-2 border-transparent'
+                    : 'text-gray-600 hover:bg-gray-50 rounded-xl'
                 }`}
                 title={sidebarCollapsed ? item.label : undefined}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
+                <Icon className={`w-5 h-5 flex-shrink-0 transition-transform duration-200 ${
+                  active && (isDark || isHybrid) ? 'text-[#d4af37]' : ''
+                } group-hover:scale-110`} />
                 <span className={`font-medium whitespace-nowrap transition-all duration-300 ${
                   sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
-                }`}>
+                } ${active && (isDark || isHybrid) ? 'font-mono tracking-wide' : ''}`}>
                   {item.label}
                 </span>
+                
+                {/* Active glow indicator */}
+                {active && (isDark || isHybrid) && (
+                  <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-[#d4af37] shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
+                )}
                 
                 {/* Tooltip for collapsed state */}
                 {sidebarCollapsed && (
                   <div className={`absolute left-full ml-2 px-3 py-2 rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
-                    isDark || isHybrid ? 'bg-gray-800 text-white' : 'bg-gray-900 text-white'
+                    isDark || isHybrid ? 'bg-[#0f1113] text-[#d4af37] border border-[rgba(212,175,55,0.2)]' : 'bg-gray-900 text-white'
                   }`}>
                     {item.label}
                   </div>
@@ -423,40 +431,6 @@ export function UnifiedLayout() {
               </Link>
             );
           })}
-          
-          <div className={`pt-4 mt-4 border-t ${
-            isDark || isHybrid ? 'border-gray-700' : 'border-gray-200'
-          }`}>
-            <Link
-              to="/data-sources"
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all relative group ${
-                isActive('/data-sources')
-                  ? isDark || isHybrid
-                    ? 'bg-blue-600 text-white shadow-lg'
-                    : 'bg-[#2563EB] text-white shadow-md'
-                  : isDark || isHybrid
-                  ? 'text-gray-300 hover:bg-gray-800'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-              title={sidebarCollapsed ? 'Data Sources' : undefined}
-            >
-              <Database className="w-5 h-5 flex-shrink-0" />
-              <span className={`font-medium whitespace-nowrap transition-all duration-300 ${
-                sidebarCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100'
-              }`}>
-                Data Sources
-              </span>
-              
-              {/* Tooltip for collapsed state */}
-              {sidebarCollapsed && (
-                <div className={`absolute left-full ml-2 px-3 py-2 rounded-lg whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 ${
-                  isDark || isHybrid ? 'bg-gray-800 text-white' : 'bg-gray-900 text-white'
-                }`}>
-                  Data Sources
-                </div>
-              )}
-            </Link>
-          </div>
         </nav>
       </aside>
 

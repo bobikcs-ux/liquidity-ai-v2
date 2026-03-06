@@ -3,6 +3,40 @@
 :root {
   --font-size: 16px;
   
+  /* Intelligence Operating System Color Palette */
+  /* Primary Background */
+  --ios-bg-primary: #070707;
+  --ios-bg-panel: #0f1113;
+  --ios-bg-card: #141618;
+  --ios-bg-elevated: #1a1c1e;
+  
+  /* Accent Colors */
+  --ios-gold: #d4af37;
+  --ios-gold-hover: #e6c768;
+  --ios-gold-muted: rgba(212, 175, 55, 0.15);
+  --ios-steel: #7a8a99;
+  --ios-steel-muted: rgba(122, 138, 153, 0.2);
+  
+  /* Status Colors */
+  --ios-warning: #ff9f43;
+  --ios-crisis: #ff3b3b;
+  --ios-success: #00d68f;
+  --ios-info: #3b82f6;
+  
+  /* Text Colors */
+  --ios-text-primary: #f5f5f5;
+  --ios-text-secondary: #a0a0a0;
+  --ios-text-muted: #6b6b6b;
+  
+  /* Borders */
+  --ios-border: rgba(212, 175, 55, 0.1);
+  --ios-border-active: rgba(212, 175, 55, 0.3);
+  
+  /* Glow Effects */
+  --ios-glow-gold: 0 0 20px rgba(212, 175, 55, 0.3);
+  --ios-glow-crisis: 0 0 30px rgba(255, 59, 59, 0.4);
+  --ios-glow-success: 0 0 20px rgba(0, 214, 143, 0.3);
+  
   /* Adaptive Financial UI Colors */
   /* Light Mode (Stable/Expansionary) */
   --light-bg: #F8F9FA;
@@ -17,16 +51,16 @@
   --hybrid-border: #374151;
   
   /* Terminal Mode (Stress) */
-  --terminal-bg: #0F1419;
-  --terminal-card: #1a2332;
-  --terminal-text: #f9fafb;
-  --terminal-border: #1e3a8a;
+  --terminal-bg: var(--ios-bg-primary);
+  --terminal-card: var(--ios-bg-panel);
+  --terminal-text: var(--ios-text-primary);
+  --terminal-border: var(--ios-border);
   
   /* Dossier Color Palette */
   --dossier-void: #020502;
-  --dossier-gold: #D4C6A9;
+  --dossier-gold: var(--ios-gold);
   --dossier-green: #00FF41;
-  --dossier-red: #E63946;
+  --dossier-red: var(--ios-crisis);
   --dossier-ghost: #1A1A1A;
   --dossier-white: #E0E0E0;
   
@@ -280,4 +314,136 @@
 
 .black-swan-terminal .text-purple-400 {
   color: #c084fc !important;
+}
+
+/* Intelligence Operating System Global Styles */
+.ios-terminal {
+  background: var(--ios-bg-primary);
+  color: var(--ios-text-primary);
+  font-family: 'JetBrains Mono', 'Inter', monospace;
+}
+
+.ios-panel {
+  background: var(--ios-bg-panel);
+  border: 1px solid var(--ios-border);
+  border-radius: 0;
+}
+
+.ios-panel-elevated {
+  background: var(--ios-bg-card);
+  border: 1px solid var(--ios-border-active);
+}
+
+/* Intelligence OS Glow Effects */
+.ios-glow-gold {
+  box-shadow: var(--ios-glow-gold);
+}
+
+.ios-glow-crisis {
+  box-shadow: var(--ios-glow-crisis);
+}
+
+.ios-glow-success {
+  box-shadow: var(--ios-glow-success);
+}
+
+/* Subtle gold accent border on hover */
+.ios-hover-glow {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ios-hover-glow:hover {
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  border-color: var(--ios-border-active);
+}
+
+/* Intelligence OS Text Styles */
+.ios-text-gold {
+  color: var(--ios-gold);
+}
+
+.ios-text-steel {
+  color: var(--ios-steel);
+}
+
+/* Active navigation glow */
+.ios-nav-active {
+  background: var(--ios-gold-muted);
+  border-left: 2px solid var(--ios-gold);
+  box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1);
+}
+
+/* Stale data indicator */
+.ios-stale-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: rgba(255, 159, 67, 0.15);
+  border: 1px solid rgba(255, 159, 67, 0.3);
+  border-radius: 2px;
+  font-size: 9px;
+  color: var(--ios-warning);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Crisis pulse animation */
+@keyframes crisis-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 59, 59, 0.3);
+    border-color: rgba(255, 59, 59, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 59, 59, 0.6);
+    border-color: rgba(255, 59, 59, 0.8);
+  }
+}
+
+.ios-crisis-pulse {
+  animation: crisis-pulse 1.5s ease-in-out infinite;
+}
+
+/* Gold pulse for alerts */
+@keyframes gold-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+  }
+}
+
+.ios-gold-pulse {
+  animation: gold-pulse 2s ease-in-out infinite;
+}
+
+/* Grid overlay for panels */
+.ios-grid-overlay {
+  background-image: 
+    linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Skeleton loader for Intelligence OS */
+@keyframes ios-skeleton {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.ios-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--ios-bg-panel) 0%,
+    var(--ios-bg-elevated) 50%,
+    var(--ios-bg-panel) 100%
+  );
+  background-size: 200% 100%;
+  animation: ios-skeleton 1.5s ease-in-out infinite;
+  border-radius: 2px;
 }
