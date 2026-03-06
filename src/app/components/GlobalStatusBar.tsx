@@ -3,6 +3,21 @@
 import React, { memo, useMemo, useCallback } from 'react';
 import { Activity, Shield, Database, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { DataSourceStatusBar } from './DataSourceStatusBar';
+
+// Design tokens - unified palette
+const DESIGN = {
+  bg: '#0b0b0f',
+  panel: '#121218',
+  gold: '#d4af37',
+  goldMuted: 'rgba(212, 175, 55, 0.12)',
+  success: '#2ecc71',
+  warning: '#ffb020',
+  crisis: '#ff3b5c',
+  textPrimary: '#f5f5f5',
+  textMuted: '#6b6b6b',
+  border: 'rgba(212, 175, 55, 0.08)',
+};
 
 // Liquidity Regime Engine Logic:
 // if systemic_risk < 30 → EXPANSION
@@ -18,17 +33,9 @@ function getLiquidityRegime(systemicRisk: number): LiquidityRegime {
 
 function getRegimeColor(regime: LiquidityRegime): string {
   switch (regime) {
-    case 'EXPANSION': return 'text-green-400';
-    case 'STRESS': return 'text-amber-400';
-    case 'LIQUIDITY CRISIS': return 'text-red-400';
-  }
-}
-
-function getRegimeBgColor(regime: LiquidityRegime): string {
-  switch (regime) {
-    case 'EXPANSION': return 'bg-green-500/20';
-    case 'STRESS': return 'bg-amber-500/20';
-    case 'LIQUIDITY CRISIS': return 'bg-red-500/20';
+    case 'EXPANSION': return DESIGN.success;
+    case 'STRESS': return DESIGN.warning;
+    case 'LIQUIDITY CRISIS': return DESIGN.crisis;
   }
 }
 
@@ -53,69 +60,86 @@ export const GlobalStatusBar = memo(function GlobalStatusBar({ className = '' }:
   const isDataVerified = dataStatus?.status === 'GREEN' || dataStatus?.status === 'YELLOW';
   
   return (
-    <div className={`bg-[#0a0e14] border-b border-blue-900/50 ${className}`}>
-      <div className="max-w-full mx-auto px-4 py-2">
-        <div className="flex items-center justify-between gap-4 text-xs font-mono overflow-x-auto">
+    <div className={className} style={{ background: DESIGN.bg }}>
+      {/* Main Status Row */}
+      <div 
+        className="flex items-center justify-between px-4 py-2"
+        style={{ borderBottom: `1px solid ${DESIGN.border}` }}
+      >
+        <div className="flex items-center gap-6 text-xs font-mono overflow-x-auto">
           {/* Version */}
-          <div className="flex items-center gap-2 text-gray-400 whitespace-nowrap">
-            <Shield className="w-3.5 h-3.5 text-blue-500" />
-            <span className="font-bold text-blue-400">LIQUIDITY</span>
-            <span className="text-gray-500">v1.0</span>
+          <div className="flex items-center gap-2 whitespace-nowrap">
+            <Shield className="w-3.5 h-3.5" style={{ color: DESIGN.gold }} />
+            <span className="font-bold" style={{ color: DESIGN.gold }}>LIQUIDITY</span>
+            <span style={{ color: DESIGN.textMuted }}>v2.0</span>
           </div>
           
           {/* Separator */}
-          <div className="w-px h-4 bg-gray-700 hidden sm:block" />
+          <div className="w-px h-4 hidden sm:block" style={{ background: DESIGN.border }} />
           
           {/* Regime */}
           <div className="flex items-center gap-2 whitespace-nowrap">
-            <span className="text-gray-500">REGIME:</span>
-            <span className={`font-bold px-2 py-0.5 rounded ${regimeBgColor} ${regimeColor}`}>
+            <span style={{ color: DESIGN.textMuted }}>REGIME:</span>
+            <span 
+              className="font-bold px-2 py-0.5"
+              style={{ 
+                background: `${regimeColor}15`,
+                color: regimeColor,
+                border: `1px solid ${regimeColor}30`
+              }}
+            >
               {loading ? 'LOADING...' : regime}
             </span>
           </div>
           
           {/* Separator */}
-          <div className="w-px h-4 bg-gray-700 hidden sm:block" />
+          <div className="w-px h-4 hidden sm:block" style={{ background: DESIGN.border }} />
           
           {/* Risk Index */}
           <div className="flex items-center gap-2 whitespace-nowrap">
-            <span className="text-gray-500">RISK INDEX:</span>
-            <span className={`font-bold tabular-nums ${
-              systemicRisk >= 60 ? 'text-red-400' : systemicRisk >= 30 ? 'text-amber-400' : 'text-green-400'
-            }`}>
+            <span style={{ color: DESIGN.textMuted }}>RISK:</span>
+            <span 
+              className="font-bold tabular-nums"
+              style={{ 
+                color: systemicRisk >= 60 ? DESIGN.crisis : systemicRisk >= 30 ? DESIGN.warning : DESIGN.success 
+              }}
+            >
               {loading ? '--' : Math.round(systemicRisk)}
             </span>
           </div>
           
           {/* Separator */}
-          <div className="w-px h-4 bg-gray-700 hidden md:block" />
+          <div className="w-px h-4 hidden md:block" style={{ background: DESIGN.border }} />
           
           {/* Data Status */}
           <div className="flex items-center gap-2 whitespace-nowrap">
-            <span className="text-gray-500">DATA:</span>
+            <span style={{ color: DESIGN.textMuted }}>DATA:</span>
             {isDataVerified ? (
-              <span className="flex items-center gap-1 text-green-400">
+              <span className="flex items-center gap-1" style={{ color: DESIGN.success }}>
                 <CheckCircle className="w-3 h-3" />
                 <span className="font-bold">VERIFIED</span>
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-amber-400">
+              <span className="flex items-center gap-1" style={{ color: DESIGN.warning }}>
                 <AlertTriangle className="w-3 h-3" />
                 <span className="font-bold">PENDING</span>
               </span>
             )}
           </div>
-          
-          {/* Separator */}
-          <div className="w-px h-4 bg-gray-700 hidden lg:block" />
-          
-          {/* Live indicator */}
-          <div className="flex items-center gap-2 whitespace-nowrap hidden lg:flex">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-green-400 font-bold">LIVE</span>
-          </div>
+        </div>
+        
+        {/* Live indicator */}
+        <div className="flex items-center gap-2 whitespace-nowrap">
+          <div 
+            className="w-1.5 h-1.5 rounded-full animate-pulse"
+            style={{ background: DESIGN.success, boxShadow: `0 0 6px ${DESIGN.success}` }}
+          />
+          <span className="text-[10px] font-mono font-bold" style={{ color: DESIGN.success }}>LIVE</span>
         </div>
       </div>
+      
+      {/* Data Source Status Row */}
+      <DataSourceStatusBar variant="compact" />
     </div>
   );
 });

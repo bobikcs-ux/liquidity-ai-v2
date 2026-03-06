@@ -653,41 +653,164 @@ const PanelSkeleton = memo(function PanelSkeleton({ title }: { title: string }) 
 });
 
 // ============================================
-// SYSTEMIC COLLAPSE BANNER
+// CRISIS CONTROL SYSTEM
+// Non-blocking alert banner with control panel
 // ============================================
 
-const SystemicCollapseBanner = memo(function SystemicCollapseBanner({
-  isVisible,
+type CrisisMode = 'NORMAL' | 'ACKNOWLEDGED' | 'SUPPRESSED' | 'ANALYSIS';
+
+const CrisisControlSystem = memo(function CrisisControlSystem({
+  isSystemicAlert,
+  riskLevel,
+  riskScore,
 }: {
-  isVisible: boolean;
+  isSystemicAlert: boolean;
+  riskLevel: string;
+  riskScore: number;
 }) {
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
+  const [mode, setMode] = useState<CrisisMode>('NORMAL');
+  const [showControls, setShowControls] = useState(false);
 
+  // Reset mode when alert clears
   useEffect(() => {
-    if (isVisible && !audio) {
-      // Create and play alert sound (optional)
-      const alertSound = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU');
-      setAudio(alertSound);
+    if (!isSystemicAlert && mode !== 'NORMAL') {
+      setMode('NORMAL');
     }
-  }, [isVisible, audio]);
+  }, [isSystemicAlert, mode]);
 
-  if (!isVisible) return null;
+  // Determine display state
+  const getRiskLevelDisplay = () => {
+    if (riskScore < 25) return { level: 'LOW', color: '#2ecc71' };
+    if (riskScore < 50) return { level: 'ELEVATED', color: '#ffb020' };
+    if (riskScore < 75) return { level: 'HIGH', color: '#ff6b4a' };
+    return { level: 'SYSTEMIC', color: '#ff3b5c' };
+  };
+
+  const { level, color } = getRiskLevelDisplay();
+  const isSuppressed = mode === 'SUPPRESSED';
+  const isAnalysis = mode === 'ANALYSIS';
 
   return (
-    <div className="fixed inset-0 z-50 pointer-events-none">
-      <div className="absolute inset-0 bg-[rgba(255,59,59,0.1)] animate-pulse" />
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        <div className="px-8 py-4 bg-[#ff3b3b] ios-crisis-pulse">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-8 h-8 text-white animate-pulse" />
-            <span className="text-xl font-mono font-bold text-white uppercase tracking-wider">
-              SYSTEMIC GLOBAL COLLAPSE RISK
-            </span>
-            <AlertTriangle className="w-8 h-8 text-white animate-pulse" />
+    <>
+      {/* Top Risk Level Bar - Always visible */}
+      <div className="sticky top-0 z-40 bg-[#0b0b0f] border-b border-[rgba(212,175,55,0.1)]">
+        {/* Animated Risk Level Bar */}
+        <div className="h-1 w-full risk-level-bar relative overflow-hidden">
+          <div 
+            className="absolute top-0 left-0 h-full bg-black/50 transition-all duration-500"
+            style={{ width: `${100 - riskScore}%`, right: 0, left: 'auto' }}
+          />
+        </div>
+
+        {/* Risk Status Row */}
+        <div className="flex items-center justify-between px-4 py-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono text-[#6b6b6b] uppercase tracking-wider">SYSTEMIC RISK LEVEL</span>
+              <div className="flex items-center gap-1">
+                {['LOW', 'ELEVATED', 'HIGH', 'SYSTEMIC'].map((lvl) => (
+                  <span 
+                    key={lvl}
+                    className={`text-[9px] font-mono px-2 py-0.5 transition-all ${
+                      level === lvl 
+                        ? `bg-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#ffb020' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}]/20 text-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#ffb020' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}] border border-current`
+                        : 'text-[#3a3a3a]'
+                    }`}
+                    style={level === lvl ? { 
+                      backgroundColor: `${color}20`, 
+                      color: color,
+                      borderColor: `${color}50`
+                    } : {}}
+                  >
+                    {lvl}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Score Display */}
+            <div className="flex items-center gap-2">
+              <span 
+                className="text-lg font-mono font-bold"
+                style={{ color }}
+              >
+                {riskScore}
+              </span>
+              <span className="text-[9px] font-mono text-[#6b6b6b]">/100</span>
+            </div>
           </div>
+
+          {/* Mode Indicator */}
+          {mode !== 'NORMAL' && (
+            <div className="flex items-center gap-2">
+              <span className={`text-[9px] font-mono px-2 py-1 ${
+                mode === 'ACKNOWLEDGED' ? 'bg-[#ffb020]/10 text-[#ffb020] border border-[#ffb020]/30' :
+                mode === 'SUPPRESSED' ? 'bg-[#6b6b6b]/10 text-[#6b6b6b] border border-[#6b6b6b]/30' :
+                'bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/30'
+              }`}>
+                {mode} MODE
+              </span>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Crisis Alert Banner - Only shows when systemic AND not suppressed */}
+      {isSystemicAlert && !isSuppressed && (
+        <div className={`relative z-30 ${isAnalysis ? 'bg-[#121218]' : 'bg-[#ff3b5c]/10'} border-b ${isAnalysis ? 'border-[#3b82f6]/30' : 'border-[#ff3b5c]/30'} transition-colors`}>
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className={`w-5 h-5 ${isAnalysis ? 'text-[#3b82f6]' : 'text-[#ff3b5c]'} ${mode === 'NORMAL' ? 'animate-pulse' : ''}`} />
+              <span className={`text-sm font-mono font-bold uppercase tracking-wider ${isAnalysis ? 'text-[#3b82f6]' : 'text-[#ff3b5c]'}`}>
+                {isAnalysis ? 'ANALYSIS MODE: SYSTEMIC COLLAPSE SCENARIO' : 'SYSTEMIC GLOBAL COLLAPSE RISK DETECTED'}
+              </span>
+            </div>
+
+            {/* Crisis Control Buttons */}
+            <div className="flex items-center gap-2">
+              {mode === 'NORMAL' && (
+                <>
+                  <button
+                    onClick={() => setMode('ACKNOWLEDGED')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ffb020]/10 border border-[#ffb020]/30 text-[#ffb020] text-[10px] font-mono uppercase hover:bg-[#ffb020]/20 transition-colors"
+                  >
+                    <CheckCircle className="w-3 h-3" />
+                    Acknowledge
+                  </button>
+                  <button
+                    onClick={() => setMode('SUPPRESSED')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6b6b6b]/10 border border-[#6b6b6b]/30 text-[#6b6b6b] text-[10px] font-mono uppercase hover:bg-[#6b6b6b]/20 transition-colors"
+                  >
+                    <Shield className="w-3 h-3" />
+                    Suppress
+                  </button>
+                  <button
+                    onClick={() => setMode('ANALYSIS')}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#3b82f6]/10 border border-[#3b82f6]/30 text-[#3b82f6] text-[10px] font-mono uppercase hover:bg-[#3b82f6]/20 transition-colors"
+                  >
+                    <Cpu className="w-3 h-3" />
+                    Analysis Mode
+                  </button>
+                </>
+              )}
+              {mode !== 'NORMAL' && (
+                <button
+                  onClick={() => setMode('NORMAL')}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ff3b5c]/10 border border-[#ff3b5c]/30 text-[#ff3b5c] text-[10px] font-mono uppercase hover:bg-[#ff3b5c]/20 transition-colors"
+                >
+                  Reset Alert
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dashboard Edge Glow Effect - Subtle crisis indication */}
+      {isSystemicAlert && !isSuppressed && mode === 'NORMAL' && (
+        <div className="fixed inset-0 pointer-events-none z-10 crisis-edge-active" />
+      )}
+    </>
   );
 });
 
@@ -710,10 +833,14 @@ export const TriadDashboard = memo(function TriadDashboard() {
 
   const statusBar = getStatusBarData();
 
-  return (
-    <div className="min-h-screen bg-[#070707] ios-terminal">
-      {/* Systemic Collapse Banner */}
-      <SystemicCollapseBanner isVisible={systemicRisk?.isSystemicCollapse ?? false} />
+return (
+  <div className="min-h-screen bg-[#0b0b0f] ios-terminal">
+  {/* Crisis Control System - Non-blocking alert with controls */}
+  <CrisisControlSystem 
+    isSystemicAlert={systemicRisk?.isSystemicCollapse ?? false}
+    riskLevel={systemicRisk?.riskLevel ?? 'STABLE'}
+    riskScore={systemicRisk?.riskScore ?? 0}
+  />
 
       {/* Top Status Bar */}
       <TopStatusBar

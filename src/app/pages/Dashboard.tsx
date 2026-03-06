@@ -14,6 +14,7 @@ import { LiquidityTransmission } from '../components/LiquidityTransmission';
 import { TerminalEventStream } from '../components/TerminalEventStream';
 import { DataIntegrityPanel } from '../components/DataIntegrityPanel';
 import { BlackSwanTimeline } from '../components/BlackSwanTimeline';
+import { GlobalRiskMeter } from '../components/GlobalRiskMeter';
 
 export function Dashboard() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
@@ -78,6 +79,11 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Global Risk Meter - Sovereign Risk Index */}
+      {(isDark || isHybrid) && (
+        <GlobalRiskMeter />
+      )}
 
       {/* Black Swan Early Warning System */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">

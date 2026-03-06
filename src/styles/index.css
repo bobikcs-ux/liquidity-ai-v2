@@ -75,6 +75,140 @@ button, a {
   overflow-x: hidden;
 }
 
+/* ========================================
+   MOBILE RESPONSIVE SYSTEM
+   ======================================== */
+
+/* Mobile-first responsive containers */
+@media (max-width: 768px) {
+  /* Force full width on mobile */
+  .mobile-full-width {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Stack all grid layouts vertically */
+  .mobile-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem;
+  }
+
+  .mobile-stack > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+  }
+
+  /* Hide on mobile */
+  .mobile-hide {
+    display: none !important;
+  }
+
+  /* Reduce padding on mobile */
+  .mobile-compact {
+    padding: 0.75rem !important;
+  }
+
+  /* Smaller text on mobile */
+  .mobile-text-sm {
+    font-size: 0.75rem !important;
+  }
+
+  /* Prevent overflow */
+  .mobile-no-overflow {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  /* Fix chart containers */
+  .chart-container-full,
+  .recharts-responsive-container,
+  svg.recharts-surface {
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  /* Responsive tables */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Touch-friendly buttons */
+  button, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile-friendly panels */
+  .ios-panel,
+  .institutional-panel {
+    margin-left: -0.5rem;
+    margin-right: -0.5rem;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+}
+
+/* Swipe container for dashboard panels */
+.swipe-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.swipe-container::-webkit-scrollbar {
+  display: none;
+}
+
+.swipe-panel {
+  flex: 0 0 85%;
+  scroll-snap-align: start;
+  min-width: 280px;
+}
+
+@media (min-width: 768px) {
+  .swipe-panel {
+    flex: 0 0 auto;
+    min-width: auto;
+  }
+  
+  .swipe-container {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    scroll-snap-type: none;
+  }
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 768px) {
+  /* Bottom safe area for iOS */
+  .mobile-safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  /* Status bar compact mode */
+  .data-source-status {
+    padding: 2px 6px;
+    font-size: 8px;
+  }
+
+  /* Compact risk meter on mobile */
+  .global-risk-meter svg {
+    max-width: 150px;
+    height: auto;
+  }
+}
+
 /* Stress regime pulse animation */
 @keyframes stress-pulse {
   0%, 100% {
