@@ -28,18 +28,21 @@ body {
   animation: pro-pulse 2s ease-in-out infinite;
 }
 
-/* Sovereign Ticker Marquee */
+/* Sovereign Ticker Marquee - Starts from RIGHT edge, exits LEFT */
 @keyframes ticker-scroll {
   0% {
-    transform: translateX(0);
+    transform: translateX(100%);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 
 .ticker-marquee {
-  animation: ticker-scroll 20s linear infinite;
+  animation: ticker-scroll 30s linear infinite;
+  display: flex;
+  gap: 4rem;
+  padding-left: 100%;
 }
 
 .ticker-marquee:hover {

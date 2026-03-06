@@ -276,7 +276,7 @@ const SignalsPanel = memo(function SignalsPanel({
         </span>
       </div>
       
-      <div className="space-y-3 max-h-[400px] overflow-y-auto">
+      <div className="space-y-3 max-h-auto md:max-h-[400px] overflow-y-auto">
         {signals.map((signal) => (
           <div
             key={signal.id}

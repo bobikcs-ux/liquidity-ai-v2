@@ -315,7 +315,7 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
       </div>
 
       {/* World Map with Hotspots (Simplified) */}
-      <div className="relative h-40 mb-4 bg-[#0a0a0a] border border-zinc-800/30 overflow-hidden">
+      <div className="relative h-auto min-h-[120px] md:h-40 mb-4 bg-[#0a0a0a] border border-zinc-800/30 overflow-hidden">
         <div className="absolute inset-0 ios-grid-overlay opacity-30" />
         
         {/* Hotspot dots */}
@@ -344,7 +344,7 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
       </div>
 
       {/* Hotspot List */}
-      <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
+      <div className="space-y-2 max-h-auto md:max-h-32 overflow-y-auto custom-scrollbar">
         {(data.hotspots || [])
           .sort((a, b) => b.intensityScore - a.intensityScore)
           .slice(0, 5)

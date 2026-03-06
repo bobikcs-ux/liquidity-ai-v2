@@ -42,9 +42,9 @@ export function PaywallOverlay({ children, show }: PaywallOverlayProps) {
         {children}
       </div>
 
-      {/* Vault Access overlay */}
+      {/* Vault Access overlay - z-40 so navigation (z-50+) is above */}
       <div 
-        className="absolute inset-0 flex items-center justify-center z-50 backdrop-blur-2xl"
+        className="absolute inset-0 flex items-center justify-center z-40 backdrop-blur-2xl"
         style={{
           background: 'rgba(10, 10, 10, 0.88)',
           backdropFilter: 'blur(12px)',

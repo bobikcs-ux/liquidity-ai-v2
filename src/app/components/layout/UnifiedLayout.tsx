@@ -49,7 +49,7 @@ import {
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 import { useUserRole } from '../../context/UserRoleContext';
-import { InstitutionalQR } from '../ProModal';
+// QR code removed - no longer needed
 import { DataSourceStatusCompact } from '../DataSourceStatus';
 import { GlobalStatusBar } from '../GlobalStatusBar';
 
@@ -306,12 +306,22 @@ export function UnifiedLayout() {
               </a>
             )}
             
-            {/* PRO Badge (shown when user is PRO) */}
+            {/* PRO Badge (shown when user is PRO) - Interactive with glow */}
             {isPro && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#A3937B] to-[#8B7D6B] text-black">
+              <a 
+                href="https://bobikcs.com/the-vault"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Visit The Vault - PRO Member"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-black transition-all hover:scale-105 pro-pulse cursor-pointer"
+                style={{ 
+                  background: 'linear-gradient(135deg, #A3937B 0%, #8B7D6B 100%)',
+                  boxShadow: '0 0 20px rgba(163, 147, 123, 0.6), 0 0 40px rgba(163, 147, 123, 0.3)'
+                }}
+              >
                 <Crown className="w-4 h-4" />
-                <span className="text-xs font-semibold">PRO MEMBER</span>
-              </div>
+                <span className="text-xs font-bold tracking-wide">PRO MEMBER</span>
+              </a>
             )}
             
             {/* Theme Toggle - Protected with mounted state */}
@@ -353,75 +363,53 @@ export function UnifiedLayout() {
           </div>
         </div>
 
-        {/* Sovereign Ticker - Marquee Style */}
-        <div className={`border-t py-1.5 overflow-hidden ${
-          isDark || isHybrid ? 'border-[#A3937B]/12 bg-zinc-950/80' : 'border-gray-100 bg-gray-50'
+        {/* Sovereign Ticker - Marquee Style (starts from right, exits left) */}
+        <div className={`border-t py-2 overflow-hidden ${
+          isDark || isHybrid ? 'border-[#A3937B]/12 bg-zinc-950/90' : 'border-gray-100 bg-gray-50'
         }`}>
-          <div className="relative flex overflow-hidden">
-            <div className="flex gap-8 ticker-marquee whitespace-nowrap">
-              {/* First set of items */}
-              <div className="flex items-center gap-8 text-xs font-mono">
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>SRI</span>
-                <span className={`font-bold tabular-nums ${systemicRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>
-                  {systemicRisk}
+          <div className="relative overflow-hidden">
+            <div className="ticker-marquee whitespace-nowrap">
+              {/* Ticker content - larger text for readability */}
+              <span className="inline-flex items-center gap-6 text-sm font-mono">
+                <span className="inline-flex items-center gap-2">
+                  <span className={isDark || isHybrid ? 'text-[#A3937B] font-semibold' : 'text-gray-500'}>SRI</span>
+                  <span className={`font-bold tabular-nums ${systemicRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>
+                    {systemicRisk}
+                  </span>
                 </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                <span className={isDark || isHybrid ? 'text-zinc-700' : 'text-gray-300'}>|</span>
                 
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Survival</span>
-                <span className={`font-bold tabular-nums ${survivalProb >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  {survivalProb}.03%
+                <span className="inline-flex items-center gap-2">
+                  <span className={isDark || isHybrid ? 'text-[#A3937B] font-semibold' : 'text-gray-500'}>Survival</span>
+                  <span className={`font-bold tabular-nums ${survivalProb >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {survivalProb}.03%
+                  </span>
                 </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                <span className={isDark || isHybrid ? 'text-zinc-700' : 'text-gray-300'}>|</span>
                 
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Yield</span>
-                <span className={`font-bold tabular-nums ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                  {yieldSpread}%
+                <span className="inline-flex items-center gap-2">
+                  <span className={isDark || isHybrid ? 'text-[#A3937B] font-semibold' : 'text-gray-500'}>Yield</span>
+                  <span className={`font-bold tabular-nums ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                    {yieldSpread}%
+                  </span>
                 </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                <span className={isDark || isHybrid ? 'text-zinc-700' : 'text-gray-300'}>|</span>
                 
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Risk</span>
-                <span className="font-bold tabular-nums text-red-400">
-                  {currentRegime.riskLevel}%
+                <span className="inline-flex items-center gap-2">
+                  <span className={isDark || isHybrid ? 'text-[#A3937B] font-semibold' : 'text-gray-500'}>Risk</span>
+                  <span className="font-bold tabular-nums text-red-400">
+                    {currentRegime.riskLevel}%
+                  </span>
                 </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                <span className={isDark || isHybrid ? 'text-zinc-700' : 'text-gray-300'}>|</span>
                 
-                <span className={`font-semibold ${isStressRegime ? 'text-red-400' : 'text-[#A3937B]'}`}>
+                <span className={`font-bold tracking-wider ${isStressRegime ? 'text-red-400' : 'text-[#B8A892]'}`}>
                   {currentRegime.regime.toUpperCase()}
                 </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
-              </div>
-              
-              {/* Duplicate for seamless loop */}
-              <div className="flex items-center gap-8 text-xs font-mono">
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>SRI</span>
-                <span className={`font-bold tabular-nums ${systemicRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>
-                  {systemicRisk}
-                </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
                 
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Survival</span>
-                <span className={`font-bold tabular-nums ${survivalProb >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  {survivalProb}.03%
-                </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
-                
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Yield</span>
-                <span className={`font-bold tabular-nums ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                  {yieldSpread}%
-                </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
-                
-                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Risk</span>
-                <span className="font-bold tabular-nums text-red-400">
-                  {currentRegime.riskLevel}%
-                </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
-                
-                <span className={`font-semibold ${isStressRegime ? 'text-red-400' : 'text-[#A3937B]'}`}>
-                  {currentRegime.regime.toUpperCase()}
-                </span>
-                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
-              </div>
+                {/* Spacer for infinite loop */}
+                <span className="inline-block w-32"></span>
+              </span>
             </div>
           </div>
         </div>

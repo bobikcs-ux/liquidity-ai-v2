@@ -22,12 +22,13 @@ interface SubscriptionContextType {
   setMockPaid: (isPaid: boolean) => void;
 }
 
+// ADMIN BYPASS: isPaid = true to allow admin testing
 const defaultState: SubscriptionState = {
-  status: 'FREE',
-  isPaid: false, // MOCK: Set to false to see paywall
-  tier: null,
+  status: 'SUBSCRIBED',
+  isPaid: true, // HARDCODED: Admin can now see all premium features
+  tier: 'INSTITUTIONAL',
   expiresAt: null,
-  isAdmin: false,
+  isAdmin: true, // Terminal is recognized as fully paid
 };
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
