@@ -25,7 +25,7 @@ import type { JapanMacroState, YenCarryTradeData } from '../types/japan-india';
 const RISING_SUN = {
   red: '#DC2626',
   darkRed: '#991B1B',
-  gold: '#D4A574',
+  gold: '#A3937B',
   white: '#FFFFFF',
   black: '#000000',
 };
@@ -93,7 +93,7 @@ const YenCarryMonitor = memo(function YenCarryMonitor({
         </div>
         <div className="h-2 bg-gray-900 rounded-none overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-red-600 to-amber-500"
+            className="h-full bg-gradient-to-r from-red-600 to-[#A3937B]"
             style={{ width: `${Math.min(data.carry_spread * 15, 100)}%` }}
           />
         </div>
@@ -336,7 +336,7 @@ export const JapanMacroWidget = memo(function JapanMacroWidget() {
               {japan.industrialProduction && japan.industrialProduction.yoy_change < -2 && (
                 <div className="mt-3 p-3 bg-amber-950/30 border border-amber-800/50 rounded-none">
                   <div className="flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    <AlertTriangle className="w-4 h-4 text-[#A3937B] flex-shrink-0" />
                     <span className="text-xs text-amber-300">
                       Production contraction detected. Monitor automotive and semiconductor 
                       supply chain exposure.

@@ -70,13 +70,13 @@ const DESIGN = {
     elevated: '#1a1a22',
   },
   accent: {
-    gold: '#d4af37',
-    goldSoft: '#c6a85a',
-    goldMuted: 'rgba(212, 175, 55, 0.12)',
+    gold: '#A3937B',
+    goldSoft: '#B8A892',
+    goldMuted: 'rgba(163, 147, 123, 0.10)',
   },
   status: {
     success: '#2ecc71',
-    warning: '#ffb020',
+    warning: '#B8A892',
     crisis: '#ff3b5c',
   },
   text: {
@@ -85,8 +85,8 @@ const DESIGN = {
     muted: '#6b6b6b',
   },
   border: {
-    default: 'rgba(212, 175, 55, 0.08)',
-    active: 'rgba(212, 175, 55, 0.2)',
+    default: 'rgba(163, 147, 123, 0.06)',
+    active: 'rgba(163, 147, 123, 0.15)',
   },
 };
 

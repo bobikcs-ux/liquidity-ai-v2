@@ -79,7 +79,7 @@ const TopStatusBar = memo(function TopStatusBar({
 }) {
   const alertColors = {
     GREEN: 'bg-[#00d68f]',
-    YELLOW: 'bg-[#d4af37]',
+    YELLOW: 'bg-[#A3937B]',
     ORANGE: 'bg-[#ff9f43]',
     RED: 'bg-[#ff3b3b]',
   };
@@ -92,13 +92,13 @@ const TopStatusBar = memo(function TopStatusBar({
 
   const syncColors = {
     SYNCED: 'text-[#00d68f]',
-    SYNCING: 'text-[#d4af37]',
+    SYNCING: 'text-[#A3937B]',
     STALE: 'text-[#ff9f43]',
   };
 
   const aiModeColors = {
     PASSIVE: 'text-[#7a8a99]',
-    ACTIVE: 'text-[#d4af37]',
+    ACTIVE: 'text-[#A3937B]',
     ALERT: 'text-[#ff3b3b]',
   };
 
@@ -153,14 +153,14 @@ const TopStatusBar = memo(function TopStatusBar({
           className="p-2 rounded hover:bg-[rgba(212,175,55,0.1)] transition-colors"
           aria-label="Refresh data"
         >
-          <RefreshCw className="w-4 h-4 text-[#d4af37]" />
+          <RefreshCw className="w-4 h-4 text-[#A3937B]" />
         </button>
 
         {/* Export Button */}
         <button
           onClick={onExport}
           aria-label="Export dashboard snapshot"
-          className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] text-[#d4af37] text-xs font-mono uppercase tracking-wider hover:bg-[rgba(212,175,55,0.2)] transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] text-[#A3937B] text-xs font-mono uppercase tracking-wider hover:bg-[rgba(212,175,55,0.2)] transition-colors"
         >
           <Download className="w-3 h-3" />
           EXPORT
@@ -185,7 +185,7 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
 
   const stressColors = {
     NORMAL: '#00d68f',
-    ELEVATED: '#d4af37',
+    ELEVATED: '#A3937B',
     WARNING: '#ff9f43',
     CRITICAL: '#ff3b3b',
   };
@@ -197,7 +197,7 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-[#d4af37]" />
+          <Activity className="w-5 h-5 text-[#A3937B]" />
           <h3 className="text-sm font-mono font-bold text-white uppercase tracking-wider">
             Liquidity Stress Engine
           </h3>
@@ -232,7 +232,7 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
             }}
           />
           {/* Threshold markers */}
-          <div className="absolute top-0 h-full w-px bg-[#d4af37]" style={{ left: '60%' }} />
+          <div className="absolute top-0 h-full w-px bg-[#A3937B]" style={{ left: '60%' }} />
           <div className="absolute top-0 h-full w-px bg-[#ff3b3b]" style={{ left: '80%' }} />
         </div>
         <div className="flex justify-between mt-1 text-[9px] font-mono text-[#6b6b6b]">
@@ -363,7 +363,7 @@ const HotspotDot = memo(function HotspotDot({ hotspot }: { hotspot: ConflictHots
 
   const alertColors = {
     LOW: '#00d68f',
-    MODERATE: '#d4af37',
+    MODERATE: '#A3937B',
     HIGH: '#ff9f43',
     CRITICAL: '#ff3b3b',
   };
@@ -390,13 +390,13 @@ const HotspotDot = memo(function HotspotDot({ hotspot }: { hotspot: ConflictHots
 const HotspotRow = memo(function HotspotRow({ hotspot }: { hotspot: ConflictHotspot }) {
   const alertColors = {
     LOW: 'text-[#00d68f]',
-    MODERATE: 'text-[#d4af37]',
+    MODERATE: 'text-[#A3937B]',
     HIGH: 'text-[#ff9f43]',
     CRITICAL: 'text-[#ff3b3b]',
   };
 
   return (
-    <div className="flex items-center justify-between py-1.5 px-2 bg-[rgba(255,255,255,0.02)] border-l-2 border-transparent hover:border-[#d4af37] transition-colors">
+    <div className="flex items-center justify-between py-1.5 px-2 bg-[rgba(255,255,255,0.02)] border-l-2 border-transparent hover:border-[#A3937B] transition-colors">
       <span className="text-xs font-mono text-white">{hotspot.displayName}</span>
       <div className="flex items-center gap-3">
         <span className="text-xs font-mono text-[#7a8a99]">{hotspot.intensityScore.toFixed(0)}</span>
@@ -462,7 +462,7 @@ const ChokepointPanel = memo(function ChokepointPanel({
 const ChokepointRow = memo(function ChokepointRow({ chokepoint }: { chokepoint: ChokepointData }) {
   const congestionColors = {
     NORMAL: 'bg-[#00d68f]',
-    ELEVATED: 'bg-[#d4af37]',
+    ELEVATED: 'bg-[#A3937B]',
     HIGH: 'bg-[#ff9f43]',
     CRITICAL: 'bg-[#ff3b3b]',
   };
@@ -513,7 +513,7 @@ const CorrelationEngine = memo(function CorrelationEngine({
 
   const riskColors = {
     STABLE: '#00d68f',
-    ELEVATED: '#d4af37',
+    ELEVATED: '#A3937B',
     HIGH: '#ff9f43',
     SYSTEMIC_COLLAPSE: '#ff3b3b',
   };
@@ -581,8 +581,8 @@ const CorrelationEngine = memo(function CorrelationEngine({
           {/* AI Assessment */}
           <div className="p-3 bg-[rgba(255,255,255,0.02)] border border-[rgba(212,175,55,0.1)]">
             <div className="flex items-center gap-2 mb-1">
-              <Cpu className="w-3 h-3 text-[#d4af37]" />
-              <span className="text-[9px] font-mono text-[#d4af37] uppercase">AI Assessment</span>
+              <Cpu className="w-3 h-3 text-[#A3937B]" />
+              <span className="text-[9px] font-mono text-[#A3937B] uppercase">AI Assessment</span>
             </div>
             <p className="text-xs font-mono text-[#a0a0a0] leading-relaxed">
               {systemicRisk.aiAssessment}
@@ -871,7 +871,7 @@ return (
       <div className="p-3 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
         {/* Dashboard Title */}
         <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
-          <Globe className="w-5 md:w-6 h-5 md:h-6 text-[#d4af37]" />
+          <Globe className="w-5 md:w-6 h-5 md:h-6 text-[#A3937B]" />
           <h1 className="text-base md:text-xl font-mono font-bold text-white uppercase tracking-wider">
             Triad Intelligence
           </h1>

@@ -137,7 +137,7 @@ class ErrorBoundary extends Component<Props, State> {
               <button
                 onClick={this.handleReset}
                 disabled={isRecovering}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-[#A3937B] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-4 h-4 ${isRecovering ? 'animate-spin' : ''}`} />
                 Try Again

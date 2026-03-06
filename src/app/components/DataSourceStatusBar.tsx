@@ -8,19 +8,19 @@
 import React, { memo, useState, useEffect, useCallback } from 'react';
 import { Database, RefreshCw, CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-react';
 
-// Design tokens
+// Design tokens - Sovereign Tint palette
 const DESIGN = {
   bg: {
     primary: '#0b0b0f',
     panel: '#121218',
   },
   accent: {
-    gold: '#d4af37',
-    goldMuted: 'rgba(212, 175, 55, 0.12)',
+    gold: '#A3937B',
+    goldMuted: 'rgba(163, 147, 123, 0.10)',
   },
   status: {
     online: '#2ecc71',
-    delayed: '#ffb020',
+    delayed: '#B8A892',
     offline: '#ff3b5c',
   },
   text: {
@@ -29,7 +29,7 @@ const DESIGN = {
     muted: '#6b6b6b',
   },
   border: {
-    default: 'rgba(212, 175, 55, 0.08)',
+    default: 'rgba(163, 147, 123, 0.06)',
   },
 };
 

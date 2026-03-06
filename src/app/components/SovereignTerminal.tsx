@@ -64,19 +64,19 @@ const SOVEREIGN = {
     card: 'bg-zinc-900/50',
   },
   border: {
-    primary: 'border-amber-500/30',
+    primary: 'border-[#A3937B]/20',
     secondary: 'border-zinc-800',
-    accent: 'border-amber-400',
+    accent: 'border-[#B8A892]',
   },
   text: {
     primary: 'text-white',
     secondary: 'text-zinc-400',
-    accent: 'text-amber-400',
-    gold: 'text-amber-500',
+    accent: 'text-[#A3937B]',
+    gold: 'text-[#B8A892]',
   },
   accent: {
-    gold: 'bg-amber-500',
-    goldMuted: 'bg-amber-500/20',
+    gold: 'bg-[#A3937B]',
+    goldMuted: 'bg-[#A3937B]/15',
   },
 };
 
@@ -104,7 +104,7 @@ const SovereignHeader = memo(function SovereignHeader({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 ${isConnected ? 'bg-amber-500' : 'bg-red-500'} rounded-none animate-pulse`} />
+            <div className={`w-3 h-3 ${isConnected ? 'bg-[#A3937B]' : 'bg-red-500'} rounded-none animate-pulse`} />
             <span className={`text-xs font-mono tracking-widest ${SOVEREIGN.text.accent}`}>
               SOVEREIGN INTELLIGENCE TERMINAL
             </span>
@@ -116,7 +116,7 @@ const SovereignHeader = memo(function SovereignHeader({
         
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Radio className={`w-3 h-3 ${isConnected ? 'text-amber-500 animate-pulse' : 'text-zinc-600'}`} />
+            <Radio className={`w-3 h-3 ${isConnected ? 'text-[#A3937B] animate-pulse' : 'text-zinc-600'}`} />
             <span className={`text-[10px] font-mono ${SOVEREIGN.text.secondary}`}>
               {isConnected ? 'REALTIME' : 'OFFLINE'}
             </span>
@@ -131,7 +131,7 @@ const SovereignHeader = memo(function SovereignHeader({
           <button
             onClick={onRefresh}
             disabled={loading}
-            className={`p-2 rounded-none border ${SOVEREIGN.border.secondary} hover:border-amber-500/50 transition-colors`}
+            className={`p-2 rounded-none border ${SOVEREIGN.border.secondary} hover:border-[#A3937B]/30 transition-colors`}
           >
             <RefreshCw className={`w-4 h-4 ${SOVEREIGN.text.accent} ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -191,7 +191,7 @@ const SRIGauge = memo(function SRIGauge({
             <div className={`h-1 ${SOVEREIGN.bg.secondary} rounded-none mt-2 overflow-hidden`}>
               <div
                 className={`h-full transition-all duration-500 ${
-                  value >= 60 ? 'bg-red-500' : value >= 40 ? 'bg-amber-500' : 'bg-green-500'
+                  value >= 60 ? 'bg-red-500' : value >= 40 ? 'bg-[#A3937B]' : 'bg-green-500'
                 }`}
                 style={{ width: `${value}%` }}
               />
@@ -215,20 +215,20 @@ const FlowSignalBanner = memo(function FlowSignalBanner({
   return (
     <div className={`border-2 rounded-none p-4 ${
       isWarning 
-        ? 'border-amber-500 bg-amber-500/10' 
+        ? 'border-amber-500 bg-[#A3937B]/10' 
         : 'border-green-500 bg-green-500/10'
     }`}>
       <div className="flex items-start gap-4">
-        <div className={`p-2 rounded-none ${isWarning ? 'bg-amber-500/20' : 'bg-green-500/20'}`}>
-          <AlertTriangle className={`w-5 h-5 ${isWarning ? 'text-amber-500' : 'text-green-500'}`} />
+        <div className={`p-2 rounded-none ${isWarning ? 'bg-[#A3937B]/20' : 'bg-green-500/20'}`}>
+          <AlertTriangle className={`w-5 h-5 ${isWarning ? 'text-[#A3937B]' : 'text-green-500'}`} />
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <h4 className={`text-sm font-bold tracking-wide ${isWarning ? 'text-amber-400' : 'text-green-400'}`}>
+            <h4 className={`text-sm font-bold tracking-wide ${isWarning ? 'text-[#B8A892]' : 'text-green-400'}`}>
               {signal.description}
             </h4>
             <span className={`text-xs font-mono px-2 py-1 rounded-none ${
-              isWarning ? 'bg-amber-500/20 text-amber-400' : 'bg-green-500/20 text-green-400'
+              isWarning ? 'bg-[#A3937B]/20 text-[#B8A892]' : 'bg-green-500/20 text-green-400'
             }`}>
               {signal.confidence}% CONFIDENCE
             </span>
@@ -256,8 +256,8 @@ const SignalsPanel = memo(function SignalsPanel({
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'CRITICAL': return 'text-red-500 border-red-500/50 bg-red-500/10';
-      case 'HIGH': return 'text-amber-500 border-amber-500/50 bg-amber-500/10';
-      case 'MEDIUM': return 'text-yellow-500 border-yellow-500/50 bg-yellow-500/10';
+      case 'HIGH': return 'text-[#A3937B] border-[#A3937B]/30 bg-[#A3937B]/10';
+      case 'MEDIUM': return 'text-[#B8A892] border-[#B8A892]/50 bg-[#B8A892]/10';
       default: return 'text-green-500 border-green-500/50 bg-green-500/10';
     }
   };
@@ -315,7 +315,7 @@ const SignalsPanel = memo(function SignalsPanel({
               {!signal.acknowledged && (
                 <button
                   onClick={() => onAcknowledge(signal.id)}
-                  className={`p-1.5 rounded-none border ${SOVEREIGN.border.secondary} hover:border-amber-500/50 transition-colors`}
+                  className={`p-1.5 rounded-none border ${SOVEREIGN.border.secondary} hover:border-[#A3937B]/30 transition-colors`}
                 >
                   <Check className={`w-3 h-3 ${SOVEREIGN.text.accent}`} />
                 </button>
@@ -344,8 +344,8 @@ const CorrelationMatrix = memo(function CorrelationMatrix({
   
   const getCorrelationColor = (value: number) => {
     if (value < -0.3) return 'text-red-500 bg-red-500/20';
-    if (value < 0) return 'text-amber-500 bg-amber-500/20';
-    if (value < 0.3) return 'text-yellow-500 bg-yellow-500/20';
+    if (value < 0) return 'text-[#A3937B] bg-[#A3937B]/20';
+    if (value < 0.3) return 'text-[#B8A892] bg-[#B8A892]/20';
     return 'text-green-500 bg-green-500/20';
   };
   
@@ -392,7 +392,7 @@ const MarketPulseMetrics = memo(function MarketPulseMetrics({
   const getMetricColor = (value: number, isInverse: boolean = false) => {
     const adjusted = isInverse ? -value : value;
     if (adjusted > 20) return 'text-red-500';
-    if (adjusted > 0) return 'text-amber-500';
+    if (adjusted > 0) return 'text-[#A3937B]';
     return 'text-green-500';
   };
   
@@ -528,12 +528,12 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
         </div>
 
         {/* BRICS Intelligence Layer */}
-        <div className="mt-8 pt-8 border-t border-amber-500/20">
+        <div className="mt-8 pt-8 border-t border-[#A3937B]/15">
           <BRICSWidget />
         </div>
 
         {/* Asian Intelligence Layer - Japan & India */}
-        <div className="mt-8 pt-8 border-t border-amber-500/20">
+        <div className="mt-8 pt-8 border-t border-[#A3937B]/15">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-orange-500 rounded-none flex items-center justify-center">
               <Activity className="w-4 h-4 text-white" />
@@ -551,7 +551,7 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
         </div>
 
         {/* Western Intelligence Layer - Europe & Australia */}
-        <div className="mt-8 pt-8 border-t border-amber-500/20">
+        <div className="mt-8 pt-8 border-t border-[#A3937B]/15">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-500 rounded-none flex items-center justify-center">
               <Globe className="w-4 h-4 text-white" />

@@ -14,12 +14,16 @@
   --ios-bg-card: #16161d;
   --ios-bg-elevated: #1a1a22;
   
-  /* Accent Colors - Elegant Gold (NOT harsh yellow) */
-  --ios-gold: #d4af37;
-  --ios-gold-soft: #c6a85a;
-  --ios-gold-hover: #e0c361;
-  --ios-gold-muted: rgba(212, 175, 55, 0.12);
-  --ios-gold-glow: rgba(212, 175, 55, 0.25);
+  /* Accent Colors - Sovereign Tint (Muted Sandy Metallic) */
+  --ios-gold: #A3937B;
+  --ios-gold-soft: #B8A892;
+  --ios-gold-hover: #C4B8A5;
+  --ios-gold-muted: rgba(163, 147, 123, 0.12);
+  --ios-gold-glow: rgba(163, 147, 123, 0.20);
+  
+  /* Silver Accent Alternative */
+  --ios-silver: #C0C0C0;
+  --ios-silver-muted: rgba(192, 192, 192, 0.15);
   
   /* Neutral Steel */
   --ios-steel: #7a8a99;
@@ -27,12 +31,12 @@
   
   /* Status Colors - Financial Grade (High Contrast on Dark) */
   --ios-success: #2ecc71;
-  --ios-warning: #ffcc40;  /* Brighter amber for better contrast on black */
-  --ios-crisis: #ff5a75;   /* Brighter red for better contrast on black */
-  --ios-info: #60a5fa;
+  --ios-warning: #C4B8A5;  /* Sovereign Tint warning - soft sand */
+  --ios-crisis: #ff5a75;   /* Red for critical alerts */
+  --ios-info: #7a8a99;     /* Steel blue-gray info */
   
   /* High Contrast Text Colors for Accessibility */
-  --ios-text-warning: #ffd966;  /* High contrast amber text */
+  --ios-text-warning: #B8A892;  /* Sovereign Tint text */
   --ios-text-danger: #ff7a8a;   /* High contrast red text */
   
   /* Text Colors */
@@ -40,17 +44,17 @@
   --ios-text-secondary: #a0a0a0;
   --ios-text-muted: #6b6b6b;
   
-  /* Borders */
-  --ios-border: rgba(212, 175, 55, 0.1);
-  --ios-border-active: rgba(212, 175, 55, 0.3);
+  /* Borders - Subtle Sovereign Tint */
+  --ios-border: rgba(163, 147, 123, 0.08);
+  --ios-border-active: rgba(163, 147, 123, 0.20);
   
-  /* Glow Effects - Subtle and Elegant */
-  --ios-glow-gold: 0 0 15px rgba(212, 175, 55, 0.2);
-  --ios-glow-gold-strong: 0 0 25px rgba(212, 175, 55, 0.35);
-  --ios-glow-crisis: 0 0 20px rgba(255, 59, 92, 0.3);
-  --ios-glow-crisis-strong: 0 0 35px rgba(255, 59, 92, 0.5);
-  --ios-glow-success: 0 0 15px rgba(46, 204, 113, 0.25);
-  --ios-glow-warning: 0 0 15px rgba(255, 176, 32, 0.25);
+  /* Glow Effects - Subtle Sovereign Tint */
+  --ios-glow-gold: 0 0 12px rgba(163, 147, 123, 0.15);
+  --ios-glow-gold-strong: 0 0 20px rgba(163, 147, 123, 0.25);
+  --ios-glow-crisis: 0 0 15px rgba(255, 59, 92, 0.20);
+  --ios-glow-crisis-strong: 0 0 25px rgba(255, 59, 92, 0.35);
+  --ios-glow-success: 0 0 12px rgba(46, 204, 113, 0.18);
+  --ios-glow-warning: 0 0 12px rgba(163, 147, 123, 0.18);
   
   /* Adaptive Financial UI Colors */
   /* Light Mode (Stable/Expansionary) */
@@ -71,10 +75,10 @@
   --terminal-text: var(--ios-text-primary);
   --terminal-border: var(--ios-border);
   
-  /* Dossier Color Palette */
+  /* Dossier Color Palette - Sovereign Tint */
   --dossier-void: #020502;
-  --dossier-gold: var(--ios-gold);
-  --dossier-green: #00FF41;
+  --dossier-gold: #A3937B;
+  --dossier-green: #2ecc71;
   --dossier-red: var(--ios-crisis);
   --dossier-ghost: #1A1A1A;
   --dossier-white: #E0E0E0;
@@ -362,13 +366,13 @@
   box-shadow: var(--ios-glow-success);
 }
 
-/* Subtle gold accent border on hover */
+/* Subtle sovereign accent border on hover */
 .ios-hover-glow {
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 .ios-hover-glow:hover {
-  box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 10px rgba(163, 147, 123, 0.12);
   border-color: var(--ios-border-active);
 }
 
@@ -385,7 +389,7 @@
 .ios-nav-active {
   background: var(--ios-gold-muted);
   border-left: 2px solid var(--ios-gold);
-  box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1);
+  box-shadow: inset 0 0 15px rgba(163, 147, 123, 0.08);
 }
 
 /* Stale data indicator */
@@ -464,26 +468,26 @@
   animation: crisis-pulse 2s ease-in-out infinite;
 }
 
-/* Gold pulse for alerts */
+/* Sovereign pulse for alerts */
 @keyframes gold-pulse {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 12px rgba(163, 147, 123, 0.15);
   }
   50% {
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+    box-shadow: 0 0 20px rgba(163, 147, 123, 0.25);
   }
 }
 
 .ios-gold-pulse {
-  animation: gold-pulse 2s ease-in-out infinite;
+  animation: gold-pulse 2.5s ease-in-out infinite;
 }
 
-/* Grid overlay for panels */
+/* Grid overlay for panels - Finely etched glass effect */
 .ios-grid-overlay {
   background-image: 
-    linear-gradient(rgba(212, 175, 55, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(212, 175, 55, 0.03) 1px, transparent 1px);
-  background-size: 20px 20px;
+    linear-gradient(rgba(163, 147, 123, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(163, 147, 123, 0.012) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* Skeleton loader for Intelligence OS */
@@ -514,7 +518,7 @@
 
 .institutional-panel {
   background: var(--ios-bg-panel);
-  border: 1px solid rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(163, 147, 123, 0.06);
   padding: 1.5rem;
 }
 
@@ -524,7 +528,7 @@
   justify-content: space-between;
   padding-bottom: 1rem;
   margin-bottom: 1rem;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  border-bottom: 1px solid rgba(163, 147, 123, 0.08);
 }
 
 .institutional-panel-title {
@@ -541,7 +545,7 @@
   width: 100%;
   min-height: 300px;
   background: var(--ios-bg-card);
-  border: 1px solid rgba(212, 175, 55, 0.05);
+  border: 1px solid rgba(163, 147, 123, 0.04);
   padding: 1rem;
 }
 

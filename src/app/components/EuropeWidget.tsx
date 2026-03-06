@@ -101,7 +101,7 @@ export const EuropeWidget = memo(function EuropeWidget() {
   const getIndexColor = (value: number) => {
     if (value >= 70) return 'text-red-500';
     if (value >= 50) return 'text-orange-400';
-    if (value >= 30) return 'text-amber-400';
+    if (value >= 30) return 'text-[#B8A892]';
     return 'text-green-400';
   };
 
@@ -111,7 +111,7 @@ export const EuropeWidget = memo(function EuropeWidget() {
       <div className="bg-gradient-to-r from-blue-900 to-blue-800 px-4 py-3 border-b border-blue-700/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-amber-400 rounded-none flex items-center justify-center">
+            <div className="w-8 h-8 bg-[#B8A892] rounded-none flex items-center justify-center">
               <Euro className="w-5 h-5 text-blue-900" />
             </div>
             <div>
@@ -144,7 +144,7 @@ export const EuropeWidget = memo(function EuropeWidget() {
             onClick={() => setView(v)}
             className={`flex-1 px-3 py-2 text-xs font-bold transition-colors ${
               view === v 
-                ? 'bg-blue-900/50 text-amber-400 border-b-2 border-amber-400' 
+                ? 'bg-blue-900/50 text-[#B8A892] border-b-2 border-[#B8A892]' 
                 : 'text-gray-400 hover:text-white hover:bg-blue-900/30'
             }`}
           >
@@ -218,7 +218,7 @@ const OverviewView = memo(function OverviewView({
             className={`h-full transition-all duration-500 ${
               index.value >= 70 ? 'bg-red-500' :
               index.value >= 50 ? 'bg-orange-500' :
-              index.value >= 30 ? 'bg-amber-400' : 'bg-green-500'
+              index.value >= 30 ? 'bg-[#B8A892]' : 'bg-green-500'
             }`}
             style={{ width: `${index.value}%` }}
           />
@@ -239,7 +239,7 @@ const OverviewView = memo(function OverviewView({
                   className={`h-full ${
                     value >= 70 ? 'bg-red-500' :
                     value >= 50 ? 'bg-orange-500' :
-                    value >= 30 ? 'bg-amber-400' : 'bg-green-500'
+                    value >= 30 ? 'bg-[#B8A892]' : 'bg-green-500'
                   }`}
                   style={{ width: `${value}%` }}
                 />
@@ -259,7 +259,7 @@ const OverviewView = memo(function OverviewView({
         </div>
         <div className="bg-gray-900/50 border border-gray-800 rounded-none p-3 text-center">
           <div className="text-gray-500 text-xs font-mono mb-1">INFLATION</div>
-          <div className={`text-lg font-bold ${data.aggregates.avg_inflation > 3 ? 'text-red-400' : 'text-amber-400'}`}>
+          <div className={`text-lg font-bold ${data.aggregates.avg_inflation > 3 ? 'text-red-400' : 'text-[#B8A892]'}`}>
             {data.aggregates.avg_inflation.toFixed(1)}%
           </div>
         </div>
@@ -283,8 +283,8 @@ const DebtStressView = memo(function DebtStressView({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2 mb-4">
-        <AlertTriangle className="w-4 h-4 text-amber-400" />
-        <span className="text-amber-400 text-sm font-bold">PIIGS DEBT STRESS MONITOR</span>
+        <AlertTriangle className="w-4 h-4 text-[#B8A892]" />
+        <span className="text-[#B8A892] text-sm font-bold">PIIGS DEBT STRESS MONITOR</span>
       </div>
       
       {signals.map((signal) => (
@@ -300,7 +300,7 @@ const DebtStressView = memo(function DebtStressView({
             <span className={`px-2 py-0.5 text-xs font-bold rounded-none ${
               signal.stress_level === 'CRITICAL' ? 'bg-red-500 text-white' :
               signal.stress_level === 'HIGH' ? 'bg-orange-500 text-white' :
-              signal.stress_level === 'ELEVATED' ? 'bg-amber-400 text-black' :
+              signal.stress_level === 'ELEVATED' ? 'bg-[#B8A892] text-black' :
               'bg-green-500 text-white'
             }`}>
               {signal.stress_level}
@@ -381,7 +381,7 @@ const CountryDetailView = memo(function CountryDetailView({
             </div>
             <div className="bg-gray-900/50 p-3 rounded-none">
               <div className="text-gray-500 text-xs">Inflation</div>
-              <div className="text-lg font-bold text-amber-400">
+              <div className="text-lg font-bold text-[#B8A892]">
                 {country.inflation_rate !== null ? `${country.inflation_rate.toFixed(1)}%` : 'N/A'}
               </div>
             </div>

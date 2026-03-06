@@ -246,7 +246,7 @@ const FlightGauge = memo(function FlightGauge({
   const levelColors = {
     LOW: '#00d68f',
     MODERATE: '#7a8a99',
-    ELEVATED: '#d4af37',
+    ELEVATED: '#A3937B',
     HIGH: '#ff9f43',
     EXTREME: '#ff3b3b',
   };
@@ -417,7 +417,7 @@ export const CapitalFlightDetector = memo(function CapitalFlightDetector() {
   const levelColors = {
     LOW: '#00d68f',
     MODERATE: '#7a8a99',
-    ELEVATED: '#d4af37',
+    ELEVATED: '#A3937B',
     HIGH: '#ff9f43',
     EXTREME: '#ff3b3b',
   };
@@ -426,12 +426,12 @@ export const CapitalFlightDetector = memo(function CapitalFlightDetector() {
     <div className={`bg-[#0f1113] border p-6 ${
       isFlightDetected 
         ? 'border-[#ff3b3b] ios-crisis-pulse' 
-        : 'border-[rgba(212,175,55,0.1)]'
+        : 'border-[rgba(163,147,123,0.08)]'
     }`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Shield className="w-6 h-6 text-[#d4af37]" />
+          <Shield className="w-6 h-6 text-[#A3937B]" />
           <div>
             <h2 className="text-lg font-mono font-bold text-white uppercase tracking-wider">
               Capital Flight Detector
@@ -451,10 +451,10 @@ export const CapitalFlightDetector = memo(function CapitalFlightDetector() {
           <button
             onClick={refresh}
             disabled={isLoading}
-            className="p-2 rounded hover:bg-[rgba(212,175,55,0.1)] transition-colors disabled:opacity-50"
+            className="p-2 rounded hover:bg-[rgba(163,147,123,0.08)] transition-colors disabled:opacity-50"
             aria-label="Refresh"
           >
-            <RefreshCw className={`w-4 h-4 text-[#d4af37] ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 text-[#A3937B] ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>

@@ -5,18 +5,18 @@ import { Activity, Shield, Database, CheckCircle, AlertTriangle } from 'lucide-r
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { DataSourceStatusBar } from './DataSourceStatusBar';
 
-// Design tokens - unified palette
+// Design tokens - Sovereign Tint palette
 const DESIGN = {
   bg: '#0b0b0f',
   panel: '#121218',
-  gold: '#d4af37',
-  goldMuted: 'rgba(212, 175, 55, 0.12)',
+  gold: '#A3937B',
+  goldMuted: 'rgba(163, 147, 123, 0.10)',
   success: '#2ecc71',
-  warning: '#ffb020',
+  warning: '#B8A892',
   crisis: '#ff3b5c',
   textPrimary: '#f5f5f5',
   textMuted: '#6b6b6b',
-  border: 'rgba(212, 175, 55, 0.08)',
+  border: 'rgba(163, 147, 123, 0.06)',
 };
 
 // Liquidity Regime Engine Logic:

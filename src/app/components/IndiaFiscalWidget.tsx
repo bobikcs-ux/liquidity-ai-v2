@@ -57,7 +57,7 @@ const GSTGauge = memo(function GSTGauge({
     ? 'text-green-500' 
     : pulse.gstCollection.trend === 'DECELERATING' 
       ? 'text-red-500' 
-      : 'text-amber-500';
+      : 'text-[#A3937B]';
 
   return (
     <div className="bg-black border border-orange-900/50 rounded-none p-6">
@@ -174,7 +174,7 @@ const FiscalHealthCard = memo(function FiscalHealthCard({
                 pulse.fiscalHealth.deficitToGDP > 6 
                   ? 'bg-red-500' 
                   : pulse.fiscalHealth.deficitToGDP > 5 
-                    ? 'bg-amber-500' 
+                    ? 'bg-[#A3937B]' 
                     : 'bg-green-500'
               }`}
               style={{ width: `${deficitWidth}%` }}

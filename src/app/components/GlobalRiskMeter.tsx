@@ -10,7 +10,7 @@ import React, { memo, useMemo } from 'react';
 import { Shield, TrendingUp, TrendingDown, Activity, AlertTriangle } from 'lucide-react';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 
-// Design tokens
+// Design tokens - Sovereign Tint palette
 const DESIGN = {
   bg: {
     primary: '#0b0b0f',
@@ -18,12 +18,12 @@ const DESIGN = {
     card: '#16161d',
   },
   accent: {
-    gold: '#d4af37',
-    goldMuted: 'rgba(212, 175, 55, 0.12)',
+    gold: '#A3937B',
+    goldMuted: 'rgba(163, 147, 123, 0.10)',
   },
   status: {
     safe: '#2ecc71',
-    elevated: '#ffb020',
+    elevated: '#B8A892',
     high: '#ff6b4a',
     systemic: '#ff3b5c',
   },
@@ -33,8 +33,8 @@ const DESIGN = {
     muted: '#6b6b6b',
   },
   border: {
-    default: 'rgba(212, 175, 55, 0.08)',
-    active: 'rgba(212, 175, 55, 0.2)',
+    default: 'rgba(163, 147, 123, 0.06)',
+    active: 'rgba(163, 147, 123, 0.15)',
   },
 };
 
