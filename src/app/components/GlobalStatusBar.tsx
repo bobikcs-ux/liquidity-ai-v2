@@ -54,7 +54,6 @@ export const GlobalStatusBar = memo(function GlobalStatusBar({ className = '' }:
   
   const regime = useMemo(() => getLiquidityRegime(systemicRisk), [systemicRisk]);
   const regimeColor = getRegimeColor(regime);
-  const regimeBgColor = getRegimeBgColor(regime);
   
   // Data verification status
   const isDataVerified = dataStatus?.status === 'GREEN' || dataStatus?.status === 'YELLOW';
