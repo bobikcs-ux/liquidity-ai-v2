@@ -7,9 +7,14 @@
 
 import React from 'react';
 import { SovereignTerminal } from '../components/SovereignTerminal';
+import { ErrorBoundaryWrapper } from '../components/ErrorBoundary';
 
 export function Sovereign() {
-  return <SovereignTerminal />;
+  return (
+    <ErrorBoundaryWrapper componentName="SovereignTerminal">
+      <SovereignTerminal />
+    </ErrorBoundaryWrapper>
+  );
 }
 
 export default Sovereign;
