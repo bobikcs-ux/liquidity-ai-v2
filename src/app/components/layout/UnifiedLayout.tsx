@@ -49,7 +49,7 @@ import {
 import { useAdaptiveTheme } from '../../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../../hooks/useMarketSnapshot';
 import { useUserRole } from '../../context/UserRoleContext';
-// QR code removed - no longer needed
+
 import { DataSourceStatusCompact } from '../DataSourceStatus';
 import { GlobalStatusBar } from '../GlobalStatusBar';
 
@@ -525,13 +525,9 @@ export function UnifiedLayout() {
                 </div>
               </div>
               
-              {/* Center - Terminal QR - Production Spec: Black on White, 220px, Level H */}
+              {/* Center - Data Source Status */}
               <div className="hidden md:flex items-center gap-4">
                 <DataSourceStatusCompact />
-                <InstitutionalQR 
-                  size={64} 
-                  label=""
-                />
               </div>
               
               <div className={`text-sm font-medium text-center md:text-right ${isDark || isHybrid ? 'text-[#A3937B]/80' : 'text-gray-700'}`}>
