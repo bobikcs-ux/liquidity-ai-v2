@@ -151,23 +151,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Message required' });
     }
 
-    // Use Vercel AI Gateway with Gemini
-    const response = await fetch('https://api.vercel.ai/v1/chat/completions', {
+    // Use Google Generative AI directly for Gemini
+    // Try direct Google AI endpoint first
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.AI_GATEWAY_API_KEY || '';
+    
+    if (!apiKey) {
+      console.log('[v0] No API key found, using fallback');
+      return res.status(200).json({
+        status: 'FALLBACK',
+        response: generateFallbackResponse(message),
+        source: 'LOCAL_TABLE_DATA',
+        note: 'Няма API ключ. Използвам локални данни.',
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    // Use Google Generative AI API
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.AI_GATEWAY_API_KEY || ''}`,
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.0-flash',
-        messages: [
-          { role: 'system', content: SYSTEM_CONTEXT },
-          { role: 'user', content: message }
+        contents: [
+          { 
+            role: 'user', 
+            parts: [{ text: `${SYSTEM_CONTEXT}\n\nПотребителят пита: ${message}` }]
+          }
         ],
-        temperature: 0.7,
-        max_tokens: 2048,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2048,
+        },
       }),
     });
+    
+    console.log('[v0] Gemini API response status:', response.status);
 
     if (!response.ok) {
       const error = await response.text();
@@ -183,7 +202,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const data = await response.json();
-    const aiResponse = data.choices?.[0]?.message?.content || 'No response generated';
+    
+    // Google Generative AI response format
+    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || 
+                       data.choices?.[0]?.message?.content || 
+                       'Няма отговор от AI';
 
     return res.status(200).json({
       status: 'ACTIVE',

@@ -274,7 +274,7 @@ export function Reports() {
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-3 md:p-4 max-w-full">
           <div className="text-xs md:text-sm text-gray-600 mb-1">High Risk Alerts</div>
-          <div className="text-xl md:text-2xl font-bold text-red-600 tabular-nums">3</div>
+          <div className="text-xl md:text-2xl font-bold text-red-500 tabular-nums">3</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-3 md:p-4 max-w-full">
           <div className="text-xs md:text-sm text-gray-600 mb-1">Downloads</div>

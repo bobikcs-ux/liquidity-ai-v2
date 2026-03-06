@@ -39,10 +39,10 @@
   --ios-text-warning: #B8A892;  /* Sovereign Tint text */
   --ios-text-danger: #ff7a8a;   /* High contrast red text */
   
-  /* Text Colors */
+  /* Text Colors - WCAG AA Compliant on Dark Backgrounds */
   --ios-text-primary: #f5f5f5;
-  --ios-text-secondary: #a0a0a0;
-  --ios-text-muted: #6b6b6b;
+  --ios-text-secondary: #a1a1aa;  /* zinc-400 - WCAG compliant */
+  --ios-text-muted: #a1a1aa;      /* zinc-400 - Improved contrast from #6b6b6b */
   
   /* Borders - Subtle Sovereign Tint */
   --ios-border: rgba(163, 147, 123, 0.08);

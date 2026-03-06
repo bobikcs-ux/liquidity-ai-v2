@@ -127,7 +127,7 @@ export default function HistoryPanel() {
                     ? (isDark ? 'text-green-400' : isHybrid ? 'text-green-300' : 'text-green-600')
                     : survivalScore >= 50 
                     ? (isDark ? 'text-[#B8A892]' : isHybrid ? 'text-[#A3937B]' : 'text-[#8B7D69]')
-                    : (isDark ? 'text-red-500' : isHybrid ? 'text-red-400' : 'text-red-600')
+                    : (isDark ? 'text-red-500' : isHybrid ? 'text-red-400' : 'text-red-500')
                 }`}>
                   SURVIVAL: {survivalScore}%
                 </span>

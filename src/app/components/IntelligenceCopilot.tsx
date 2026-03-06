@@ -146,14 +146,15 @@ export function IntelligenceCopilot() {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-4 rounded-2xl shadow-2xl transition-all hover:scale-105 z-50"
+        aria-label="Отвори Gemini Intelligence чат"
+        className="fixed bottom-6 right-6 p-4 rounded-2xl shadow-2xl transition-all hover:scale-105 z-50 min-h-[44px]"
         style={{ 
           background: `linear-gradient(135deg, ${DESIGN.sovereignSand} 0%, ${DESIGN.sovereignSandLight} 100%)`,
           border: `1px solid ${DESIGN.border}`
         }}
       >
         <div className="flex items-center gap-2">
-          <Brain className="w-6 h-6 text-black" />
+          <Brain className="w-6 h-6 text-black" aria-hidden="true" />
           <span className="font-semibold text-black">Gemini Intelligence</span>
         </div>
       </button>
@@ -208,14 +209,16 @@ export function IntelligenceCopilot() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-2 rounded-lg transition-colors hover:bg-zinc-900"
+            aria-label={isExpanded ? 'Намали прозореца' : 'Уголеми прозореца'}
+            className="p-2 rounded-lg transition-colors hover:bg-zinc-900 min-h-[44px] min-w-[44px] flex items-center justify-center"
             style={{ color: DESIGN.textMuted }}
           >
             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 rounded-lg transition-colors hover:bg-zinc-900"
+            aria-label="Затвори чата"
+            className="p-2 rounded-lg transition-colors hover:bg-zinc-900 min-h-[44px] min-w-[44px] flex items-center justify-center"
             style={{ color: DESIGN.textMuted }}
           >
             <X className="w-4 h-4" />

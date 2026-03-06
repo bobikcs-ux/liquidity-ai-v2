@@ -102,7 +102,7 @@ export function Intelligence() {
         <div className="bg-white rounded-3xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-[#FEF2F2] rounded-xl flex items-center justify-center">
-              <Target className="w-5 h-5 text-red-600" />
+              <Target className="w-5 h-5 text-red-500" />
             </div>
             <h2 className="text-base font-semibold text-gray-900">Crash Similarity</h2>
           </div>
@@ -147,7 +147,7 @@ export function Intelligence() {
           </div>
 
           <div className="text-center py-8">
-            <div className={`text-5xl font-bold mb-2 tabular-nums min-h-[3.5rem] flex items-center justify-center ${btcVolatility > 60 ? 'text-red-600' : btcVolatility > 40 ? 'text-amber-600' : 'text-green-600'}`}>
+            <div className={`text-5xl font-bold mb-2 tabular-nums min-h-[3.5rem] flex items-center justify-center ${btcVolatility > 60 ? 'text-red-500' : btcVolatility > 40 ? 'text-amber-600' : 'text-green-600'}`}>
               {snapshotLoading ? <span className="inline-block w-16 h-12 bg-gray-200 rounded animate-pulse" /> : `${btcVolatility}%`}
             </div>
             <p className="text-sm text-gray-600">BTC Volatility Index</p>
@@ -231,7 +231,7 @@ export function Intelligence() {
                   <div className="text-xs font-medium text-gray-600">7-day average</div>
                 </div>
                 <div className={`text-lg font-semibold tabular-nums min-w-[5rem] text-right ${
-                  item.trend === 'up' ? 'text-green-600' : 'text-red-600'
+                  item.trend === 'up' ? 'text-green-600' : 'text-red-500'
                 }`}>
                   {item.amount}
                 </div>

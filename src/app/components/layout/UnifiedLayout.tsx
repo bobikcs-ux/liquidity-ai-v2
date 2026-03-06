@@ -359,7 +359,7 @@ export function UnifiedLayout() {
               <span className={`font-medium tabular-nums min-w-[2.5rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 {snapshotLoading ? <span className="inline-block w-8 h-4 bg-gray-700 rounded animate-pulse" /> : systemicRisk}
               </span>
-              <span className={`min-w-[2.5rem] font-semibold ${systemicRisk > 50 ? 'text-red-600' : isDark || isHybrid ? 'text-emerald-400' : 'text-green-700'}`}>
+              <span className={`min-w-[2.5rem] font-semibold ${systemicRisk > 50 ? 'text-red-500' : isDark || isHybrid ? 'text-emerald-400' : 'text-green-700'}`}>
                 {systemicRisk > 50 ? 'HIGH' : 'OK'}
               </span>
             </div>
@@ -369,7 +369,7 @@ export function UnifiedLayout() {
               <span className={`font-medium tabular-nums min-w-[3rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 {snapshotLoading ? <span className="inline-block w-10 h-4 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
               </span>
-              <span className={`min-w-[4rem] font-semibold ${survivalProb >= 70 ? (isDark || isHybrid ? 'text-emerald-400' : 'text-green-700') : survivalProb >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+              <span className={`min-w-[4rem] font-semibold ${survivalProb >= 70 ? (isDark || isHybrid ? 'text-emerald-400' : 'text-green-700') : survivalProb >= 50 ? 'text-amber-600' : 'text-red-500'}`}>
                 {survivalProb >= 70 ? 'SAFE' : survivalProb >= 50 ? 'CAUTION' : 'RISK'}
               </span>
             </div>

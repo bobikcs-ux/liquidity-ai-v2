@@ -121,7 +121,7 @@ export function ConflictTransmissionModel() {
             isDark || isHybrid ? 'bg-red-950/50' : 'bg-red-50'
           }`}>
             <Shield className={`w-5 h-5 ${
-              isDark || isHybrid ? 'text-red-400' : 'text-red-600'
+              isDark || isHybrid ? 'text-red-400' : 'text-red-500'
             }`} />
           </div>
           <div>
@@ -248,7 +248,7 @@ export function ConflictTransmissionModel() {
       }`}>
         <div className="flex items-start gap-3">
           <AlertTriangle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
-            isDark || isHybrid ? 'text-red-400' : 'text-red-600'
+            isDark || isHybrid ? 'text-red-400' : 'text-red-500'
           }`} />
           <div>
             <div className={`text-sm font-semibold mb-1 ${

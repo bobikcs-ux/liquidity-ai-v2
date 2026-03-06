@@ -316,7 +316,7 @@ const FlightGauge = memo(function FlightGauge({
         >
           {value.toFixed(0)}
         </span>
-        <span className="text-xs font-mono text-[#6b6b6b] uppercase tracking-wider">
+        <span className="text-xs font-mono text-[#a1a1aa] uppercase tracking-wider">
           FLIGHT INDEX
         </span>
       </div>
@@ -339,8 +339,8 @@ const SignalIndicator = memo(function SignalIndicator({
         ? 'bg-[rgba(255,59,59,0.1)] border-[rgba(255,59,59,0.3)]' 
         : 'border border-zinc-800/50 border-transparent'
     }`}>
-      <Icon className={`w-4 h-4 ${active ? 'text-[#ff3b3b]' : 'text-[#6b6b6b]'}`} />
-      <span className={`text-xs font-mono uppercase ${active ? 'text-[#ff3b3b]' : 'text-[#6b6b6b]'}`}>
+      <Icon className={`w-4 h-4 ${active ? 'text-[#ff3b3b]' : 'text-[#a1a1aa]'}`} />
+      <span className={`text-xs font-mono uppercase ${active ? 'text-[#ff3b3b]' : 'text-[#a1a1aa]'}`}>
         {label}
       </span>
       <div className={`w-2 h-2 rounded-full ml-auto ${active ? 'bg-[#ff3b3b] animate-pulse' : 'bg-[#2a2a2a]'}`} />
@@ -371,7 +371,7 @@ const IndicatorRow = memo(function IndicatorRow({
     <div className="flex items-center gap-4 py-2 px-3 border border-zinc-800/50 hover:bg-zinc-900 transition-colors">
       <div className="flex-1">
         <div className="text-xs font-mono text-white">{indicator.name}</div>
-        <div className="text-xs font-mono text-[#6b6b6b]">{indicator.description}</div>
+        <div className="text-xs font-mono text-[#a1a1aa]">{indicator.description}</div>
       </div>
       
       <div className="text-right">
@@ -436,7 +436,7 @@ export const CapitalFlightDetector = memo(function CapitalFlightDetector() {
             <h2 className="text-lg font-mono font-bold text-white uppercase tracking-wider">
               Capital Flight Detector
             </h2>
-            <p className="text-xs font-mono text-[#6b6b6b]">
+            <p className="text-xs font-mono text-[#a1a1aa]">
               Early warning system for crisis capital movement
             </p>
           </div>
@@ -444,7 +444,7 @@ export const CapitalFlightDetector = memo(function CapitalFlightDetector() {
 
         <div className="flex items-center gap-3">
           {lastUpdated && (
-            <span className="text-xs font-mono text-[#6b6b6b]">
+            <span className="text-xs font-mono text-[#a1a1aa]">
               {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false })}
             </span>
           )}

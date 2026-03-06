@@ -15,7 +15,7 @@ const DESIGN = {
   warning: '#B8A892',
   crisis: '#ff3b5c',
   textPrimary: '#f5f5f5',
-  textMuted: '#6b6b6b',
+  textMuted: '#a1a1aa',
   border: 'rgba(163, 147, 123, 0.06)',
 };
 

@@ -143,7 +143,7 @@ const TopStatusBar = memo(function TopStatusBar({
       <div className="flex items-center gap-4">
         {/* Last Update */}
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-[#6b6b6b]" />
+          <Clock className="w-4 h-4 text-[#a1a1aa]" />
           <span className="text-xs font-mono text-[#a0a0a0]">{formattedTime}</span>
         </div>
 
@@ -235,7 +235,7 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
           <div className="absolute top-0 h-full w-px bg-[#A3937B]" style={{ left: '60%' }} />
           <div className="absolute top-0 h-full w-px bg-[#ff3b3b]" style={{ left: '80%' }} />
         </div>
-        <div className="flex justify-between mt-1 text-xs font-mono text-[#6b6b6b]">
+        <div className="flex justify-between mt-1 text-xs font-mono text-[#a1a1aa]">
           <span>0σ</span>
           <span>1.2σ</span>
           <span>1.6σ</span>
@@ -324,7 +324,7 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
         ))}
 
         {/* Map label */}
-        <div className="absolute bottom-2 right-2 text-[8px] font-mono text-[#6b6b6b]">
+        <div className="absolute bottom-2 right-2 text-[8px] font-mono text-[#a1a1aa]">
           ACLED DATA FEED
         </div>
       </div>
@@ -488,7 +488,7 @@ const FreightRateBox = memo(function FreightRateBox({ data }: { data: FreightRat
 
   return (
     <div className={`p-2 border border-zinc-800/50 border ${isSpike ? 'border-[rgba(255,159,67,0.3)]' : 'border-transparent'}`}>
-      <div className="text-xs font-mono text-[#6b6b6b] uppercase">{data.vesselType}</div>
+      <div className="text-xs font-mono text-[#a1a1aa] uppercase">{data.vesselType}</div>
       <div className={`text-sm font-mono font-bold ${isSpike ? 'text-[#ff9f43]' : 'text-white'}`}>
         +{data.spike.toFixed(0)}%
       </div>
@@ -553,7 +553,7 @@ const CorrelationEngine = memo(function CorrelationEngine({
               >
                 {systemicRisk.riskScore}
               </span>
-              <span className="text-[8px] font-mono text-[#6b6b6b] uppercase">RISK</span>
+              <span className="text-[8px] font-mono text-[#a1a1aa] uppercase">RISK</span>
             </div>
           </div>
         </div>
@@ -604,7 +604,7 @@ const TriggerIndicator = memo(function TriggerIndicator({
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${active ? 'bg-[#ff3b3b]' : 'bg-[#2a2a2a]'}`} />
-      <span className={`text-xs font-mono uppercase ${active ? 'text-[#ff3b3b]' : 'text-[#6b6b6b]'}`}>
+      <span className={`text-xs font-mono uppercase ${active ? 'text-[#ff3b3b]' : 'text-[#a1a1aa]'}`}>
         {label}
       </span>
     </div>
@@ -628,7 +628,7 @@ const MetricBox = memo(function MetricBox({
 }) {
   return (
     <div className={`p-2 border border-zinc-800/50 border ${alert ? 'border-[rgba(255,59,59,0.3)]' : 'border-transparent'}`}>
-      <div className="text-xs font-mono text-[#6b6b6b] uppercase tracking-wider">{label}</div>
+      <div className="text-xs font-mono text-[#a1a1aa] uppercase tracking-wider">{label}</div>
       <div className="flex items-center gap-1">
         <span className={`text-sm font-mono font-bold ${alert ? 'text-[#ff3b3b]' : 'text-white'}`}>
           {value}
@@ -654,7 +654,7 @@ const PanelSkeleton = memo(function PanelSkeleton({ title }: { title: string }) 
     <div className="bg-[#0f1113] border border-[rgba(163,147,123,0.08)] p-4">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-5 h-5 ios-skeleton" />
-        <span className="text-sm font-mono font-bold text-[#6b6b6b] uppercase tracking-wider">
+        <span className="text-sm font-mono font-bold text-[#a1a1aa] uppercase tracking-wider">
           {title}
         </span>
       </div>
@@ -724,7 +724,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono text-[#6b6b6b] uppercase tracking-wider">SYSTEMIC RISK LEVEL</span>
+              <span className="text-xs font-mono text-[#a1a1aa] uppercase tracking-wider">SYSTEMIC RISK LEVEL</span>
               <div className="flex items-center gap-1">
                 {['LOW', 'ELEVATED', 'HIGH', 'SYSTEMIC'].map((lvl) => (
                   <span 
@@ -754,7 +754,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
               >
                 {riskScore}
               </span>
-              <span className="text-xs font-mono text-[#6b6b6b]">/100</span>
+              <span className="text-xs font-mono text-[#a1a1aa]">/100</span>
             </div>
           </div>
 
@@ -763,7 +763,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
             <div className="flex items-center gap-2">
               <span className={`text-xs font-mono px-2 py-1 ${
                 mode === 'ACKNOWLEDGED' ? 'bg-[#A3937B]/10 text-[#A3937B] border border-[#A3937B]/30' :
-                mode === 'SUPPRESSED' ? 'bg-[#6b6b6b]/10 text-[#6b6b6b] border border-[#6b6b6b]/30' :
+                mode === 'SUPPRESSED' ? 'bg-[#a1a1aa]/10 text-[#a1a1aa] border border-[#a1a1aa]/30' :
                 'bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/30'
               }`}>
                 {mode} MODE
@@ -797,7 +797,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
                   </button>
                   <button
                     onClick={() => setMode('SUPPRESSED')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6b6b6b]/10 border border-[#6b6b6b]/30 text-[#6b6b6b] text-xs font-mono uppercase hover:bg-[#6b6b6b]/20 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#a1a1aa]/10 border border-[#a1a1aa]/30 text-[#a1a1aa] text-xs font-mono uppercase hover:bg-[#a1a1aa]/20 transition-colors"
                   >
                     <Shield className="w-3 h-3" />
                     Suppress
@@ -875,7 +875,7 @@ return (
           <h1 className="text-base md:text-xl font-mono font-bold text-white uppercase tracking-wider">
             Triad Intelligence
           </h1>
-          <span className="text-xs md:text-xs font-mono text-[#6b6b6b]">v1.0</span>
+          <span className="text-xs md:text-xs font-mono text-[#a1a1aa]">v1.0</span>
         </div>
 
         {/* Error State */}

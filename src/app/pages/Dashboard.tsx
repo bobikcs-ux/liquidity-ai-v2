@@ -160,7 +160,7 @@ export function Dashboard() {
               </div>
               <div className={`p-2 md:p-3 rounded-lg overflow-hidden ${isDark || isHybrid ? 'bg-white/5' : 'bg-gray-100'}`}>
                 <div className={`text-xs uppercase font-mono font-medium ${isDark || isHybrid ? 'text-slate-300' : 'text-gray-900'}`}>Risk Level</div>
-                <div className={`text-base md:text-lg font-bold font-mono tabular-nums ${currentRegime.riskLevel > 50 ? 'text-red-600' : 'text-green-600'}`}>
+                <div className={`text-base md:text-lg font-bold font-mono tabular-nums ${currentRegime.riskLevel > 50 ? 'text-red-500' : 'text-green-600'}`}>
                   {currentRegime.riskLevel}%
                 </div>
               </div>
@@ -208,7 +208,7 @@ export function Dashboard() {
             ].map((m, i) => (
               <div key={i} className={`flex justify-between items-end border-b pb-2 min-h-[2rem] ${isDark || isHybrid ? 'border-white/5' : 'border-gray-200'}`}>
                 <span className={`text-xs font-mono uppercase ${isDark || isHybrid ? 'text-gray-200' : 'text-gray-900 font-semibold'}`}>{m.label}</span>
-                <span className={`text-base font-bold font-mono tabular-nums min-w-[4rem] text-right ${m.trend === 'up' ? 'text-green-600' : m.trend === 'down' ? 'text-red-600' : isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
+                <span className={`text-base font-bold font-mono tabular-nums min-w-[4rem] text-right ${m.trend === 'up' ? 'text-green-600' : m.trend === 'down' ? 'text-red-500' : isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                   {m.val ?? <span className={`inline-block w-12 h-5 rounded animate-pulse ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`} />}
                 </span>
               </div>

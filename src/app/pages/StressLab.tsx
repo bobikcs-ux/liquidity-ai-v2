@@ -456,7 +456,7 @@ export function StressLab() {
             } ${correlationWarning ? 'border-amber-500' : ''}`}>
               <div className="flex items-center gap-2 md:gap-3 mb-2 md:mb-4">
                 <div className={`w-7 h-7 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center ${isDark || isHybrid ? 'bg-red-500/20' : 'bg-[#FEF2F2]'}`}>
-                  <TrendingDown className={`w-3.5 h-3.5 md:w-5 md:h-5 ${isDark || isHybrid ? 'text-red-400' : 'text-red-600'}`} />
+                  <TrendingDown className={`w-3.5 h-3.5 md:w-5 md:h-5 ${isDark || isHybrid ? 'text-red-400' : 'text-red-500'}`} />
                 </div>
                 <h3 className={`text-xs md:text-base font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Drawdown</h3>
               </div>

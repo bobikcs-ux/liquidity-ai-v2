@@ -81,8 +81,8 @@ const DESIGN = {
   },
   text: {
     primary: '#f5f5f5',
-    secondary: '#a0a0a0',
-    muted: '#6b6b6b',
+    secondary: '#a1a1aa',  // zinc-400 - WCAG compliant
+    muted: '#a1a1aa',      // zinc-400 - Improved contrast
   },
   border: {
     default: 'rgba(163, 147, 123, 0.06)',
