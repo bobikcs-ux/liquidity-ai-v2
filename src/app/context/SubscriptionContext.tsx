@@ -1,18 +1,23 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export type SubscriptionStatus = 'FREE' | 'SUBSCRIBED' | 'TRIAL';
+
+// Admin users who always have full access
+const ADMIN_USERS = ['Admin_Bobikcs', 'admin@bobikcs.com', 'bobikcs'];
 
 interface SubscriptionState {
   status: SubscriptionStatus;
   isPaid: boolean;
   tier: 'BASIC' | 'INSTITUTIONAL' | null;
   expiresAt: Date | null;
+  isAdmin: boolean;
 }
 
 interface SubscriptionContextType {
   subscription: SubscriptionState;
-  checkAccess: (feature: 'intelligence' | 'deepRisk' | 'dossier') => boolean;
+  checkAccess: (feature: 'intelligence' | 'deepRisk' | 'dossier' | 'blackSwan' | 'narrativeShock' | 'deepShipping') => boolean;
   upgradeTier: (tier: 'INSTITUTIONAL') => void;
+  setAdminUser: (username: string) => void;
   // For testing/demo
   setMockPaid: (isPaid: boolean) => void;
 }
@@ -22,16 +27,50 @@ const defaultState: SubscriptionState = {
   isPaid: false, // MOCK: Set to false to see paywall
   tier: null,
   expiresAt: null,
+  isAdmin: false,
 };
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [subscription, setSubscription] = useState<SubscriptionState>(defaultState);
+  
+  // Check for admin user in localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('bobikcs_user');
+    if (storedUser && ADMIN_USERS.includes(storedUser)) {
+      setSubscription(prev => ({
+        ...prev,
+        isAdmin: true,
+        isPaid: true,
+        status: 'SUBSCRIBED',
+        tier: 'INSTITUTIONAL',
+      }));
+    }
+  }, []);
+  
+  // Admin user setter
+  const setAdminUser = (username: string) => {
+    if (ADMIN_USERS.includes(username)) {
+      localStorage.setItem('bobikcs_user', username);
+      setSubscription(prev => ({
+        ...prev,
+        isAdmin: true,
+        isPaid: true,
+        status: 'SUBSCRIBED',
+        tier: 'INSTITUTIONAL',
+      }));
+    }
+  };
 
-  const checkAccess = (feature: 'intelligence' | 'deepRisk' | 'dossier'): boolean => {
+  const checkAccess = (feature: 'intelligence' | 'deepRisk' | 'dossier' | 'blackSwan' | 'narrativeShock' | 'deepShipping'): boolean => {
+    // Admins always have access
+    if (subscription.isAdmin) {
+      return true;
+    }
+    
     // Premium features require paid subscription
-    const premiumFeatures = ['intelligence', 'deepRisk', 'dossier'];
+    const premiumFeatures = ['intelligence', 'deepRisk', 'dossier', 'blackSwan', 'narrativeShock', 'deepShipping'];
     
     if (premiumFeatures.includes(feature)) {
       return subscription.isPaid && subscription.status === 'SUBSCRIBED';
@@ -60,7 +99,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SubscriptionContext.Provider value={{ subscription, checkAccess, upgradeTier, setMockPaid }}>
+    <SubscriptionContext.Provider value={{ subscription, checkAccess, upgradeTier, setMockPaid, setAdminUser }}>
       {children}
     </SubscriptionContext.Provider>
   );

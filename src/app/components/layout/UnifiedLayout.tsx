@@ -53,6 +53,7 @@ import { InstitutionalQR } from '../ProModal';
 import { DataSourceStatusCompact } from '../DataSourceStatus';
 import { GlobalStatusBar } from '../GlobalStatusBar';
 
+// Merged navigation - same items for desktop and mobile
 const navItems = [
   { path: '/dashboard', label: 'Home', icon: Home },
   { path: '/triad', label: 'Triad', icon: TrendingUp },
@@ -65,7 +66,7 @@ const navItems = [
   { path: '/black-swan', label: 'Black Swan', icon: AlertTriangle },
   { path: '/energy-finance', label: 'Energy', icon: Zap },
   { path: '/reports', label: 'Reports', icon: FileText },
-  { path: '/data-sources', label: 'Data', icon: Database },
+  { path: '/data-sources', label: 'Data Sources', icon: Database },
 ];
 
 export function UnifiedLayout() {
@@ -186,6 +187,23 @@ export function UnifiedLayout() {
 
           {/* Mobile Hamburger Menu */}
           <div className="lg:hidden flex items-center gap-2">
+            {/* Mobile PRO Button - Pulsating */}
+            {!isPro && (
+              <a 
+                href="https://bobikcs.com/the-vault"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Unlock PRO access"
+                className="flex items-center justify-center w-11 h-11 rounded-xl transition-all hover:scale-105 pro-pulse"
+                style={{ 
+                  backgroundColor: '#A3937B',
+                  boxShadow: '0 0 12px rgba(163, 147, 123, 0.5)'
+                }}
+              >
+                <Crown className="w-5 h-5 text-black" />
+              </a>
+            )}
+            
             {/* Theme Toggle - Protected with mounted state */}
             {mounted && (
               <button 
@@ -262,26 +280,7 @@ export function UnifiedLayout() {
                     );
                   })}
                   
-                  {/* Data Sources */}
-                  <DrawerClose asChild>
-                    <Link
-                      to="/data-sources"
-                      aria-label="Navigate to Data Sources"
-                      aria-current={isActive('/data-sources') ? 'page' : undefined}
-                      className={`flex items-center gap-4 px-4 py-4 rounded-xl transition-all touch-manipulation min-h-[56px] ${
-                        isActive('/data-sources')
-                          ? isDark || isHybrid
-                            ? 'bg-[#A3937B]/15 text-[#A3937B] border border-[#A3937B]/20'
-                            : 'bg-[#2563EB] text-white'
-                          : isDark || isHybrid
-                          ? 'text-zinc-400 hover:bg-zinc-900 hover:text-[#A3937B] active:bg-zinc-800'
-                          : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
-                      }`}
-                    >
-                      <Database className={`w-6 h-6 flex-shrink-0 ${isActive('/data-sources') && (isDark || isHybrid) ? 'text-[#A3937B]' : ''}`} />
-                      <span className="font-medium text-base">Data Sources</span>
-                    </Link>
-                  </DrawerClose>
+
                 </div>
               </DrawerContent>
             </Drawer>
@@ -289,10 +288,28 @@ export function UnifiedLayout() {
 
           {/* Theme Indicator & PRO Badge */}
           <div className="hidden lg:flex items-center gap-3">
+            {/* PRO Button - Pulsating link to The Vault */}
+            {!isPro && (
+              <a 
+                href="https://bobikcs.com/the-vault"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Unlock PRO access at The Vault"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-black transition-all hover:scale-105 pro-pulse"
+                style={{ 
+                  backgroundColor: '#A3937B',
+                  boxShadow: '0 0 15px rgba(163, 147, 123, 0.5)'
+                }}
+              >
+                <Crown className="w-4 h-4" />
+                <span className="text-xs font-bold tracking-wide">PRO</span>
+              </a>
+            )}
+            
             {/* PRO Badge (shown when user is PRO) */}
             {isPro && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950">
-                <Crown className="w-4 h-4 text-zinc-950" />
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#A3937B] to-[#8B7D6B] text-black">
+                <Crown className="w-4 h-4" />
                 <span className="text-xs font-semibold">PRO MEMBER</span>
               </div>
             )}
@@ -336,62 +353,76 @@ export function UnifiedLayout() {
           </div>
         </div>
 
-        {/* Macro Ticker - Centered on mobile */}
-        <div className={`border-t px-4 lg:px-6 py-2 overflow-x-auto ${
-          isDark || isHybrid ? 'border-[#A3937B]/12 bg-zinc-950/50' : 'border-gray-100 bg-gray-50'
+        {/* Sovereign Ticker - Marquee Style */}
+        <div className={`border-t py-1.5 overflow-hidden ${
+          isDark || isHybrid ? 'border-[#A3937B]/12 bg-zinc-950/80' : 'border-gray-100 bg-gray-50'
         }`}>
-          <div className="flex items-center justify-center md:justify-start gap-6 text-xs whitespace-nowrap">
-            {/* Mobile Regime Status - Only shows on mobile */}
-            <div className={`flex md:hidden items-center gap-2 px-2 py-1 rounded ${isStressRegime ? 'bg-red-500/10 border border-red-500/30' : ''}`}>
-              <div className={`w-2 h-2 rounded-full ${isStressRegime ? 'animate-ping' : 'animate-pulse'} ${getRegimeColor()}`}></div>
-              <span className={isStressRegime ? 'text-red-400 font-semibold' : isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>
-                {currentRegime.regime.toUpperCase()}
-              </span>
-              <span className={`font-medium ${isStressRegime ? 'text-red-300' : isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                {currentRegime.confidence}%
-              </span>
+          <div className="relative flex overflow-hidden">
+            <div className="flex gap-8 ticker-marquee whitespace-nowrap">
+              {/* First set of items */}
+              <div className="flex items-center gap-8 text-xs font-mono">
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>SRI</span>
+                <span className={`font-bold tabular-nums ${systemicRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>
+                  {systemicRisk}
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Survival</span>
+                <span className={`font-bold tabular-nums ${survivalProb >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {survivalProb}.03%
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Yield</span>
+                <span className={`font-bold tabular-nums ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                  {yieldSpread}%
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Risk</span>
+                <span className="font-bold tabular-nums text-red-400">
+                  {currentRegime.riskLevel}%
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={`font-semibold ${isStressRegime ? 'text-red-400' : 'text-[#A3937B]'}`}>
+                  {currentRegime.regime.toUpperCase()}
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+              </div>
+              
+              {/* Duplicate for seamless loop */}
+              <div className="flex items-center gap-8 text-xs font-mono">
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>SRI</span>
+                <span className={`font-bold tabular-nums ${systemicRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>
+                  {systemicRisk}
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Survival</span>
+                <span className={`font-bold tabular-nums ${survivalProb >= 70 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {survivalProb}.03%
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Yield</span>
+                <span className={`font-bold tabular-nums ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+                  {yieldSpread}%
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={isDark || isHybrid ? 'text-[#A3937B]' : 'text-gray-500'}>Risk</span>
+                <span className="font-bold tabular-nums text-red-400">
+                  {currentRegime.riskLevel}%
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+                
+                <span className={`font-semibold ${isStressRegime ? 'text-red-400' : 'text-[#A3937B]'}`}>
+                  {currentRegime.regime.toUpperCase()}
+                </span>
+                <span className={isDark || isHybrid ? 'text-zinc-600' : 'text-gray-300'}>|</span>
+              </div>
             </div>
-            
-            <div className={`hidden md:block w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-            
-            <div className="flex items-center gap-2">
-              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>SRI</span>
-              <span className={`font-medium tabular-nums min-w-[2.5rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                {snapshotLoading ? <span className="inline-block w-8 h-4 bg-gray-700 rounded animate-pulse" /> : systemicRisk}
-              </span>
-              <span className={`min-w-[2.5rem] font-semibold ${systemicRisk > 50 ? 'text-red-500' : isDark || isHybrid ? 'text-emerald-400' : 'text-green-700'}`}>
-                {systemicRisk > 50 ? 'HIGH' : 'OK'}
-              </span>
-            </div>
-            <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-            <div className="flex items-center gap-2">
-              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>Survival</span>
-              <span className={`font-medium tabular-nums min-w-[3rem] ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-                {snapshotLoading ? <span className="inline-block w-10 h-4 bg-gray-700 rounded animate-pulse" /> : `${survivalProb}%`}
-              </span>
-              <span className={`min-w-[4rem] font-semibold ${survivalProb >= 70 ? (isDark || isHybrid ? 'text-emerald-400' : 'text-green-700') : survivalProb >= 50 ? 'text-amber-600' : 'text-red-500'}`}>
-                {survivalProb >= 70 ? 'SAFE' : survivalProb >= 50 ? 'CAUTION' : 'RISK'}
-              </span>
-            </div>
-            <div className={`w-px h-4 ${isDark || isHybrid ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
-            <div className="flex items-center gap-2">
-              <span className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-500'}>Yield</span>
-              <span className={`font-medium tabular-nums min-w-[3.5rem] ${parseFloat(yieldSpread) < 0 ? 'text-red-400' : 'text-white'}`}>
-                {snapshotLoading ? <span className="inline-block w-12 h-4 bg-gray-700 rounded animate-pulse" /> : `${yieldSpread}%`}
-              </span>
-            </div>
-            
-            {/* Risk Level Indicator (shows in terminal/hybrid mode) */}
-            {(isDark || isHybrid) && (
-              <>
-                <div className="w-px h-4 bg-gray-700"></div>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-3 h-3 text-red-500" />
-                  <span className="text-gray-200">Risk</span>
-                  <span className="font-medium tabular-nums min-w-[2.5rem] text-red-400">{currentRegime.riskLevel}%</span>
-                </div>
-              </>
-            )}
           </div>
         </div>
       </div>

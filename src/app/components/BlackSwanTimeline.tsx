@@ -4,6 +4,8 @@ import React, { memo, useMemo, useState, useCallback, startTransition } from 're
 import { TrendingUp, AlertTriangle, Activity, ChevronRight } from 'lucide-react';
 import { useBlackSwanRisk, getRiskColorClass } from '../hooks/useBlackSwanRisk';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
+import { PaywallOverlay } from './PaywallOverlay';
+import { useSubscription } from '../context/SubscriptionContext';
 
 type Timeframe = '7D' | '30D' | '90D';
 
@@ -177,5 +179,16 @@ export const BlackSwanTimeline = memo(function BlackSwanTimeline({ onAlertClick 
     </div>
   );
 });
+
+// Guarded wrapper with paywall
+export function BlackSwanTimelineGuarded(props: BlackSwanTimelineProps) {
+  const { subscription } = useSubscription();
+  
+  return (
+    <PaywallOverlay show={!subscription.isPaid && !subscription.isAdmin}>
+      <BlackSwanTimeline {...props} />
+    </PaywallOverlay>
+  );
+}
 
 export default BlackSwanTimeline;

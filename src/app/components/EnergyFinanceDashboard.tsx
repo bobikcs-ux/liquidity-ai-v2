@@ -587,6 +587,10 @@ export function EnergyFinanceDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   
+  // Subscription state for paywall
+  const { subscription } = useSubscription();
+  const showPaywall = !subscription.isPaid && !subscription.isAdmin;
+  
   // Table 7.6 data from Gemini Intelligence API
   const [tableData, setTableData] = useState<TableData>({
     t76: {
@@ -810,7 +814,7 @@ export function EnergyFinanceDashboard() {
           icon={Anchor}
           isLoading={isLoading}
         >
-          <PaywallOverlay show={!useSubscription().subscription.isPaid}>
+          <PaywallOverlay show={showPaywall}>
             <ShippingFlowPanel data={energyData} />
           </PaywallOverlay>
         </InstitutionalPanel>
@@ -822,7 +826,7 @@ export function EnergyFinanceDashboard() {
           icon={DollarSign}
           isLoading={isLoading}
         >
-          <PaywallOverlay show={!useSubscription().subscription.isPaid}>
+          <PaywallOverlay show={showPaywall}>
             <PetrodollarIndex />
           </PaywallOverlay>
         </InstitutionalPanel>

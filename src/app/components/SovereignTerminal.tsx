@@ -466,7 +466,7 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
   const alertLevel = currentPulse?.alert_level ?? 'GREEN';
 
   return (
-    <div className={`min-h-screen ${SOVEREIGN.bg.primary}`}>
+    <div className={`min-h-screen w-full max-w-full overflow-x-hidden ${SOVEREIGN.bg.primary}`}>
       {/* Header */}
       <SovereignHeader
         regime={regime}

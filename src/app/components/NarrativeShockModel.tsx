@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { TrendingUp, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { PaywallOverlay } from './PaywallOverlay';
+import { useSubscription } from '../context/SubscriptionContext';
 
 interface NarrativeMetric {
   name: string;
@@ -15,7 +17,8 @@ interface TransmissionStage {
   status: 'active' | 'monitoring' | 'stable';
 }
 
-export function NarrativeShockModel() {
+// Core component (internal)
+function NarrativeShockModelCore() {
   const { uiTheme } = useAdaptiveTheme();
   const [showDetails, setShowDetails] = useState(false);
   
@@ -478,5 +481,16 @@ export function NarrativeShockModel() {
         <span>Last Update: 15m ago</span>
       </div>
     </div>
+  );
+}
+
+// Guarded version with paywall
+export function NarrativeShockModel() {
+  const { subscription } = useSubscription();
+  
+  return (
+    <PaywallOverlay show={!subscription.isPaid && !subscription.isAdmin}>
+      <NarrativeShockModelCore />
+    </PaywallOverlay>
   );
 }

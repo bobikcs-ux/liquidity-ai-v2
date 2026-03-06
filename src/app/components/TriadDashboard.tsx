@@ -852,7 +852,7 @@ export const TriadDashboard = memo(function TriadDashboard() {
   const statusBar = getStatusBarData();
 
 return (
-  <div className="min-h-screen bg-[#0b0b0f] ios-terminal">
+  <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#0b0b0f] ios-terminal">
   {/* Crisis Control System - Non-blocking alert with controls */}
   <CrisisControlSystem 
     isSystemicAlert={systemicRisk?.isSystemicCollapse ?? false}
