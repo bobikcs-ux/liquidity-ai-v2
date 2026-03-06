@@ -133,7 +133,7 @@ export const GlobalStatusBar = memo(function GlobalStatusBar({ className = '' }:
             className="w-1.5 h-1.5 rounded-full animate-pulse"
             style={{ background: DESIGN.success, boxShadow: `0 0 6px ${DESIGN.success}` }}
           />
-          <span className="text-[10px] font-mono font-bold" style={{ color: DESIGN.success }}>LIVE</span>
+          <span className="text-xs font-mono font-bold" style={{ color: DESIGN.success }}>LIVE</span>
         </div>
       </div>
       

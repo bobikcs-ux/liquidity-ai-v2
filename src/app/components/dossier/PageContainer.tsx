@@ -36,7 +36,7 @@ export function PageContainer({ children, pageNumber }: PageContainerProps) {
       />
 
       {/* Page Number */}
-      <div className="absolute bottom-6 right-6 text-[#D4C6A9] text-[10px] tracking-[0.08em] opacity-60">
+      <div className="absolute bottom-6 right-6 text-[#D4C6A9] text-xs tracking-[0.08em] opacity-60">
         {pageNumber}
       </div>
 

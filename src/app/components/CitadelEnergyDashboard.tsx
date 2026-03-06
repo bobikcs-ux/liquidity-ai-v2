@@ -77,7 +77,7 @@ const MetricCard = memo(function MetricCard({
   return (
     <div className={`bg-zinc-950 border border-zinc-800 p-6 ${getGlowClass()} transition-all hover:border-zinc-700`}>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[10px] font-medium tracking-[0.2em] text-zinc-500 uppercase">
+        <span className="text-xs font-medium tracking-[0.2em] text-zinc-500 uppercase">
           {label}
         </span>
         {trend && (
@@ -160,14 +160,14 @@ const SignalEngine = memo(function SignalEngine({ signal }: { signal: EnergySign
           <h3 className="text-xs font-bold tracking-[0.2em] text-white uppercase">
             Structural Energy Signal
           </h3>
-          <p className="text-[10px] text-zinc-600 font-mono mt-0.5">
+          <p className="text-xs text-zinc-600 font-mono mt-0.5">
             {activeCount}/3 CONDITIONS ACTIVE
           </p>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase">IF</div>
+        <div className="text-xs font-medium tracking-wider text-zinc-500 uppercase">IF</div>
         
         <div className="space-y-2 pl-4 border-l border-zinc-800">
           {conditions.map((condition, i) => (
@@ -189,7 +189,7 @@ const SignalEngine = memo(function SignalEngine({ signal }: { signal: EnergySign
           ))}
         </div>
 
-        <div className="text-[10px] font-medium tracking-wider text-zinc-500 uppercase pt-2">THEN</div>
+        <div className="text-xs font-medium tracking-wider text-zinc-500 uppercase pt-2">THEN</div>
 
         <div className={`p-4 ${
           isTightening 
@@ -304,7 +304,7 @@ export const CitadelEnergyDashboard = memo(function CitadelEnergyDashboard() {
             </p>
           </div>
           <div className="text-right">
-            <span className="text-[10px] font-medium tracking-[0.2em] text-zinc-500 uppercase block">
+            <span className="text-xs font-medium tracking-[0.2em] text-zinc-500 uppercase block">
               Global Energy Monitor
             </span>
             <span className="text-xs text-zinc-600 font-mono">
@@ -387,7 +387,7 @@ export const CitadelEnergyDashboard = memo(function CitadelEnergyDashboard() {
           </div>
           
           <div className="bg-zinc-950 border border-zinc-800 p-6">
-            <div className="flex items-center gap-6 mb-6 text-[10px] font-medium tracking-wider text-zinc-500">
+            <div className="flex items-center gap-6 mb-6 text-xs font-medium tracking-wider text-zinc-500">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 bg-amber-500" />
                 <span>CRUDE PRICE</span>
@@ -428,7 +428,7 @@ export const CitadelEnergyDashboard = memo(function CitadelEnergyDashboard() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Database className="w-3 h-3 text-zinc-600" />
-              <span className="text-[10px] font-medium tracking-wider text-zinc-600 uppercase">
+              <span className="text-xs font-medium tracking-wider text-zinc-600 uppercase">
                 Data Sources:
               </span>
             </div>
@@ -436,7 +436,7 @@ export const CitadelEnergyDashboard = memo(function CitadelEnergyDashboard() {
               {['EIA', 'OPEC', 'EUROSTAT', 'ABS'].map((source) => (
                 <span 
                   key={source}
-                  className="text-[10px] font-mono text-zinc-500 px-2 py-1 bg-zinc-900 border border-zinc-800"
+                  className="text-xs font-mono text-zinc-500 px-2 py-1 bg-zinc-900 border border-zinc-800"
                 >
                   {source}
                 </span>
@@ -444,7 +444,7 @@ export const CitadelEnergyDashboard = memo(function CitadelEnergyDashboard() {
             </div>
           </div>
           <div className="mt-4 text-center">
-            <span className="text-[10px] text-zinc-700 font-mono">
+            <span className="text-xs text-zinc-700 font-mono">
               CITADEL ENERGY INTELLIGENCE // INSTITUTIONAL TERMINAL v2.0
             </span>
           </div>

@@ -67,7 +67,7 @@ const MomentumGauge = memo(function MomentumGauge({
         <h3 className="text-xs font-bold tracking-widest text-[#B8A892] uppercase">
           BRICS Momentum
         </h3>
-        <span className="text-[10px] font-mono text-gray-500">
+        <span className="text-xs font-mono text-gray-500">
           (BRA + RUS + IND) / 3
         </span>
       </div>
@@ -136,7 +136,7 @@ const PowerShiftGauge = memo(function PowerShiftGauge({
         <h3 className="text-xs font-bold tracking-widest text-[#B8A892] uppercase">
           Geoeconomic Power Shift
         </h3>
-        <span className="text-[10px] font-mono text-gray-500">BRICS / US GDP</span>
+        <span className="text-xs font-mono text-gray-500">BRICS / US GDP</span>
       </div>
 
       {/* Main Ratio Display */}
@@ -266,7 +266,7 @@ const PowerShiftChart = memo(function PowerShiftChart({
         <h3 className="text-xs font-bold tracking-widest text-[#B8A892] uppercase">
           Power Shift Timeline
         </h3>
-        <span className="text-[10px] font-mono text-gray-500">BRICS/US Ratio</span>
+        <span className="text-xs font-mono text-gray-500">BRICS/US Ratio</span>
       </div>
 
       {/* Simple line chart */}
@@ -308,8 +308,8 @@ const PowerShiftChart = memo(function PowerShiftChart({
 
       {/* Year labels */}
       <div className="flex justify-between mt-2">
-        <span className="text-[10px] text-gray-500">{history[0]?.year}</span>
-        <span className="text-[10px] text-gray-500">{history[history.length - 1]?.year}</span>
+        <span className="text-xs text-gray-500">{history[0]?.year}</span>
+        <span className="text-xs text-gray-500">{history[history.length - 1]?.year}</span>
       </div>
     </div>
   );
@@ -345,7 +345,7 @@ const SignalsPanel = memo(function SignalsPanel({
             }`}
           >
             <div className="text-xs font-bold text-white">{signal.title}</div>
-            <div className="text-[10px] text-gray-400 mt-1">{signal.description}</div>
+            <div className="text-xs text-gray-400 mt-1">{signal.description}</div>
           </div>
         ))}
       </div>
@@ -394,7 +394,7 @@ export const BRICSWidget = memo(function BRICSWidget() {
           </h2>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono text-gray-500">
+          <span className="text-xs font-mono text-gray-500">
             Data: {data.aggregate.year}
           </span>
           <button
@@ -451,7 +451,7 @@ export const BRICSWidget = memo(function BRICSWidget() {
                 <div className={`text-lg font-bold tabular-nums ${c.growth > 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {formatPercent(c.growth)}
                 </div>
-                <div className="text-[10px] text-gray-500">{c.code}</div>
+                <div className="text-xs text-gray-500">{c.code}</div>
               </div>
             ))}
           </div>
@@ -477,7 +477,7 @@ export const BRICSWidget = memo(function BRICSWidget() {
       )}
 
       {/* Footer */}
-      <div className="text-[10px] text-gray-600 text-center border-t border-[#A3937B]/10 pt-3">
+      <div className="text-xs text-gray-600 text-center border-t border-[#A3937B]/10 pt-3">
         Source: World Bank API • Last updated: {new Date(data.lastUpdated).toLocaleString()}
       </div>
     </div>

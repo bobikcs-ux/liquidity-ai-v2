@@ -16,10 +16,10 @@ export function ProgressBar({ label, percentage, color = 'green' }: ProgressBarP
   return (
     <div className="space-y-1">
       <div className="flex justify-between items-center">
-        <span className="text-[10px] tracking-[0.08em] uppercase opacity-70 text-[#E0E0E0]">
+        <span className="text-xs tracking-[0.08em] uppercase opacity-70 text-[#E0E0E0]">
           {label}
         </span>
-        <span className="text-[10px] text-[#E0E0E0] opacity-80">{percentage}%</span>
+        <span className="text-xs text-[#E0E0E0] opacity-80">{percentage}%</span>
       </div>
       <div className="h-1 bg-[#1A1A1A] border border-[#1A1A1A] relative overflow-hidden">
         <div

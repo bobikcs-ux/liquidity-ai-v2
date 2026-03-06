@@ -109,7 +109,7 @@ const SovereignHeader = memo(function SovereignHeader({
               SOVEREIGN INTELLIGENCE TERMINAL
             </span>
           </div>
-          <div className={`px-3 py-1 text-[10px] font-mono tracking-wider border rounded-none ${getAlertLevelColor(alertLevel)}`}>
+          <div className={`px-3 py-1 text-xs font-mono tracking-wider border rounded-none ${getAlertLevelColor(alertLevel)}`}>
             {alertLevel} ALERT
           </div>
         </div>
@@ -117,13 +117,13 @@ const SovereignHeader = memo(function SovereignHeader({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Radio className={`w-3 h-3 ${isConnected ? 'text-[#A3937B] animate-pulse' : 'text-zinc-600'}`} />
-            <span className={`text-[10px] font-mono ${SOVEREIGN.text.secondary}`}>
+            <span className={`text-xs font-mono ${SOVEREIGN.text.secondary}`}>
               {isConnected ? 'REALTIME' : 'OFFLINE'}
             </span>
           </div>
           
           {lastUpdate && (
-            <span className={`text-[10px] font-mono ${SOVEREIGN.text.secondary}`}>
+            <span className={`text-xs font-mono ${SOVEREIGN.text.secondary}`}>
               {new Date(lastUpdate).toLocaleTimeString()}
             </span>
           )}
@@ -156,7 +156,7 @@ const SRIGauge = memo(function SRIGauge({
         <h3 className={`text-xs font-mono tracking-widest ${SOVEREIGN.text.accent}`}>
           SOVEREIGN RISK INDEX
         </h3>
-        <span className={`text-[10px] font-mono ${getRegimeColor(regime)}`}>
+        <span className={`text-xs font-mono ${getRegimeColor(regime)}`}>
           {regime}
         </span>
       </div>
@@ -184,7 +184,7 @@ const SRIGauge = memo(function SRIGauge({
               <Icon className={`w-3 h-3 ${SOVEREIGN.text.accent}`} />
               <span className={`text-lg font-bold tabular-nums ${getSRIColor(value)}`}>{value}</span>
             </div>
-            <div className={`text-[9px] font-mono tracking-wider ${SOVEREIGN.text.secondary}`}>
+            <div className={`text-xs font-mono tracking-wider ${SOVEREIGN.text.secondary}`}>
               {label}
             </div>
             {/* Progress bar */}
@@ -235,7 +235,7 @@ const FlowSignalBanner = memo(function FlowSignalBanner({
           </div>
           <div className="flex flex-wrap gap-2">
             {(signal.triggers || []).map((trigger, i) => (
-              <span key={i} className={`text-[10px] font-mono px-2 py-1 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
+              <span key={i} className={`text-xs font-mono px-2 py-1 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
                 {trigger}
               </span>
             ))}
@@ -271,7 +271,7 @@ const SignalsPanel = memo(function SignalsPanel({
             RISK SIGNALS
           </h3>
         </div>
-        <span className={`text-[10px] font-mono px-2 py-1 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
+        <span className={`text-xs font-mono px-2 py-1 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
           {signals.filter(s => !s.acknowledged).length} ACTIVE
         </span>
       </div>
@@ -287,10 +287,10 @@ const SignalsPanel = memo(function SignalsPanel({
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded-none border ${getSeverityColor(signal.severity)}`}>
+                  <span className={`text-xs font-mono px-1.5 py-0.5 rounded-none border ${getSeverityColor(signal.severity)}`}>
                     {signal.severity}
                   </span>
-                  <span className={`text-[9px] font-mono ${SOVEREIGN.text.secondary}`}>
+                  <span className={`text-xs font-mono ${SOVEREIGN.text.secondary}`}>
                     {signal.signal_type.replace(/_/g, ' ')}
                   </span>
                 </div>
@@ -302,11 +302,11 @@ const SignalsPanel = memo(function SignalsPanel({
                 </p>
                 <div className="flex items-center gap-2 mt-2">
                   {(signal.data_sources || []).map((source) => (
-                    <span key={source} className={`text-[9px] font-mono px-1.5 py-0.5 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
+                    <span key={source} className={`text-xs font-mono px-1.5 py-0.5 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
                       {source}
                     </span>
                   ))}
-                  <span className={`text-[9px] font-mono ${SOVEREIGN.text.secondary}`}>
+                  <span className={`text-xs font-mono ${SOVEREIGN.text.secondary}`}>
                     {new Date(signal.created_at).toLocaleTimeString()}
                   </span>
                 </div>
@@ -416,7 +416,7 @@ const MarketPulseMetrics = memo(function MarketPulseMetrics({
           return (
             <div key={label} className={`${SOVEREIGN.bg.tertiary} rounded-none p-3 border ${SOVEREIGN.border.secondary}`}>
               <div className="flex items-center justify-between">
-                <span className={`text-[9px] font-mono ${SOVEREIGN.text.secondary}`}>{label}</span>
+                <span className={`text-xs font-mono ${SOVEREIGN.text.secondary}`}>{label}</span>
                 <Icon className={`w-3 h-3 ${getMetricColor(value, isInverse)}`} />
               </div>
               <div className={`text-xl font-bold tabular-nums mt-1 ${getMetricColor(value, isInverse)}`}>

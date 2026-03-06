@@ -316,7 +316,7 @@ const FlightGauge = memo(function FlightGauge({
         >
           {value.toFixed(0)}
         </span>
-        <span className="text-[10px] font-mono text-[#6b6b6b] uppercase tracking-wider">
+        <span className="text-xs font-mono text-[#6b6b6b] uppercase tracking-wider">
           FLIGHT INDEX
         </span>
       </div>
@@ -337,7 +337,7 @@ const SignalIndicator = memo(function SignalIndicator({
     <div className={`flex items-center gap-2 px-3 py-2 border ${
       active 
         ? 'bg-[rgba(255,59,59,0.1)] border-[rgba(255,59,59,0.3)]' 
-        : 'bg-[rgba(255,255,255,0.02)] border-transparent'
+        : 'border border-zinc-800/50 border-transparent'
     }`}>
       <Icon className={`w-4 h-4 ${active ? 'text-[#ff3b3b]' : 'text-[#6b6b6b]'}`} />
       <span className={`text-xs font-mono uppercase ${active ? 'text-[#ff3b3b]' : 'text-[#6b6b6b]'}`}>
@@ -368,10 +368,10 @@ const IndicatorRow = memo(function IndicatorRow({
   };
 
   return (
-    <div className="flex items-center gap-4 py-2 px-3 bg-[rgba(255,255,255,0.02)] hover:bg-[rgba(255,255,255,0.04)] transition-colors">
+    <div className="flex items-center gap-4 py-2 px-3 border border-zinc-800/50 hover:bg-[rgba(255,255,255,0.04)] transition-colors">
       <div className="flex-1">
         <div className="text-xs font-mono text-white">{indicator.name}</div>
-        <div className="text-[9px] font-mono text-[#6b6b6b]">{indicator.description}</div>
+        <div className="text-xs font-mono text-[#6b6b6b]">{indicator.description}</div>
       </div>
       
       <div className="text-right">
@@ -384,13 +384,13 @@ const IndicatorRow = memo(function IndicatorRow({
           ) : (
             <TrendingDown className="w-3 h-3" />
           )}
-          <span className="text-[10px] font-mono">
+          <span className="text-xs font-mono">
             {indicator.change24h >= 0 ? '+' : ''}{indicator.change24h.toFixed(2)}%
           </span>
         </div>
       </div>
 
-      <div className={`text-[9px] font-mono uppercase px-2 py-1 ${signalColors[indicator.signal]} bg-[rgba(255,255,255,0.05)]`}>
+      <div className={`text-xs font-mono uppercase px-2 py-1 ${signalColors[indicator.signal]} bg-[rgba(255,255,255,0.05)]`}>
         {indicator.signal}
       </div>
     </div>
@@ -444,7 +444,7 @@ export const CapitalFlightDetector = memo(function CapitalFlightDetector() {
 
         <div className="flex items-center gap-3">
           {lastUpdated && (
-            <span className="text-[10px] font-mono text-[#6b6b6b]">
+            <span className="text-xs font-mono text-[#6b6b6b]">
               {new Date(lastUpdated).toLocaleTimeString('en-US', { hour12: false })}
             </span>
           )}

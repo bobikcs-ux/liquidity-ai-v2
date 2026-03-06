@@ -517,7 +517,7 @@ export function UnifiedLayout() {
               
               <div className={`text-sm font-medium text-center md:text-right ${isDark || isHybrid ? 'text-[#A3937B]/80' : 'text-gray-700'}`}>
                 <span className="font-mono tracking-wider">BOBIKCS // CITADEL</span>
-                <span className={`block text-[10px] mt-1 ${isDark || isHybrid ? 'text-zinc-500' : 'text-gray-400'}`}>
+                <span className={`block text-xs mt-1 ${isDark || isHybrid ? 'text-zinc-500' : 'text-gray-400'}`}>
                   Professional Risk Intelligence Platform
                 </span>
               </div>

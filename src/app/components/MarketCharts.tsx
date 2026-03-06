@@ -163,7 +163,7 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
           <div className={`flex rounded-lg p-0.5 md:p-1 ${isDark ? 'bg-gray-800' : isHybrid ? 'bg-gray-700' : 'bg-gray-100'}`}>
             <button
               onClick={() => setActiveChart('yield')}
-              className={`px-2 md:px-3 py-1 text-[10px] md:text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+              className={`px-2 md:px-3 py-1 text-xs md:text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                 activeChart === 'yield'
                   ? isDark || isHybrid ? 'bg-amber-600 text-white' : 'bg-amber-500 text-white'
                   : isDark || isHybrid ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
@@ -173,7 +173,7 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
             </button>
             <button
               onClick={() => setActiveChart('price')}
-              className={`px-2 md:px-3 py-1 text-[10px] md:text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
+              className={`px-2 md:px-3 py-1 text-xs md:text-xs font-medium rounded-md transition-colors whitespace-nowrap ${
                 activeChart === 'price'
                   ? isDark || isHybrid ? 'bg-amber-600 text-white' : 'bg-amber-500 text-white'
                   : isDark || isHybrid ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
@@ -201,7 +201,7 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
       }`}>
         <div className="flex items-center gap-2 min-w-[140px] shrink-0 whitespace-nowrap overflow-hidden">
           <div>
-            <p className={`text-[10px] md:text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>Yield Curve</p>
+            <p className={`text-xs md:text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>Yield Curve</p>
             <div className="flex items-center gap-1">
               <span className={`font-mono font-semibold tabular-nums text-sm md:text-base ${latestYield < 0 ? 'text-red-500' : 'text-green-500'}`}>
                 {latestYield.toFixed(3)}%
@@ -216,12 +216,12 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
         </div>
         <div className="flex items-center gap-2 min-w-[160px] shrink-0 whitespace-nowrap overflow-hidden">
           <div>
-            <p className={`text-[10px] md:text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>BTC Price</p>
+            <p className={`text-xs md:text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>BTC Price</p>
             <div className="flex items-center gap-1">
               <span className={`font-mono font-semibold tabular-nums text-sm md:text-base ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
                 ${latestPrice.toLocaleString()}
               </span>
-              <span className={`text-[10px] md:text-xs tabular-nums ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <span className={`text-xs md:text-xs tabular-nums ${parseFloat(priceChange) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {parseFloat(priceChange) >= 0 ? '+' : ''}{priceChange}%
               </span>
             </div>
@@ -229,7 +229,7 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
         </div>
         <div className="flex items-center gap-2 min-w-[100px] shrink-0 whitespace-nowrap overflow-hidden">
           <div>
-            <p className={`text-[10px] md:text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>Fear & Greed</p>
+            <p className={`text-xs md:text-xs ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-500'}`}>Fear & Greed</p>
             <span className={`font-mono font-semibold tabular-nums text-sm md:text-base ${
               latestFearGreed < 25 ? 'text-red-500' : latestFearGreed > 75 ? 'text-green-500' : 'text-amber-500'
             }`}>
@@ -333,7 +333,7 @@ export function MarketCharts({ className = '' }: MarketChartsProps) {
       </div>
 
       {/* Footer Info */}
-      <div className={`px-3 md:px-4 py-2 text-[10px] md:text-xs border-t truncate ${
+      <div className={`px-3 md:px-4 py-2 text-xs md:text-xs border-t truncate ${
         isDark ? 'border-gray-700 text-gray-500' : isHybrid ? 'border-gray-600 text-gray-400' : 'border-gray-200 text-gray-400'
       }`}>
         {activeChart === 'yield' 

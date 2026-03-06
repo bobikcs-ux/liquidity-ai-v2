@@ -461,7 +461,7 @@ export function StressLab() {
                 <h3 className={`text-xs md:text-base font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Drawdown</h3>
               </div>
               <div className="text-2xl md:text-4xl font-bold text-red-500 mb-1 md:mb-2 tabular-nums font-mono">-{displayResults.drawdown}%</div>
-              <p className={`text-[10px] md:text-sm truncate ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Peak decline</p>
+              <p className={`text-xs md:text-sm truncate ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Peak decline</p>
             </div>
 
             {/* Recovery Time */}
@@ -475,7 +475,7 @@ export function StressLab() {
                 <h3 className={`text-xs md:text-base font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Recovery</h3>
               </div>
               <div className="text-2xl md:text-4xl font-bold text-amber-500 mb-1 md:mb-2 tabular-nums font-mono">{displayResults.recovery}</div>
-              <p className={`text-[10px] md:text-sm truncate ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Days to BEP</p>
+              <p className={`text-xs md:text-sm truncate ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Days to BEP</p>
             </div>
 
             {/* Confidence Level */}
@@ -489,7 +489,7 @@ export function StressLab() {
                 <h3 className={`text-xs md:text-base font-semibold ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>Confidence</h3>
               </div>
               <div className={`text-2xl md:text-4xl font-bold mb-1 md:mb-2 tabular-nums font-mono ${isDark || isHybrid ? 'text-blue-400' : 'text-[#2563EB]'}`}>{displayResults.confidence}%</div>
-              <p className={`text-[10px] md:text-sm truncate ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Model certainty</p>
+              <p className={`text-xs md:text-sm truncate ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>Model certainty</p>
             </div>
           </div>
 
@@ -522,10 +522,10 @@ export function StressLab() {
                 }`}>
                   <span className={`text-[11px] md:text-sm truncate min-w-0 flex-1 ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'}`}>{item.event}</span>
                   <div className="flex items-center gap-2 md:gap-4 shrink-0 whitespace-nowrap font-mono">
-                    <span className="text-[10px] md:text-sm">
+                    <span className="text-xs md:text-sm">
                       <span className="font-semibold text-green-500 tabular-nums">{item.survival}%</span>
                     </span>
-                    <span className="text-[10px] md:text-sm">
+                    <span className="text-xs md:text-sm">
                       <span className="font-semibold text-red-500 tabular-nums">-{item.drawdown}%</span>
                     </span>
                   </div>

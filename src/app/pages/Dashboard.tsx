@@ -231,7 +231,7 @@ export function Dashboard() {
                 <AlertTriangle className="w-5 h-5 text-red-500" aria-hidden="true" />
                 <h3 className="text-sm font-black uppercase tracking-widest text-white">Systemic Stress</h3>
               </div>
-              <span className="text-[9px] font-mono text-blue-400 animate-pulse" aria-label="Live feed active">LIVE_FEED</span>
+              <span className="text-xs font-mono text-blue-400 animate-pulse" aria-label="Live feed active">LIVE_FEED</span>
            </div>
            <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {[
@@ -244,7 +244,7 @@ export function Dashboard() {
                   <div className={`w-1.5 h-1.5 rounded-full ${s.color} shadow-sm`}></div>
                   <div className="flex-1">
                     <div className="text-xs font-bold text-white uppercase leading-tight">{s.msg}</div>
-                    <div className="text-[9px] text-slate-300 font-mono font-medium mt-1">{s.time} // PRIORITY: {s.level}</div>
+                    <div className="text-xs text-slate-300 font-mono font-medium mt-1">{s.time} // PRIORITY: {s.level}</div>
                   </div>
                 </div>
               ))}

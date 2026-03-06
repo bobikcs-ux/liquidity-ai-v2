@@ -24,7 +24,7 @@ export function Page01({ clientName, serialNumber, timestamp }: Page01Props) {
             </p>
           </div>
           <div className="text-right">
-            <div className="text-[10px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 mb-1">
+            <div className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 mb-1">
               SERIAL
             </div>
             <div className="text-[14px] tracking-[0.08em] text-[#D4C6A9]">
@@ -36,7 +36,7 @@ export function Page01({ clientName, serialNumber, timestamp }: Page01Props) {
         {/* Client Name - Centered */}
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-[10px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 mb-4">
+            <div className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 mb-4">
               CLIENT_DESIGNATION
             </div>
             <input
@@ -78,7 +78,7 @@ export function Page01({ clientName, serialNumber, timestamp }: Page01Props) {
           </div>
 
           {/* Timestamp */}
-          <div className="flex justify-between items-center text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50">
+          <div className="flex justify-between items-center text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50">
             <div>GENERATED: {timestamp}</div>
             <div>STRUCTURAL_MIRROR_v2.0</div>
           </div>

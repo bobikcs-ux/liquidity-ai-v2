@@ -114,7 +114,7 @@ const DataSourceItem = memo(function DataSourceItem({
       <div className="flex items-center gap-1.5">
         <StatusDot status={source.status} />
         <span 
-          className="text-[9px] font-mono uppercase tracking-wider"
+          className="text-xs font-mono uppercase tracking-wider"
           style={{ color: statusColors[source.status] }}
         >
           {source.shortName}
@@ -135,7 +135,7 @@ const DataSourceItem = memo(function DataSourceItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span 
-            className="text-[10px] font-mono font-semibold uppercase"
+            className="text-xs font-mono font-semibold uppercase"
             style={{ color: DESIGN.text.primary }}
           >
             {source.shortName}
@@ -215,7 +215,7 @@ export const DataSourceStatusBar = memo(function DataSourceStatusBar({
       >
         <div className="flex items-center gap-2 flex-shrink-0">
           <Database className="w-3.5 h-3.5" style={{ color: DESIGN.accent.gold }} />
-          <span className="text-[9px] font-mono uppercase tracking-wider hidden md:inline" style={{ color: DESIGN.text.muted }}>
+          <span className="text-xs font-mono uppercase tracking-wider hidden md:inline" style={{ color: DESIGN.text.muted }}>
             Data Sources
           </span>
         </div>
@@ -228,7 +228,7 @@ export const DataSourceStatusBar = memo(function DataSourceStatusBar({
 
         <div className="ml-auto flex items-center gap-2 md:gap-3 flex-shrink-0">
           <span 
-            className="text-[8px] md:text-[9px] font-mono whitespace-nowrap"
+            className="text-[8px] md:text-xs font-mono whitespace-nowrap"
             style={{ color: allOnline ? DESIGN.status.online : DESIGN.status.delayed }}
           >
             {onlineCount}/{totalCount}
@@ -265,7 +265,7 @@ export const DataSourceStatusBar = memo(function DataSourceStatusBar({
         <button
           onClick={refreshStatuses}
           disabled={isRefreshing}
-          className="flex items-center gap-1.5 px-2 py-1 text-[9px] font-mono uppercase transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 text-xs font-mono uppercase transition-colors"
           style={{ 
             background: DESIGN.accent.goldMuted,
             color: DESIGN.accent.gold,
@@ -284,7 +284,7 @@ export const DataSourceStatusBar = memo(function DataSourceStatusBar({
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <div className="flex items-center gap-4 text-[9px] font-mono" style={{ color: DESIGN.text.muted }}>
+        <div className="flex items-center gap-4 text-xs font-mono" style={{ color: DESIGN.text.muted }}>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full" style={{ background: DESIGN.status.online }} />
             ONLINE
@@ -298,7 +298,7 @@ export const DataSourceStatusBar = memo(function DataSourceStatusBar({
             OFFLINE
           </div>
         </div>
-        <span className="text-[9px] font-mono" style={{ color: DESIGN.text.muted }}>
+        <span className="text-xs font-mono" style={{ color: DESIGN.text.muted }}>
           Last check: {new Date().toLocaleTimeString()}
         </span>
       </div>

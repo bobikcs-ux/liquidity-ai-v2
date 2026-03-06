@@ -82,7 +82,7 @@ export function DataSourceStatus() {
 
       {/* Details */}
       <div className="flex flex-col">
-        <span className={`text-[10px] font-mono uppercase tracking-wider ${
+        <span className={`text-xs font-mono uppercase tracking-wider ${
           isDark || isHybrid ? 'text-gray-500' : 'text-gray-400'
         }`}>
           DATA SOURCES

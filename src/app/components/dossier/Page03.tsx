@@ -23,7 +23,7 @@ export function Page03() {
           <div className="grid grid-cols-3 gap-6">
             {/* Pillar 1 */}
             <div className="border border-[#1A1A1A] p-6 bg-[#1A1A1A]/20">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#D4C6A9] mb-4">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#D4C6A9] mb-4">
                 01 // NARRATIVE_ASSEMBLY
               </div>
               <p className="text-[11px] leading-[1.7] tracking-[0.02em] text-[#E0E0E0]">
@@ -34,7 +34,7 @@ export function Page03() {
 
             {/* Pillar 2 */}
             <div className="border border-[#1A1A1A] p-6 bg-[#1A1A1A]/20">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#D4C6A9] mb-4">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#D4C6A9] mb-4">
                 02 // RADICAL_DIFFERENTIATION
               </div>
               <p className="text-[11px] leading-[1.7] tracking-[0.02em] text-[#E0E0E0]">
@@ -45,7 +45,7 @@ export function Page03() {
 
             {/* Pillar 3 */}
             <div className="border border-[#1A1A1A] p-6 bg-[#1A1A1A]/20">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#D4C6A9] mb-4">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#D4C6A9] mb-4">
                 03 // FRICTION_LOGIC
               </div>
               <p className="text-[11px] leading-[1.7] tracking-[0.02em] text-[#E0E0E0]">
@@ -104,10 +104,10 @@ export function Page03() {
             <div className="relative flex flex-col items-center flex-1">
               <div className="w-3 h-3 rounded-full bg-[#00FF41] border-2 border-[#020502] z-10 mb-3" />
               <div className="text-center">
-                <div className="text-[10px] tracking-[0.08em] uppercase text-[#00FF41] mb-1">
+                <div className="text-xs tracking-[0.08em] uppercase text-[#00FF41] mb-1">
                   T+24h
                 </div>
-                <div className="text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-60">
+                <div className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-60">
                   AUDIT_ABSORPTION
                 </div>
               </div>
@@ -117,10 +117,10 @@ export function Page03() {
             <div className="relative flex flex-col items-center flex-1">
               <div className="w-3 h-3 rounded-full bg-[#D4C6A9] border-2 border-[#020502] z-10 mb-3" />
               <div className="text-center">
-                <div className="text-[10px] tracking-[0.08em] uppercase text-[#D4C6A9] mb-1">
+                <div className="text-xs tracking-[0.08em] uppercase text-[#D4C6A9] mb-1">
                   T+7d
                 </div>
-                <div className="text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-60">
+                <div className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-60">
                   VOICE_CALIBRATION
                 </div>
               </div>
@@ -130,10 +130,10 @@ export function Page03() {
             <div className="relative flex flex-col items-center flex-1">
               <div className="w-3 h-3 rounded-full bg-[#00FF41] border-2 border-[#020502] z-10 mb-3" />
               <div className="text-center">
-                <div className="text-[10px] tracking-[0.08em] uppercase text-[#00FF41] mb-1">
+                <div className="text-xs tracking-[0.08em] uppercase text-[#00FF41] mb-1">
                   T+30d
                 </div>
-                <div className="text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-60">
+                <div className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-60">
                   STRUCTURAL_MIRROR_COMPLETE
                 </div>
               </div>

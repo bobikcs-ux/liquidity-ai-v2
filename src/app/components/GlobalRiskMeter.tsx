@@ -121,7 +121,7 @@ export const GlobalRiskMeter = memo(function GlobalRiskMeter() {
             >
               Sovereign Risk Index
             </h3>
-            <p className="text-[10px] font-mono" style={{ color: DESIGN.text.muted }}>
+            <p className="text-xs font-mono" style={{ color: DESIGN.text.muted }}>
               Global Systemic Risk Assessment
             </p>
           </div>
@@ -135,7 +135,7 @@ export const GlobalRiskMeter = memo(function GlobalRiskMeter() {
             }}
           >
             <AlertTriangle className="w-3 h-3" style={{ color: DESIGN.status.systemic }} />
-            <span className="text-[9px] font-mono font-bold uppercase" style={{ color: DESIGN.status.systemic }}>
+            <span className="text-xs font-mono font-bold uppercase" style={{ color: DESIGN.status.systemic }}>
               ALERT
             </span>
           </div>
@@ -222,7 +222,7 @@ export const GlobalRiskMeter = memo(function GlobalRiskMeter() {
               >
                 {Math.round(riskScore)}
               </span>
-              <div className="text-[9px] font-mono uppercase" style={{ color: DESIGN.text.muted }}>
+              <div className="text-xs font-mono uppercase" style={{ color: DESIGN.text.muted }}>
                 /100
               </div>
             </div>
@@ -297,7 +297,7 @@ export const GlobalRiskMeter = memo(function GlobalRiskMeter() {
                 className="p-3"
                 style={{ background: DESIGN.bg.card, border: `1px solid ${DESIGN.border.default}` }}
               >
-                <div className="text-[9px] font-mono uppercase tracking-wider mb-2" style={{ color: DESIGN.text.muted }}>
+                <div className="text-xs font-mono uppercase tracking-wider mb-2" style={{ color: DESIGN.text.muted }}>
                   {comp.name}
                 </div>
                 <div className="flex items-end justify-between">
@@ -308,7 +308,7 @@ export const GlobalRiskMeter = memo(function GlobalRiskMeter() {
                     {Math.round(comp.value)}
                   </span>
                   <div 
-                    className="flex items-center gap-0.5 text-[10px] font-mono"
+                    className="flex items-center gap-0.5 text-xs font-mono"
                     style={{ color: isPositive ? DESIGN.status.high : DESIGN.status.safe }}
                   >
                     {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}

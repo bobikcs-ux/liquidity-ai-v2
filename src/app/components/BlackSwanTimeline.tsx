@@ -168,7 +168,7 @@ export const BlackSwanTimeline = memo(function BlackSwanTimeline({ onAlertClick 
                   }`}
                   style={{ height: `${height}%` }}
                 />
-                <span className="text-[10px] text-gray-500 font-mono">{labels[i]}</span>
+                <span className="text-xs text-gray-500 font-mono">{labels[i]}</span>
               </div>
             );
           })}

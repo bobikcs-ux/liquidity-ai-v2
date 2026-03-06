@@ -99,28 +99,28 @@ const GSTGauge = memo(function GSTGauge({
               className="w-full bg-orange-500/80 rounded-none"
               style={{ height: `${(pulse.gstCollection.cgst / pulse.gstCollection.total) * 200}%` }}
             />
-            <span className="text-[10px] text-gray-500 mt-1">CGST</span>
+            <span className="text-xs text-gray-500 mt-1">CGST</span>
           </div>
           <div className="flex-1 flex flex-col items-center">
             <div 
               className="w-full bg-green-500/80 rounded-none"
               style={{ height: `${(pulse.gstCollection.sgst / pulse.gstCollection.total) * 200}%` }}
             />
-            <span className="text-[10px] text-gray-500 mt-1">SGST</span>
+            <span className="text-xs text-gray-500 mt-1">SGST</span>
           </div>
           <div className="flex-1 flex flex-col items-center">
             <div 
               className="w-full bg-blue-500/80 rounded-none"
               style={{ height: `${(pulse.gstCollection.igst / pulse.gstCollection.total) * 200}%` }}
             />
-            <span className="text-[10px] text-gray-500 mt-1">IGST</span>
+            <span className="text-xs text-gray-500 mt-1">IGST</span>
           </div>
           <div className="flex-1 flex flex-col items-center">
             <div 
               className="w-full bg-purple-500/80 rounded-none"
               style={{ height: `${(pulse.gstCollection.cess / pulse.gstCollection.total) * 200}%` }}
             />
-            <span className="text-[10px] text-gray-500 mt-1">Cess</span>
+            <span className="text-xs text-gray-500 mt-1">Cess</span>
           </div>
         </div>
       </div>
@@ -180,7 +180,7 @@ const FiscalHealthCard = memo(function FiscalHealthCard({
               style={{ width: `${deficitWidth}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+          <div className="flex justify-between text-xs text-gray-600 mt-1">
             <span>0%</span>
             <span className="text-amber-600">Target: 5.9%</span>
             <span>10%</span>
@@ -238,7 +238,7 @@ const GSTBreakdown = memo(function GSTBreakdown({
                   {formatGSTValue(comp.value)}
                 </span>
               </div>
-              <div className="text-[10px] text-gray-500">{comp.desc}</div>
+              <div className="text-xs text-gray-500">{comp.desc}</div>
             </div>
             <span className="text-xs text-gray-500">
               {((comp.value / pulse.gstCollection.total) * 100).toFixed(1)}%
@@ -289,7 +289,7 @@ const HistoricalTrend = memo(function HistoricalTrend({
         })}
       </div>
       
-      <div className="flex justify-between text-[10px] text-gray-600 mt-2">
+      <div className="flex justify-between text-xs text-gray-600 mt-2">
         <span>{data[0]?.period.slice(5)}</span>
         <span>{data[data.length - 1]?.period.slice(5)}</span>
       </div>

@@ -105,7 +105,7 @@ export default function HistoryPanel() {
             return (
               <div 
                 key={report.id} 
-                className={`grid grid-cols-4 gap-4 text-[10px] font-mono p-2 border transition-colors ${
+                className={`grid grid-cols-4 gap-4 text-xs font-mono p-2 border transition-colors ${
                   isDark 
                     ? 'border-green-900/30 bg-green-950/5 hover:bg-green-900/20' 
                     : isHybrid 

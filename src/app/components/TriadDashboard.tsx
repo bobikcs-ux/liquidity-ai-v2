@@ -235,7 +235,7 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
           <div className="absolute top-0 h-full w-px bg-[#A3937B]" style={{ left: '60%' }} />
           <div className="absolute top-0 h-full w-px bg-[#ff3b3b]" style={{ left: '80%' }} />
         </div>
-        <div className="flex justify-between mt-1 text-[9px] font-mono text-[#6b6b6b]">
+        <div className="flex justify-between mt-1 text-xs font-mono text-[#6b6b6b]">
           <span>0σ</span>
           <span>1.2σ</span>
           <span>1.6σ</span>
@@ -309,7 +309,7 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
         {data.alertTriggered && (
           <div className="flex items-center gap-1 px-2 py-1 bg-[rgba(255,59,59,0.2)] border border-[rgba(255,59,59,0.3)]">
             <AlertTriangle className="w-3 h-3 text-[#ff3b3b]" />
-            <span className="text-[9px] font-mono text-[#ff3b3b] uppercase">ALERT</span>
+            <span className="text-xs font-mono text-[#ff3b3b] uppercase">ALERT</span>
           </div>
         )}
       </div>
@@ -396,11 +396,11 @@ const HotspotRow = memo(function HotspotRow({ hotspot }: { hotspot: ConflictHots
   };
 
   return (
-    <div className="flex items-center justify-between py-1.5 px-2 bg-[rgba(255,255,255,0.02)] border-l-2 border-transparent hover:border-[#A3937B] transition-colors">
+    <div className="flex items-center justify-between py-1.5 px-2 border border-zinc-800/50 border-l-2 border-transparent hover:border-[#A3937B] transition-colors">
       <span className="text-xs font-mono text-white">{hotspot.displayName}</span>
       <div className="flex items-center gap-3">
         <span className="text-xs font-mono text-[#7a8a99]">{hotspot.intensityScore.toFixed(0)}</span>
-        <span className={`text-[9px] font-mono uppercase ${alertColors[hotspot.alertLevel]}`}>
+        <span className={`text-xs font-mono uppercase ${alertColors[hotspot.alertLevel]}`}>
           {hotspot.alertLevel}
         </span>
       </div>
@@ -434,7 +434,7 @@ const ChokepointPanel = memo(function ChokepointPanel({
         {data.alertTriggered && (
           <div className="flex items-center gap-1 px-2 py-1 bg-[rgba(255,159,67,0.2)] border border-[rgba(255,159,67,0.3)]">
             <Ship className="w-3 h-3 text-[#ff9f43]" />
-            <span className="text-[9px] font-mono text-[#ff9f43] uppercase">DISRUPTION</span>
+            <span className="text-xs font-mono text-[#ff9f43] uppercase">DISRUPTION</span>
           </div>
         )}
       </div>
@@ -468,7 +468,7 @@ const ChokepointRow = memo(function ChokepointRow({ chokepoint }: { chokepoint: 
   };
 
   return (
-    <div className="flex items-center gap-3 py-2 px-2 bg-[rgba(255,255,255,0.02)]">
+    <div className="flex items-center gap-3 py-2 px-2 border border-zinc-800/50">
       <div className={`w-2 h-2 rounded-full ${congestionColors[chokepoint.congestionLevel]}`} />
       <span className="text-xs font-mono text-white flex-1">{chokepoint.displayName}</span>
       <div className="flex items-center gap-2">
@@ -487,8 +487,8 @@ const FreightRateBox = memo(function FreightRateBox({ data }: { data: FreightRat
   const isSpike = data.spike > 20;
 
   return (
-    <div className={`p-2 bg-[rgba(255,255,255,0.02)] border ${isSpike ? 'border-[rgba(255,159,67,0.3)]' : 'border-transparent'}`}>
-      <div className="text-[9px] font-mono text-[#6b6b6b] uppercase">{data.vesselType}</div>
+    <div className={`p-2 border border-zinc-800/50 border ${isSpike ? 'border-[rgba(255,159,67,0.3)]' : 'border-transparent'}`}>
+      <div className="text-xs font-mono text-[#6b6b6b] uppercase">{data.vesselType}</div>
       <div className={`text-sm font-mono font-bold ${isSpike ? 'text-[#ff9f43]' : 'text-white'}`}>
         +{data.spike.toFixed(0)}%
       </div>
@@ -579,10 +579,10 @@ const CorrelationEngine = memo(function CorrelationEngine({
           </div>
 
           {/* AI Assessment */}
-          <div className="p-3 bg-[rgba(255,255,255,0.02)] border border-[rgba(163,147,123,0.08)]">
+          <div className="p-3 border border-zinc-800/50 border border-[rgba(163,147,123,0.08)]">
             <div className="flex items-center gap-2 mb-1">
               <Cpu className="w-3 h-3 text-[#A3937B]" />
-              <span className="text-[9px] font-mono text-[#A3937B] uppercase">AI Assessment</span>
+              <span className="text-xs font-mono text-[#A3937B] uppercase">AI Assessment</span>
             </div>
             <p className="text-xs font-mono text-[#a0a0a0] leading-relaxed">
               {systemicRisk.aiAssessment}
@@ -604,7 +604,7 @@ const TriggerIndicator = memo(function TriggerIndicator({
   return (
     <div className="flex items-center gap-1.5">
       <div className={`w-2 h-2 rounded-full ${active ? 'bg-[#ff3b3b]' : 'bg-[#2a2a2a]'}`} />
-      <span className={`text-[9px] font-mono uppercase ${active ? 'text-[#ff3b3b]' : 'text-[#6b6b6b]'}`}>
+      <span className={`text-xs font-mono uppercase ${active ? 'text-[#ff3b3b]' : 'text-[#6b6b6b]'}`}>
         {label}
       </span>
     </div>
@@ -627,8 +627,8 @@ const MetricBox = memo(function MetricBox({
   alert?: boolean;
 }) {
   return (
-    <div className={`p-2 bg-[rgba(255,255,255,0.02)] border ${alert ? 'border-[rgba(255,59,59,0.3)]' : 'border-transparent'}`}>
-      <div className="text-[9px] font-mono text-[#6b6b6b] uppercase tracking-wider">{label}</div>
+    <div className={`p-2 border border-zinc-800/50 border ${alert ? 'border-[rgba(255,59,59,0.3)]' : 'border-transparent'}`}>
+      <div className="text-xs font-mono text-[#6b6b6b] uppercase tracking-wider">{label}</div>
       <div className="flex items-center gap-1">
         <span className={`text-sm font-mono font-bold ${alert ? 'text-[#ff3b3b]' : 'text-white'}`}>
           {value}
@@ -724,12 +724,12 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
         <div className="flex items-center justify-between px-4 py-2">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-[#6b6b6b] uppercase tracking-wider">SYSTEMIC RISK LEVEL</span>
+              <span className="text-xs font-mono text-[#6b6b6b] uppercase tracking-wider">SYSTEMIC RISK LEVEL</span>
               <div className="flex items-center gap-1">
                 {['LOW', 'ELEVATED', 'HIGH', 'SYSTEMIC'].map((lvl) => (
                   <span 
                     key={lvl}
-                    className={`text-[9px] font-mono px-2 py-0.5 transition-all ${
+                    className={`text-xs font-mono px-2 py-0.5 transition-all ${
                       level === lvl 
                         ? `bg-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#A3937B' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}]/20 text-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#A3937B' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}] border border-current`
                         : 'text-[#3a3a3a]'
@@ -754,14 +754,14 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
               >
                 {riskScore}
               </span>
-              <span className="text-[9px] font-mono text-[#6b6b6b]">/100</span>
+              <span className="text-xs font-mono text-[#6b6b6b]">/100</span>
             </div>
           </div>
 
           {/* Mode Indicator */}
           {mode !== 'NORMAL' && (
             <div className="flex items-center gap-2">
-              <span className={`text-[9px] font-mono px-2 py-1 ${
+              <span className={`text-xs font-mono px-2 py-1 ${
                 mode === 'ACKNOWLEDGED' ? 'bg-[#A3937B]/10 text-[#A3937B] border border-[#A3937B]/30' :
                 mode === 'SUPPRESSED' ? 'bg-[#6b6b6b]/10 text-[#6b6b6b] border border-[#6b6b6b]/30' :
                 'bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/30'
@@ -790,21 +790,21 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
                 <>
                   <button
                     onClick={() => setMode('ACKNOWLEDGED')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#A3937B]/10 border border-[#A3937B]/30 text-[#A3937B] text-[10px] font-mono uppercase hover:bg-[#A3937B]/20 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#A3937B]/10 border border-[#A3937B]/30 text-[#A3937B] text-xs font-mono uppercase hover:bg-[#A3937B]/20 transition-colors"
                   >
                     <CheckCircle className="w-3 h-3" />
                     Acknowledge
                   </button>
                   <button
                     onClick={() => setMode('SUPPRESSED')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6b6b6b]/10 border border-[#6b6b6b]/30 text-[#6b6b6b] text-[10px] font-mono uppercase hover:bg-[#6b6b6b]/20 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#6b6b6b]/10 border border-[#6b6b6b]/30 text-[#6b6b6b] text-xs font-mono uppercase hover:bg-[#6b6b6b]/20 transition-colors"
                   >
                     <Shield className="w-3 h-3" />
                     Suppress
                   </button>
                   <button
                     onClick={() => setMode('ANALYSIS')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#3b82f6]/10 border border-[#3b82f6]/30 text-[#3b82f6] text-[10px] font-mono uppercase hover:bg-[#3b82f6]/20 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#3b82f6]/10 border border-[#3b82f6]/30 text-[#3b82f6] text-xs font-mono uppercase hover:bg-[#3b82f6]/20 transition-colors"
                   >
                     <Cpu className="w-3 h-3" />
                     Analysis Mode
@@ -814,7 +814,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
               {mode !== 'NORMAL' && (
                 <button
                   onClick={() => setMode('NORMAL')}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ff3b5c]/10 border border-[#ff3b5c]/30 text-[#ff3b5c] text-[10px] font-mono uppercase hover:bg-[#ff3b5c]/20 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ff3b5c]/10 border border-[#ff3b5c]/30 text-[#ff3b5c] text-xs font-mono uppercase hover:bg-[#ff3b5c]/20 transition-colors"
                 >
                   Reset Alert
                 </button>
@@ -875,7 +875,7 @@ return (
           <h1 className="text-base md:text-xl font-mono font-bold text-white uppercase tracking-wider">
             Triad Intelligence
           </h1>
-          <span className="text-[10px] md:text-xs font-mono text-[#6b6b6b]">v1.0</span>
+          <span className="text-xs md:text-xs font-mono text-[#6b6b6b]">v1.0</span>
         </div>
 
         {/* Error State */}
