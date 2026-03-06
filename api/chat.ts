@@ -156,7 +156,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.AI_GATEWAY_API_KEY || '';
     
     if (!apiKey) {
-      console.log('[v0] No API key found, using fallback');
+      
       return res.status(200).json({
         status: 'FALLBACK',
         response: generateFallbackResponse(message),
@@ -186,7 +186,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     });
     
-    console.log('[v0] Gemini API response status:', response.status);
+    
 
     if (!response.ok) {
       const error = await response.text();
@@ -258,5 +258,21 @@ function generateFallbackResponse(query: string): string {
     return `SOVEREIGN INTELLIGENCE ACTIVE | Tables Loaded: t63, t76, t81, t94, t95 | WTI: $${TABLE_DATA.t76.data.wti.price} | Bab el-Mandeb Risk: ${(TABLE_DATA.t63.data.acledCorrelation.babElMandeb * 100).toFixed(0)}%`;
   }
   
-  return `Query received. Available data: Oil Markets (t76), Tanker Rates (t63), Natural Gas (t81), Shipping Flow (t94), Petrodollar (t95). Please specify your query.`;
+  // Strategic fallback - provide actual analysis instead of generic message
+  const overview = `SOVEREIGN MARKET BRIEF:
+
+WTI: $${TABLE_DATA.t76.data.wti.price}/bbl (${TABLE_DATA.t76.data.wti.change24h > 0 ? '+' : ''}${TABLE_DATA.t76.data.wti.change24h}%)
+Brent: $${TABLE_DATA.t76.data.brent.price}/bbl
+3:2:1 Crack: $${TABLE_DATA.t76.data.crackSpread321.value}/bbl
+
+РИСК ИНДИКАТОРИ:
+• Bab el-Mandeb: ${(TABLE_DATA.t63.data.acledCorrelation.babElMandeb * 100).toFixed(0)}% ACLED корелация
+• VLCC Premium: +${TABLE_DATA.t63.data.vlcc.babElMandebPremium}%
+• Hormuz Flow: ${TABLE_DATA.t94.data.hormuz.flow} mb/d
+
+US Inventory: ${(TABLE_DATA.t76.data.inventory.us / 1000000).toFixed(1)}M bbl
+OPEC Supply: ${TABLE_DATA.t76.data.opecSupply.value} mb/d
+
+Задайте конкретен въпрос за детайлен анализ.`;
+  return overview;
 }

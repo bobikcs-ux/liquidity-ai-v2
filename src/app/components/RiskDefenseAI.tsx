@@ -1,6 +1,8 @@
 import React from 'react';
 import { Shield, AlertTriangle, TrendingDown, Zap, Activity, Target } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { IntelligenceGuard } from './IntelligenceGuard';
+import { useSubscription } from '../context/SubscriptionContext';
 
 interface DefenseAction {
   priority: 'critical' | 'high' | 'medium';
@@ -9,7 +11,8 @@ interface DefenseAction {
   impact: string;
 }
 
-export function RiskDefenseAI() {
+// Core component (internal)
+function RiskDefenseAICore() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
   
   // Only show in high-risk regimes
@@ -353,4 +356,21 @@ export function RiskDefenseAI() {
       </div>
     </div>
   );
+}
+
+// Guarded version with paywall
+export function RiskDefenseAI() {
+  const { subscription } = useSubscription();
+  
+  // If not paid, show the guarded (blurred) version with paywall
+  if (!subscription.isPaid) {
+    return (
+      <IntelligenceGuard feature="deepRisk">
+        <RiskDefenseAICore />
+      </IntelligenceGuard>
+    );
+  }
+  
+  // Paid users get direct access
+  return <RiskDefenseAICore />;
 }

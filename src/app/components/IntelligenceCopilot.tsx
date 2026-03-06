@@ -4,6 +4,8 @@ import {
   AlertCircle, CheckCircle2
 } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { IntelligenceGuard } from './IntelligenceGuard';
+import { useSubscription } from '../context/SubscriptionContext';
 
 // Message types for the AI chat
 interface ChatMessage {
@@ -25,7 +27,8 @@ const DESIGN = {
   border: 'rgba(163, 147, 123, 0.15)',
 };
 
-export function IntelligenceCopilot() {
+// Core copilot component (internal)
+function IntelligenceCopilotCore() {
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -375,6 +378,23 @@ export function IntelligenceCopilot() {
       </div>
     </div>
   );
+}
+
+// Guarded version with paywall
+export function IntelligenceCopilot() {
+  const { subscription } = useSubscription();
+  
+  // If not paid, show the guarded (blurred) version with paywall
+  if (!subscription.isPaid) {
+    return (
+      <IntelligenceGuard feature="intelligence">
+        <IntelligenceCopilotCore />
+      </IntelligenceGuard>
+    );
+  }
+  
+  // Paid users get direct access
+  return <IntelligenceCopilotCore />;
 }
 
 export default IntelligenceCopilot;
