@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { useSovereignIntelligence, getSRIColor, getAlertLevelColor, getRegimeColor } from '../hooks/useSovereignIntelligence';
 import type { SovereignView, SovereignRiskSignal } from '../types/sovereign';
+import { BRICSWidget } from './BRICSWidget';
 
 // ============================================================================
 // SOVEREIGN DESIGN TOKENS
@@ -499,6 +500,11 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
             <MarketPulseMetrics pulse={currentPulse} />
             <CorrelationMatrix matrix={correlationMatrix} />
           </div>
+        </div>
+
+        {/* BRICS Intelligence Layer */}
+        <div className="mt-8 pt-8 border-t border-amber-500/20">
+          <BRICSWidget />
         </div>
       </div>
     </div>
