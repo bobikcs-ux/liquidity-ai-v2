@@ -15,6 +15,8 @@ import { TerminalEventStream } from '../components/TerminalEventStream';
 import { DataIntegrityPanel } from '../components/DataIntegrityPanel';
 import { BlackSwanTimeline } from '../components/BlackSwanTimeline';
 import { GlobalRiskMeter } from '../components/GlobalRiskMeter';
+import { CrisisControlBar } from '../components/CrisisControlBar';
+import { InfrastructureStatusBar } from '../components/InfrastructureStatusBar';
 
 export function Dashboard() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
@@ -36,7 +38,19 @@ export function Dashboard() {
   }`;
 
   return (
-    <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto px-4 py-4 md:py-8">
+    <div>
+      {/* Crisis Control Bar - Top-mounted */}
+      <CrisisControlBar 
+        riskLevel={currentRegime.riskLevel} 
+        isSystemic={currentRegime.riskLevel >= 85}
+        systemicRiskLabel={`Risk Status: ${currentRegime.regime.toUpperCase()}`}
+      />
+      
+      {/* Infrastructure Status Bar */}
+      <InfrastructureStatusBar refreshInterval={30000} />
+      
+      {/* Main Dashboard Content */}
+      <div className="space-y-4 md:space-y-6 max-w-6xl mx-auto px-4 py-4 md:py-8">
       
       {/* HEADER SECTION - ПЕРСОНАЛИЗИРАНО ЗАГЛАВИЕ */}
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 md:gap-6 mb-6 md:mb-10 border-b border-blue-900/30 pb-4 md:pb-6">
@@ -255,6 +269,7 @@ export function Dashboard() {
         <div className="flex flex-col">
            <AICopilot />
         </div>
+      </div>
       </div>
     </div>
   );

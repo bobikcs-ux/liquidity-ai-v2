@@ -1,10 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+/* Global Font Application - JetBrains Mono everywhere */
+* {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+}
+
+html, body {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Code and technical text */
+code, pre, kbd, samp {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-weight: 500;
+}
 
 /* Intelligence OS Typography */
 .font-ios-mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-weight: 500;
 }
 
 .font-ios-ui {
-  font-family: 'Inter', sans-serif;
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  font-weight: 400;
+}
+
+/* Terminal typography */
+.terminal-text, .terminal-font {
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  letter-spacing: 0.01em;
 }

@@ -4,22 +4,22 @@
   --font-size: 16px;
   
   /* ========================================
-     UNIFIED INTELLIGENCE TERMINAL PALETTE
+     GLOBAL DESIGN SYSTEM - THE SOVEREIGN PALETTE
      Bloomberg-Grade Financial UI System
      ======================================== */
   
-  /* Primary Background - Deep Space Black */
+  /* Primary Background - Deep Night (#0b0b0f) */
   --ios-bg-primary: #0b0b0f;
   --ios-bg-panel: #121218;
   --ios-bg-card: #16161d;
   --ios-bg-elevated: #1a1a22;
   
-  /* Accent Colors - Sovereign Tint (Muted Sandy Metallic) */
-  --ios-gold: #A3937B;
-  --ios-gold-soft: #B8A892;
-  --ios-gold-hover: #C4B8A5;
-  --ios-gold-muted: rgba(163, 147, 123, 0.12);
-  --ios-gold-glow: rgba(163, 147, 123, 0.20);
+  /* Accent Colors - Elegant Gold (Primary: #d4af37, Secondary: #c6a85a) */
+  --ios-gold: #d4af37;
+  --ios-gold-soft: #c6a85a;
+  --ios-gold-hover: #dfc050;
+  --ios-gold-muted: rgba(212, 175, 55, 0.12);
+  --ios-gold-glow: rgba(212, 175, 55, 0.20);
   
   /* Silver Accent Alternative */
   --ios-silver: #C0C0C0;
@@ -31,30 +31,30 @@
   
   /* Status Colors - Financial Grade (High Contrast on Dark) */
   --ios-success: #2ecc71;
-  --ios-warning: #C4B8A5;  /* Sovereign Tint warning - soft sand */
-  --ios-crisis: #ff5a75;   /* Red for critical alerts */
-  --ios-info: #7a8a99;     /* Steel blue-gray info */
+  --ios-warning: #ffb020;
+  --ios-crisis: #ff3b5c;
+  --ios-info: #7a8a99;
   
   /* High Contrast Text Colors for Accessibility */
-  --ios-text-warning: #B8A892;  /* Sovereign Tint text */
-  --ios-text-danger: #ff7a8a;   /* High contrast red text */
+  --ios-text-warning: #ffb020;
+  --ios-text-danger: #ff7a8a;
   
   /* Text Colors - WCAG AA Compliant on Dark Backgrounds */
   --ios-text-primary: #f5f5f5;
-  --ios-text-secondary: #a1a1aa;  /* zinc-400 - WCAG compliant */
-  --ios-text-muted: #a1a1aa;      /* zinc-400 - Improved contrast from #6b6b6b */
+  --ios-text-secondary: #a1a1aa;
+  --ios-text-muted: #a1a1aa;
   
-  /* Borders - Subtle Sovereign Tint */
-  --ios-border: rgba(163, 147, 123, 0.08);
-  --ios-border-active: rgba(163, 147, 123, 0.20);
+  /* Borders - Subtle Gold Tint */
+  --ios-border: rgba(212, 175, 55, 0.08);
+  --ios-border-active: rgba(212, 175, 55, 0.20);
   
-  /* Glow Effects - Subtle Sovereign Tint */
-  --ios-glow-gold: 0 0 12px rgba(163, 147, 123, 0.15);
-  --ios-glow-gold-strong: 0 0 20px rgba(163, 147, 123, 0.25);
+  /* Glow Effects - Subtle Gold */
+  --ios-glow-gold: 0 0 12px rgba(212, 175, 55, 0.15);
+  --ios-glow-gold-strong: 0 0 20px rgba(212, 175, 55, 0.25);
   --ios-glow-crisis: 0 0 15px rgba(255, 59, 92, 0.20);
   --ios-glow-crisis-strong: 0 0 25px rgba(255, 59, 92, 0.35);
   --ios-glow-success: 0 0 12px rgba(46, 204, 113, 0.18);
-  --ios-glow-warning: 0 0 12px rgba(163, 147, 123, 0.18);
+  --ios-glow-warning: 0 0 12px rgba(255, 176, 32, 0.18);
   
   /* Adaptive Financial UI Colors */
   /* Light Mode (Stable/Expansionary) */
@@ -75,9 +75,9 @@
   --terminal-text: var(--ios-text-primary);
   --terminal-border: var(--ios-border);
   
-  /* Dossier Color Palette - Sovereign Tint */
+  /* Dossier Color Palette - Elegant Gold */
   --dossier-void: #020502;
-  --dossier-gold: #A3937B;
+  --dossier-gold: #d4af37;
   --dossier-green: #2ecc71;
   --dossier-red: var(--ios-crisis);
   --dossier-ghost: #1A1A1A;
