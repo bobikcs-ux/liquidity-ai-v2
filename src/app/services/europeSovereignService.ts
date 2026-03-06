@@ -72,6 +72,7 @@ async function fetchEurostatData(
     const queryParams = new URLSearchParams({
       format: 'JSON',
       lang: 'EN',
+      lastTimePeriod: '1', // Fetch only latest period to reduce latency
       ...params,
     });
 

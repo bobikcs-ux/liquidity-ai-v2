@@ -142,6 +142,7 @@ const TopStatusBar = memo(function TopStatusBar({
         {/* Export Button */}
         <button
           onClick={onExport}
+          aria-label="Export dashboard snapshot"
           className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] text-[#d4af37] text-xs font-mono uppercase tracking-wider hover:bg-[rgba(212,175,55,0.2)] transition-colors"
         >
           <Download className="w-3 h-3" />
@@ -229,7 +230,7 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
       <div className="mb-4">
         <h4 className="text-xs font-mono text-[#7a8a99] uppercase mb-2">Currency Volatility</h4>
         <div className="grid grid-cols-7 gap-1">
-          {data.currencyVolatility.map((cell) => (
+          {(data.currencyVolatility || []).map((cell) => (
             <VolatilityCell key={cell.pair} cell={cell} />
           ))}
         </div>
@@ -237,10 +238,10 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
 
       {/* Key Metrics */}
       <div className="grid grid-cols-2 gap-3">
-        <MetricBox label="WALCL Δ30d" value={`${data.fred.walcl_30d_change.toFixed(1)}%`} trend={data.fred.walcl_30d_change < 0 ? 'down' : 'up'} />
-        <MetricBox label="DXY" value={data.fred.dxy.toFixed(1)} />
-        <MetricBox label="EUR/USD" value={data.fred.eurusd.toFixed(4)} />
-        <MetricBox label="USD/JPY Vol" value={`${data.fred.usdjpy_volatility_7d.toFixed(2)}%`} />
+        <MetricBox label="WALCL Δ30d" value={`${data.fred?.walcl_30d_change?.toFixed(1) ?? '--'}%`} trend={data.fred?.walcl_30d_change < 0 ? 'down' : 'up'} />
+        <MetricBox label="DXY" value={data.fred?.dxy?.toFixed(1) ?? '--'} />
+        <MetricBox label="EUR/USD" value={data.fred?.eurusd?.toFixed(4) ?? '--'} />
+        <MetricBox label="USD/JPY Vol" value={`${data.fred?.usdjpy_volatility_7d?.toFixed(2) ?? '--'}%`} />
       </div>
     </div>
   );
@@ -301,7 +302,7 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
         <div className="absolute inset-0 ios-grid-overlay opacity-30" />
         
         {/* Hotspot dots */}
-        {data.hotspots.map((hotspot) => (
+        {(data.hotspots || []).map((hotspot) => (
           <HotspotDot key={hotspot.region} hotspot={hotspot} />
         ))}
 
@@ -315,19 +316,19 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
       <div className="grid grid-cols-2 gap-3 mb-4">
         <MetricBox 
           label="Max Escalation 24h" 
-          value={`${data.maxEscalation24h.toFixed(0)}%`} 
-          alert={data.maxEscalation24h > 25}
+          value={`${data.maxEscalation24h?.toFixed(0) ?? '--'}%`} 
+          alert={(data.maxEscalation24h ?? 0) > 25}
         />
         <MetricBox 
           label="Max Escalation 72h" 
-          value={`${data.maxEscalation72h.toFixed(0)}%`}
-          alert={data.maxEscalation72h > 100}
+          value={`${data.maxEscalation72h?.toFixed(0) ?? '--'}%`}
+          alert={(data.maxEscalation72h ?? 0) > 100}
         />
       </div>
 
       {/* Hotspot List */}
       <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
-        {data.hotspots
+        {(data.hotspots || [])
           .sort((a, b) => b.intensityScore - a.intensityScore)
           .slice(0, 5)
           .map((hotspot) => (
@@ -423,7 +424,7 @@ const ChokepointPanel = memo(function ChokepointPanel({
 
       {/* Chokepoint Grid */}
       <div className="space-y-2 mb-4">
-        {data.chokepoints.map((cp) => (
+        {(data.chokepoints || []).map((cp) => (
           <ChokepointRow key={cp.id} chokepoint={cp} />
         ))}
       </div>
@@ -432,7 +433,7 @@ const ChokepointPanel = memo(function ChokepointPanel({
       <div>
         <h4 className="text-xs font-mono text-[#7a8a99] uppercase mb-2">Freight Rates</h4>
         <div className="grid grid-cols-3 gap-2">
-          {data.freightRates.map((fr) => (
+          {(data.freightRates || []).map((fr) => (
             <FreightRateBox key={fr.vesselType} data={fr} />
           ))}
         </div>
@@ -850,14 +851,14 @@ return (
       />
 
       {/* Main Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-3 md:p-6 space-y-4 md:space-y-6 overflow-x-hidden">
         {/* Dashboard Title */}
-        <div className="flex items-center gap-3 mb-2">
-          <Globe className="w-6 h-6 text-[#d4af37]" />
-          <h1 className="text-xl font-mono font-bold text-white uppercase tracking-wider">
-            Triad Intelligence Dashboard
+        <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2">
+          <Globe className="w-5 md:w-6 h-5 md:h-6 text-[#d4af37]" />
+          <h1 className="text-base md:text-xl font-mono font-bold text-white uppercase tracking-wider">
+            Triad Intelligence
           </h1>
-          <span className="text-xs font-mono text-[#6b6b6b]">v1.0</span>
+          <span className="text-[10px] md:text-xs font-mono text-[#6b6b6b]">v1.0</span>
         </div>
 
         {/* Error State */}
@@ -871,7 +872,7 @@ return (
         )}
 
         {/* Main 3-Panel Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6 mobile-stack">
           <LiquidityStressPanel data={liquidity} />
           <ConflictRadarPanel data={conflict} />
           <ChokepointPanel data={chokepoints} />

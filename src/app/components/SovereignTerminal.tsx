@@ -215,7 +215,7 @@ const FlowSignalBanner = memo(function FlowSignalBanner({
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
-            {signal.triggers.map((trigger, i) => (
+            {(signal.triggers || []).map((trigger, i) => (
               <span key={i} className={`text-[10px] font-mono px-2 py-1 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
                 {trigger}
               </span>
@@ -282,7 +282,7 @@ const SignalsPanel = memo(function SignalsPanel({
                   {signal.description}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
-                  {signal.data_sources.map((source) => (
+                  {(signal.data_sources || []).map((source) => (
                     <span key={source} className={`text-[9px] font-mono px-1.5 py-0.5 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
                       {source}
                     </span>

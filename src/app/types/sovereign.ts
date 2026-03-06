@@ -121,6 +121,11 @@ export interface SRIInputs {
   naturalGasPrice: number;
   naturalGasPriceChange: number;
   
+  // Transport Cost Metrics (from Table 6.3 / Baltic Dry Index)
+  freightIndex?: number; // Baltic Dry Index
+  freightIndexChange?: number; // percentage change
+  containerCostIndex?: number; // Container shipping cost index
+  
   // Market Metrics (from existing market_snapshots)
   btcVolatility: number;
   systemicRisk: number;
@@ -134,6 +139,7 @@ export interface SRIResult {
     energyScore: number;
     cryptoScore: number;
     macroScore: number;
+    transportScore: number; // Table 6.3 transport cost factor
   };
   regime: 'EXPANSION' | 'CONTRACTION' | 'STRESS' | 'CRISIS';
   alertLevel: 'GREEN' | 'AMBER' | 'RED' | 'BLACK';

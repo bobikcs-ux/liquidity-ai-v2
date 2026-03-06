@@ -637,7 +637,7 @@ export function EnergyFinanceDashboard() {
             />
           </div>
           <FullWidthChart 
-            data={energyData?.historicalPrices.map(d => ({ ...d, value: d.value * 0.035 })) ?? []}
+            data={(energyData?.historicalPrices || []).map(d => ({ ...d, value: d.value * 0.035 }))}
             label="Henry Hub Price History (52W)"
             height={180}
             color={DESIGN.status.warning}

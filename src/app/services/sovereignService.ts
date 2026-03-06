@@ -98,10 +98,10 @@ export async function fetchEnergyData(apiKey?: string): Promise<{
 
 /**
  * Calculate Sovereign Risk Index
- * Combines liquidity, energy, crypto, and macro signals
+ * Combines liquidity, energy, crypto, macro, and transport/logistics signals
  * 
- * Formula:
- * SRI = (LiquidityScore * 0.30) + (EnergyScore * 0.25) + (CryptoScore * 0.25) + (MacroScore * 0.20)
+ * Formula (Updated with Table 6.3 Transport Costs):
+ * SRI = (LiquidityScore * 0.25) + (EnergyScore * 0.22) + (CryptoScore * 0.20) + (MacroScore * 0.18) + (TransportScore * 0.15)
  */
 export function calculateSRI(inputs: SRIInputs): SRIResult {
   // Liquidity Score (0-100)
@@ -109,6 +109,17 @@ export function calculateSRI(inputs: SRIInputs): SRIResult {
   const liquidityScore = Math.min(100, Math.max(0,
     50 - (inputs.stablecoinMcapChange7d * 5) + // Negative change increases score
     (inputs.fedBalanceSheet < 7000000000000 ? 20 : 0) // QT pressure
+  ));
+  
+  // Transport Cost Score (0-100) - Based on Table 6.3 shipping index data
+  // Rising freight costs = higher supply chain stress
+  const baseFreightIndex = inputs.freightIndex ?? 1500; // Default Baltic Dry Index baseline
+  const freightChange = inputs.freightIndexChange ?? 0;
+  const transportScore = Math.min(100, Math.max(0,
+    25 +
+    (baseFreightIndex > 2000 ? 25 : baseFreightIndex > 1500 ? 15 : 0) + // High freight costs
+    (freightChange > 20 ? 30 : freightChange > 10 ? 20 : freightChange > 5 ? 10 : 0) + // Freight spike
+    (inputs.containerCostIndex ?? 0 > 3000 ? 20 : 0) // Container cost stress
   ));
   
   // Energy Score (0-100)
@@ -135,12 +146,13 @@ export function calculateSRI(inputs: SRIInputs): SRIResult {
     (inputs.yieldSpread < -0.5 ? 20 : 0)
   ));
   
-  // Weighted composite score
+  // Weighted composite score (Updated with transport cost factor)
   const score = Math.round(
-    (liquidityScore * 0.30) +
-    (energyScore * 0.25) +
-    (cryptoScore * 0.25) +
-    (macroScore * 0.20)
+    (liquidityScore * 0.25) +
+    (energyScore * 0.22) +
+    (cryptoScore * 0.20) +
+    (macroScore * 0.18) +
+    (transportScore * 0.15)
   );
   
   // Determine regime
@@ -164,6 +176,8 @@ export function calculateSRI(inputs: SRIInputs): SRIResult {
   if (inputs.btcVolatility > 60) signals.push('CRYPTO_VOLATILITY');
   if (inputs.yieldSpread < -0.3) signals.push('YIELD_INVERSION');
   if (liquidityScore > 60 && energyScore > 60) signals.push('STAGFLATION_RISK');
+  if (transportScore > 60) signals.push('SUPPLY_CHAIN_STRESS');
+  if ((inputs.freightIndexChange ?? 0) > 15) signals.push('FREIGHT_SPIKE');
   
   return {
     score,
@@ -172,6 +186,7 @@ export function calculateSRI(inputs: SRIInputs): SRIResult {
       energyScore,
       cryptoScore,
       macroScore,
+      transportScore,
     },
     regime,
     alertLevel,

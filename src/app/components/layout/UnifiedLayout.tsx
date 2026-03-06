@@ -395,6 +395,8 @@ export function UnifiedLayout() {
               <Link
                 key={item.path}
                 to={item.path}
+                aria-label={`Navigate to ${item.label}`}
+                aria-current={active ? 'page' : undefined}
                 className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 relative group ${
                   active
                     ? isDark || isHybrid
