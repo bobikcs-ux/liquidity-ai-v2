@@ -107,7 +107,7 @@ const TopStatusBar = memo(function TopStatusBar({
     : '--:--:--';
 
   return (
-    <div className="flex items-center justify-between px-6 py-3 bg-[#0f1113] border-b border-[rgba(212,175,55,0.1)]">
+    <div className="flex items-center justify-between px-6 py-3 bg-[#0f1113] border-b border-[rgba(163,147,123,0.08)]">
       <div className="flex items-center gap-6">
         {/* Alert Level Indicator */}
         <div className="flex items-center gap-2">
@@ -150,7 +150,7 @@ const TopStatusBar = memo(function TopStatusBar({
         {/* Refresh Button */}
         <button
           onClick={onRefresh}
-          className="p-2 rounded hover:bg-[rgba(212,175,55,0.1)] transition-colors"
+          className="p-2 rounded hover:bg-[rgba(163,147,123,0.08)] transition-colors"
           aria-label="Refresh data"
         >
           <RefreshCw className="w-4 h-4 text-[#A3937B]" />
@@ -160,7 +160,7 @@ const TopStatusBar = memo(function TopStatusBar({
         <button
           onClick={onExport}
           aria-label="Export dashboard snapshot"
-          className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(212,175,55,0.1)] border border-[rgba(212,175,55,0.2)] text-[#A3937B] text-xs font-mono uppercase tracking-wider hover:bg-[rgba(212,175,55,0.2)] transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 bg-[rgba(163,147,123,0.08)] border border-[rgba(212,175,55,0.2)] text-[#A3937B] text-xs font-mono uppercase tracking-wider hover:bg-[rgba(212,175,55,0.2)] transition-colors"
         >
           <Download className="w-3 h-3" />
           EXPORT
@@ -193,7 +193,7 @@ const LiquidityStressPanel = memo(function LiquidityStressPanel({
   const stressColor = stressColors[data.stressLevel];
 
   return (
-    <div className="bg-[#0f1113] border border-[rgba(212,175,55,0.1)] p-4 ios-hover-glow">
+    <div className="bg-[#0f1113] border border-[rgba(163,147,123,0.08)] p-4 ios-hover-glow">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -297,7 +297,7 @@ const ConflictRadarPanel = memo(function ConflictRadarPanel({
   }
 
   return (
-    <div className="bg-[#0f1113] border border-[rgba(212,175,55,0.1)] p-4 ios-hover-glow">
+    <div className="bg-[#0f1113] border border-[rgba(163,147,123,0.08)] p-4 ios-hover-glow">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -422,7 +422,7 @@ const ChokepointPanel = memo(function ChokepointPanel({
   }
 
   return (
-    <div className="bg-[#0f1113] border border-[rgba(212,175,55,0.1)] p-4 ios-hover-glow">
+    <div className="bg-[#0f1113] border border-[rgba(163,147,123,0.08)] p-4 ios-hover-glow">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -507,7 +507,7 @@ const CorrelationEngine = memo(function CorrelationEngine({
 }) {
   if (!systemicRisk) {
     return (
-      <div className="bg-[#0f1113] border border-[rgba(212,175,55,0.1)] p-4 ios-skeleton h-32" />
+      <div className="bg-[#0f1113] border border-[rgba(163,147,123,0.08)] p-4 ios-skeleton h-32" />
     );
   }
 
@@ -521,7 +521,7 @@ const CorrelationEngine = memo(function CorrelationEngine({
   const isCollapse = systemicRisk.isSystemicCollapse;
 
   return (
-    <div className={`bg-[#0f1113] border p-4 ${isCollapse ? 'border-[#ff3b3b] ios-crisis-pulse' : 'border-[rgba(212,175,55,0.1)]'}`}>
+    <div className={`bg-[#0f1113] border p-4 ${isCollapse ? 'border-[#ff3b3b] ios-crisis-pulse' : 'border-[rgba(163,147,123,0.08)]'}`}>
       <div className="flex items-start gap-6">
         {/* Risk Score Gauge */}
         <div className="flex-shrink-0">
@@ -579,7 +579,7 @@ const CorrelationEngine = memo(function CorrelationEngine({
           </div>
 
           {/* AI Assessment */}
-          <div className="p-3 bg-[rgba(255,255,255,0.02)] border border-[rgba(212,175,55,0.1)]">
+          <div className="p-3 bg-[rgba(255,255,255,0.02)] border border-[rgba(163,147,123,0.08)]">
             <div className="flex items-center gap-2 mb-1">
               <Cpu className="w-3 h-3 text-[#A3937B]" />
               <span className="text-[9px] font-mono text-[#A3937B] uppercase">AI Assessment</span>
@@ -651,7 +651,7 @@ const StaleIndicator = memo(function StaleIndicator() {
 
 const PanelSkeleton = memo(function PanelSkeleton({ title }: { title: string }) {
   return (
-    <div className="bg-[#0f1113] border border-[rgba(212,175,55,0.1)] p-4">
+    <div className="bg-[#0f1113] border border-[rgba(163,147,123,0.08)] p-4">
       <div className="flex items-center gap-2 mb-4">
         <div className="w-5 h-5 ios-skeleton" />
         <span className="text-sm font-mono font-bold text-[#6b6b6b] uppercase tracking-wider">
@@ -699,7 +699,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
   // Determine display state
   const getRiskLevelDisplay = () => {
     if (riskScore < 25) return { level: 'LOW', color: '#2ecc71' };
-    if (riskScore < 50) return { level: 'ELEVATED', color: '#ffb020' };
+    if (riskScore < 50) return { level: 'ELEVATED', color: '#A3937B' };
     if (riskScore < 75) return { level: 'HIGH', color: '#ff6b4a' };
     return { level: 'SYSTEMIC', color: '#ff3b5c' };
   };
@@ -711,7 +711,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
   return (
     <>
       {/* Top Risk Level Bar - Always visible */}
-      <div className="sticky top-0 z-40 bg-[#0b0b0f] border-b border-[rgba(212,175,55,0.1)]">
+      <div className="sticky top-0 z-40 bg-[#0b0b0f] border-b border-[rgba(163,147,123,0.08)]">
         {/* Animated Risk Level Bar */}
         <div className="h-1 w-full risk-level-bar relative overflow-hidden">
           <div 
@@ -731,7 +731,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
                     key={lvl}
                     className={`text-[9px] font-mono px-2 py-0.5 transition-all ${
                       level === lvl 
-                        ? `bg-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#ffb020' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}]/20 text-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#ffb020' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}] border border-current`
+                        ? `bg-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#A3937B' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}]/20 text-[${lvl === 'LOW' ? '#2ecc71' : lvl === 'ELEVATED' ? '#A3937B' : lvl === 'HIGH' ? '#ff6b4a' : '#ff3b5c'}] border border-current`
                         : 'text-[#3a3a3a]'
                     }`}
                     style={level === lvl ? { 
@@ -762,7 +762,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
           {mode !== 'NORMAL' && (
             <div className="flex items-center gap-2">
               <span className={`text-[9px] font-mono px-2 py-1 ${
-                mode === 'ACKNOWLEDGED' ? 'bg-[#ffb020]/10 text-[#ffb020] border border-[#ffb020]/30' :
+                mode === 'ACKNOWLEDGED' ? 'bg-[#A3937B]/10 text-[#A3937B] border border-[#A3937B]/30' :
                 mode === 'SUPPRESSED' ? 'bg-[#6b6b6b]/10 text-[#6b6b6b] border border-[#6b6b6b]/30' :
                 'bg-[#3b82f6]/10 text-[#3b82f6] border border-[#3b82f6]/30'
               }`}>
@@ -790,7 +790,7 @@ const CrisisControlSystem = memo(function CrisisControlSystem({
                 <>
                   <button
                     onClick={() => setMode('ACKNOWLEDGED')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ffb020]/10 border border-[#ffb020]/30 text-[#ffb020] text-[10px] font-mono uppercase hover:bg-[#ffb020]/20 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-[#A3937B]/10 border border-[#A3937B]/30 text-[#A3937B] text-[10px] font-mono uppercase hover:bg-[#A3937B]/20 transition-colors"
                   >
                     <CheckCircle className="w-3 h-3" />
                     Acknowledge

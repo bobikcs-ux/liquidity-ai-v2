@@ -190,7 +190,7 @@ export function getRiskColor(value: number | null): string {
 export function getRiskColorClass(value: number | null): string {
   if (value === null) return 'text-gray-500';
   if (value < 40) return 'text-green-500';
-  if (value < 70) return 'text-yellow-500';
-  if (value < 85) return 'text-orange-500';
+  if (value < 70) return 'text-[#B8A892]';
+  if (value < 85) return 'text-[#A3937B]';
   return 'text-red-500';
 }

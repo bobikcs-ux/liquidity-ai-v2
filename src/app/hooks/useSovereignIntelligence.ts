@@ -252,15 +252,15 @@ export function useSovereignIntelligence() {
 
 export function getSRIColor(score: number): string {
   if (score >= 75) return 'text-red-500';
-  if (score >= 55) return 'text-amber-500';
-  if (score >= 35) return 'text-yellow-400';
+  if (score >= 55) return 'text-[#A3937B]';
+  if (score >= 35) return 'text-[#B8A892]';
   return 'text-green-400';
 }
 
 export function getSRIBgColor(score: number): string {
   if (score >= 75) return 'bg-red-500/20';
-  if (score >= 55) return 'bg-amber-500/20';
-  if (score >= 35) return 'bg-yellow-500/20';
+  if (score >= 55) return 'bg-[#A3937B]/20';
+  if (score >= 35) return 'bg-[#B8A892]/20';
   return 'bg-green-500/20';
 }
 
@@ -268,7 +268,7 @@ export function getAlertLevelColor(level: string): string {
   switch (level) {
     case 'BLACK': return 'bg-black text-red-500 border-red-500';
     case 'RED': return 'bg-red-950 text-red-400 border-red-600';
-    case 'AMBER': return 'bg-amber-950 text-amber-400 border-amber-600';
+    case 'AMBER': return 'bg-[#A3937B]/20 text-[#A3937B] border-[#A3937B]';
     default: return 'bg-green-950 text-green-400 border-green-600';
   }
 }
@@ -276,8 +276,8 @@ export function getAlertLevelColor(level: string): string {
 export function getRegimeColor(regime: string): string {
   switch (regime) {
     case 'CRISIS': return 'text-red-500';
-    case 'STRESS': return 'text-amber-500';
-    case 'CONTRACTION': return 'text-yellow-400';
+    case 'STRESS': return 'text-[#A3937B]';
+    case 'CONTRACTION': return 'text-[#B8A892]';
     default: return 'text-green-400';
   }
 }

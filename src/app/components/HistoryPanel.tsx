@@ -119,14 +119,14 @@ export default function HistoryPanel() {
                 <span className={`tabular-nums ${isDark ? 'text-green-400' : isHybrid ? 'text-green-300' : 'text-green-700'}`}>
                   BTC: ${Number(report.btc_price).toLocaleString()}
                 </span>
-                <span className={`tabular-nums ${isDark ? 'text-yellow-500' : isHybrid ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                <span className={`tabular-nums ${isDark ? 'text-[#B8A892]' : isHybrid ? 'text-[#A3937B]' : 'text-[#8B7D69]'}`}>
                   FEAR: {report.fear_greed_value}
                 </span>
                 <span className={`font-bold text-right tabular-nums ${
                   survivalScore >= 70 
                     ? (isDark ? 'text-green-400' : isHybrid ? 'text-green-300' : 'text-green-600')
                     : survivalScore >= 50 
-                    ? (isDark ? 'text-yellow-500' : isHybrid ? 'text-yellow-400' : 'text-yellow-600')
+                    ? (isDark ? 'text-[#B8A892]' : isHybrid ? 'text-[#A3937B]' : 'text-[#8B7D69]')
                     : (isDark ? 'text-red-500' : isHybrid ? 'text-red-400' : 'text-red-600')
                 }`}>
                   SURVIVAL: {survivalScore}%

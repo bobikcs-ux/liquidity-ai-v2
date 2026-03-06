@@ -7,9 +7,7 @@ import { ErrorBoundaryWrapper } from '../components/ErrorBoundary';
 export function EnergyFinance() {
   return (
     <ErrorBoundaryWrapper componentName="EnergyFinanceDashboard">
-      <div className="h-[calc(100vh-200px)] min-h-[600px]">
-        <EnergyFinanceDashboard />
-      </div>
+      <EnergyFinanceDashboard />
     </ErrorBoundaryWrapper>
   );
 }

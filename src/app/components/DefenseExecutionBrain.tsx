@@ -199,8 +199,8 @@ function DefenseGauge({ score }: { score: number }) {
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`text-3xl font-bold font-mono tabular-nums ${
           score > 0.7 ? 'text-red-400' :
-          score > 0.5 ? 'text-amber-400' :
-          score > 0.3 ? 'text-yellow-400' : 'text-green-400'
+          score > 0.5 ? 'text-[#A3937B]' :
+          score > 0.3 ? 'text-[#B8A892]' : 'text-green-400'
         }`}>
           {(score * 100).toFixed(0)}
         </span>
