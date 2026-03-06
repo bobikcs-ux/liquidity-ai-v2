@@ -11,6 +11,7 @@ import { CapitalSurvival } from "./pages/CapitalSurvival";
 import { AGITerminal } from "./pages/AGITerminal";
 import { EnergyFinance } from "./pages/EnergyFinance";
 import { Sovereign } from "./pages/Sovereign";
+import { Citadel } from "./pages/Citadel";
 
 export const router = createBrowserRouter([
   {
@@ -64,6 +65,10 @@ export const router = createBrowserRouter([
       {
         path: "sovereign",
         element: <Sovereign />,
+      },
+      {
+        path: "citadel",
+        element: <Citadel />,
       },
     ],
   },

@@ -18,7 +18,8 @@ import {
   Crown,
   Cpu,
   X,
-  MoreHorizontal
+  MoreHorizontal,
+  Activity
 } from 'lucide-react';
 import {
   Drawer,
@@ -40,6 +41,7 @@ const navItems = [
   { path: '/agi-terminal', label: 'AGI Terminal', icon: Cpu },
   { path: '/intelligence', label: 'Intelligence', icon: Brain },
   { path: '/sovereign', label: 'Sovereign', icon: Crown },
+  { path: '/citadel', label: 'Citadel', icon: Activity },
   { path: '/capital-survival', label: 'Capital AI', icon: Shield },
   { path: '/stress-lab', label: 'Stress Lab', icon: FlaskConical },
   { path: '/black-swan', label: 'Black Swan', icon: AlertTriangle },
