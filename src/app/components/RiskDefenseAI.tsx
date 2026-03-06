@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shield, AlertTriangle, TrendingDown, Zap, Activity, Target } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
-import { IntelligenceGuard } from './IntelligenceGuard';
+import { PaywallOverlay } from './PaywallOverlay';
 import { useSubscription } from '../context/SubscriptionContext';
 
 interface DefenseAction {
@@ -362,15 +362,9 @@ function RiskDefenseAICore() {
 export function RiskDefenseAI() {
   const { subscription } = useSubscription();
   
-  // If not paid, show the guarded (blurred) version with paywall
-  if (!subscription.isPaid) {
-    return (
-      <IntelligenceGuard feature="deepRisk">
-        <RiskDefenseAICore />
-      </IntelligenceGuard>
-    );
-  }
-  
-  // Paid users get direct access
-  return <RiskDefenseAICore />;
+  return (
+    <PaywallOverlay show={!subscription.isPaid}>
+      <RiskDefenseAICore />
+    </PaywallOverlay>
+  );
 }

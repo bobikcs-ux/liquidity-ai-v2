@@ -57,6 +57,8 @@ import {
   formatLargeNumber,
   formatPercentChange,
 } from '../services/energyFinanceService';
+import { PaywallOverlay } from './PaywallOverlay';
+import { useSubscription } from '../context/SubscriptionContext';
 
 // =============================================================================
 // INSTITUTIONAL DESIGN TOKENS
@@ -427,7 +429,13 @@ const ShippingFlowPanel = memo(function ShippingFlowPanel({
                 <div className="text-xs font-mono" style={{ color: DESIGN.text.muted }}>Daily Flow</div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-mono tabular-nums" style={{ color: DESIGN.text.secondary }}>
+                <div 
+                  className="text-xs font-mono tabular-nums"
+                  style={{ 
+                    filter: 'blur(6px)',
+                    color: DESIGN.text.secondary 
+                  }}
+                >
                   ${(point.tankerRate / 1000).toFixed(1)}k
                 </div>
                 <div className="text-xs font-mono" style={{ color: DESIGN.text.muted }}>VLCC Rate</div>
@@ -435,7 +443,10 @@ const ShippingFlowPanel = memo(function ShippingFlowPanel({
               <div className="text-right">
                 <div 
                   className="text-xs font-mono tabular-nums"
-                  style={{ color: point.acledRisk > 0.5 ? DESIGN.status.crisis : point.acledRisk > 0.3 ? DESIGN.status.warning : DESIGN.status.success }}
+                  style={{ 
+                    color: point.acledRisk > 0.5 ? DESIGN.status.crisis : point.acledRisk > 0.3 ? DESIGN.status.warning : DESIGN.status.success,
+                    filter: 'blur(6px)',
+                  }}
                 >
                   {(point.acledRisk * 100).toFixed(0)}%
                 </div>
@@ -543,7 +554,7 @@ const PetrodollarIndex = memo(function PetrodollarIndex() {
               </span>
               {comp.unit && <span className="text-xs font-mono mb-0.5" style={{ color: DESIGN.text.muted }}>{comp.unit}</span>}
             </div>
-            <div className="text-xs font-mono mt-1" style={{ color: DESIGN.accent.goldSoft }}>
+            <div className="text-xs font-mono mt-1" style={{ color: DESIGN.accent.goldSoft, filter: 'blur(4px)' }}>
               Weight: {comp.weight}%
             </div>
           </div>
@@ -799,7 +810,9 @@ export function EnergyFinanceDashboard() {
           icon={Anchor}
           isLoading={isLoading}
         >
-          <ShippingFlowPanel data={energyData} />
+          <PaywallOverlay show={!useSubscription().subscription.isPaid}>
+            <ShippingFlowPanel data={energyData} />
+          </PaywallOverlay>
         </InstitutionalPanel>
 
         {/* Section 4: Petrodollar Index */}
@@ -809,7 +822,9 @@ export function EnergyFinanceDashboard() {
           icon={DollarSign}
           isLoading={isLoading}
         >
-          <PetrodollarIndex />
+          <PaywallOverlay show={!useSubscription().subscription.isPaid}>
+            <PetrodollarIndex />
+          </PaywallOverlay>
         </InstitutionalPanel>
 
       </div>
