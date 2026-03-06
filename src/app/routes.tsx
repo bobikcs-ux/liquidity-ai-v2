@@ -9,6 +9,7 @@ import { Profile } from "./pages/Profile";
 import { BlackSwanTerminal } from "./pages/BlackSwanTerminal";
 import { CapitalSurvival } from "./pages/CapitalSurvival";
 import { AGITerminal } from "./pages/AGITerminal";
+import { EnergyFinance } from "./pages/EnergyFinance";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         element: <Profile />,
+      },
+      {
+        path: "energy-finance",
+        element: <EnergyFinance />,
       },
     ],
   },

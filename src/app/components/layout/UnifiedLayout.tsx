@@ -42,6 +42,7 @@ const navItems = [
   { path: '/capital-survival', label: 'Capital AI', icon: Shield },
   { path: '/stress-lab', label: 'Stress Lab', icon: FlaskConical },
   { path: '/black-swan', label: 'Black Swan', icon: AlertTriangle },
+  { path: '/energy-finance', label: 'Energy', icon: Zap },
   { path: '/reports', label: 'Reports', icon: FileText },
   { path: '/profile', label: 'Profile', icon: User },
 ];
