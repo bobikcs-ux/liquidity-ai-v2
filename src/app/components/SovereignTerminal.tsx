@@ -24,6 +24,7 @@ import {
   Radio,
   Loader2,
   Globe,
+  X,
 } from 'lucide-react';
 import { useSovereignIntelligence, getSRIColor, getAlertLevelColor, getRegimeColor } from '../hooks/useSovereignIntelligence';
 import type { SovereignView, SovereignRiskSignal } from '../types/sovereign';

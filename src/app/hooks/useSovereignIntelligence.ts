@@ -183,32 +183,38 @@ export function useSovereignIntelligence() {
     // Set up polling interval (every 30 seconds)
     const pollInterval = setInterval(fetchSovereignData, 30000);
 
-    // Set up Supabase realtime subscription for signals
-    const signalsChannel = supabase
-      .channel('sovereign_signals')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'sovereign_risk_signals',
-        },
-        (payload) => {
-          if (isMounted.current) {
-            setState(prev => ({
-              ...prev,
-              recentSignals: [payload.new as SovereignRiskSignal, ...prev.recentSignals.slice(0, 9)],
-              lastUpdate: new Date().toISOString(),
-            }));
+    // Set up Supabase realtime subscription for signals (only if supabase is available)
+    let signalsChannel: ReturnType<typeof supabase.channel> | null = null;
+    
+    if (supabase) {
+      signalsChannel = supabase
+        .channel('sovereign_signals')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'sovereign_risk_signals',
+          },
+          (payload) => {
+            if (isMounted.current) {
+              setState(prev => ({
+                ...prev,
+                recentSignals: [payload.new as SovereignRiskSignal, ...prev.recentSignals.slice(0, 9)],
+                lastUpdate: new Date().toISOString(),
+              }));
+            }
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe();
+    }
 
     return () => {
       isMounted.current = false;
       clearInterval(pollInterval);
-      signalsChannel.unsubscribe();
+      if (signalsChannel) {
+        signalsChannel.unsubscribe();
+      }
     };
   }, [fetchSovereignData]);
 
