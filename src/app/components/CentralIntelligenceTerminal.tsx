@@ -8,25 +8,26 @@ export function CentralIntelligenceTerminal() {
   const { logs, isLoading, refresh } = useIntelligenceLogs();
   const [selectedImpact, setSelectedImpact] = useState<string | null>(null);
 
-  // Calculate statistics
-  const criticalCount = logs.filter(l => l.impact === 'CRITICAL').length;
-  const highCount = logs.filter(l => l.impact === 'HIGH').length;
+  // Maps intel_feed.severity → display color
+  const severityColor = (s: string) => {
+    switch (s?.toUpperCase()) {
+      case 'CRITICAL': return '#ff3b5c';
+      case 'HIGH':     return '#ffb020';
+      case 'MEDIUM':   return '#ffa500';
+      default:         return '#2ecc71';
+    }
+  };
+
+  // Statistics derived from intel_feed.severity
+  const criticalCount = logs.filter(l => l.severity?.toUpperCase() === 'CRITICAL').length;
+  const highCount     = logs.filter(l => l.severity?.toUpperCase() === 'HIGH').length;
   const avgConfidence = logs.length > 0
-    ? (logs.reduce((sum, l) => sum + l.confidence, 0) / logs.length)
+    ? logs.reduce((sum, l) => sum + (l.confidence ?? 0), 0) / logs.length
     : 0;
 
   const filteredLogs = selectedImpact
-    ? logs.filter(l => l.impact === selectedImpact)
+    ? logs.filter(l => l.severity?.toUpperCase() === selectedImpact)
     : logs;
-
-  const impactColor = (impact: string) => {
-    switch (impact) {
-      case 'CRITICAL': return '#ff3b5c';
-      case 'HIGH': return '#ffb020';
-      case 'MEDIUM': return '#ffa500';
-      default: return '#2ecc71';
-    }
-  };
 
   return (
     <div
@@ -139,23 +140,23 @@ export function CentralIntelligenceTerminal() {
         </div>
       </div>
 
-      {/* Filter Buttons */}
+      {/* Filter Buttons — keyed on severity */}
       <div className="flex flex-wrap gap-2 p-4 border-b" style={{ borderColor: 'rgba(212, 175, 55, 0.1)' }}>
-        {['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map(impact => {
-          const count = logs.filter(l => l.impact === impact).length;
-          const isSelected = selectedImpact === impact;
+        {(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] as const).map(sev => {
+          const count = logs.filter(l => l.severity?.toUpperCase() === sev).length;
+          const isSelected = selectedImpact === sev;
           return (
             <button
-              key={impact}
-              onClick={() => setSelectedImpact(isSelected ? null : impact)}
+              key={sev}
+              onClick={() => setSelectedImpact(isSelected ? null : sev)}
               className="px-3 py-1.5 rounded text-xs font-semibold uppercase transition-all"
               style={{
-                color: isSelected ? '#0b0b0f' : impactColor(impact),
-                background: isSelected ? impactColor(impact) : `${impactColor(impact)}15`,
-                border: `1px solid ${isSelected ? impactColor(impact) : impactColor(impact)}40`,
+                color:      isSelected ? '#0b0b0f' : severityColor(sev),
+                background: isSelected ? severityColor(sev) : `${severityColor(sev)}15`,
+                border:     `1px solid ${isSelected ? severityColor(sev) : severityColor(sev)}40`,
               }}
             >
-              {impact} ({count})
+              {sev} ({count})
             </button>
           );
         })}
@@ -218,33 +219,38 @@ export function CentralIntelligenceTerminal() {
                     background: idx % 2 === 0 ? 'rgba(212, 175, 55, 0.02)' : 'transparent',
                   }}
                 >
+                  {/* Signal title — intel_feed.title */}
                   <td className="p-4" style={{ color: '#f5f5f5' }}>
-                    <div className="font-semibold">{log.signal}</div>
-                    {log.region && (
-                      <div style={{ color: '#a1a1aa', marginTop: '0.25rem' }}>
-                        Region: {log.region}
+                    <div className="font-semibold">{log.title}</div>
+                    {log.content && (
+                      <div className="line-clamp-2" style={{ color: '#a1a1aa', marginTop: '0.25rem', fontSize: '0.7rem' }}>
+                        {log.content}
                       </div>
                     )}
                   </td>
+                  {/* Severity — intel_feed.severity */}
                   <td className="p-4">
                     <span
                       className="px-2 py-1 rounded text-[11px] font-bold uppercase"
                       style={{
                         color: '#0b0b0f',
-                        background: impactColor(log.impact),
+                        background: severityColor(log.severity),
                       }}
                     >
-                      {log.impact}
+                      {log.severity ?? 'INFO'}
                     </span>
                   </td>
+                  {/* Confidence — derived client-side */}
                   <td className="p-4" style={{ color: '#d4af37', fontWeight: 'bold' }}>
-                    {log.confidence.toFixed(1)}%
+                    {(log.confidence ?? 0)}%
                   </td>
+                  {/* Source — derived client-side */}
                   <td className="p-4" style={{ color: '#a1a1aa' }}>
-                    {log.source}
+                    {log.source ?? 'AURELIUS AI CORE'}
                   </td>
+                  {/* Timestamp — intel_feed.created_at — 24h */}
                   <td className="p-4" style={{ color: '#a1a1aa' }}>
-                    {new Date(log.timestamp).toLocaleString()}
+                    {new Date(log.created_at).toLocaleString('en-GB', { hour12: false })}
                   </td>
                 </tr>
               ))

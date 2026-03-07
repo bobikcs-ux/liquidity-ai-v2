@@ -10,17 +10,14 @@ export function LiveAlphaTicker() {
   // Get the most recent 5 signals for the ticker
   const tickerSignals = logs.slice(0, 5);
 
-  const impactColor = (impact: string) => {
-    switch (impact) {
+  // Maps intel_feed.severity → display color
+  const severityColor = (s: string) => {
+    switch (s?.toUpperCase()) {
       case 'CRITICAL': return '#ff3b5c';
-      case 'HIGH': return '#ffb020';
-      case 'MEDIUM': return '#ffa500';
-      default: return '#2ecc71';
+      case 'HIGH':     return '#ffb020';
+      case 'MEDIUM':   return '#ffa500';
+      default:         return '#2ecc71';
     }
-  };
-
-  const confidenceBar = (conf: number) => {
-    return Math.min(100, Math.max(0, conf));
   };
 
   return (
@@ -39,7 +36,7 @@ export function LiveAlphaTicker() {
           Live Alpha Ticker
         </h3>
         <span className="text-xs ml-auto" style={{ color: '#a1a1aa' }}>
-          {isLoading ? 'Loading...' : `${tickerSignals.length} signals`}
+          {isLoading ? 'Syncing...' : `${tickerSignals.length} signals`}
         </span>
       </div>
 
@@ -56,15 +53,15 @@ export function LiveAlphaTicker() {
               className="flex items-start gap-3 p-3 rounded"
               style={{
                 background: 'rgba(18, 18, 24, 0.6)',
-                border: `1px solid ${impactColor(log.impact)}20`,
+                border: `1px solid ${severityColor(log.severity)}20`,
               }}
             >
-              {/* Impact Badge */}
+              {/* Severity Badge */}
               <div
                 className="flex-shrink-0 w-8 h-8 rounded flex items-center justify-center mt-0.5"
                 style={{
-                  background: `${impactColor(log.impact)}20`,
-                  color: impactColor(log.impact),
+                  background: `${severityColor(log.severity)}20`,
+                  color: severityColor(log.severity),
                 }}
               >
                 <TrendingUp className="w-4 h-4" />
@@ -73,64 +70,57 @@ export function LiveAlphaTicker() {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span
-                    className="text-xs font-bold uppercase"
-                    style={{ color: impactColor(log.impact) }}
-                  >
-                    {log.impact}
+                  <span className="text-xs font-bold uppercase" style={{ color: severityColor(log.severity) }}>
+                    {log.severity ?? 'INFO'}
                   </span>
                   <span style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>
-                    {log.source}
+                    {log.source ?? 'AURELIUS AI CORE'}
                   </span>
-                  {log.region && (
-                    <span
-                      style={{
-                        color: '#d4af37',
-                        fontSize: '0.75rem',
-                        background: 'rgba(212, 175, 55, 0.1)',
-                        padding: '0 4px',
-                        borderRadius: '3px',
-                      }}
-                    >
-                      {log.region}
-                    </span>
-                  )}
+                  <span
+                    className="text-[10px] px-1 rounded"
+                    style={{ background: 'rgba(212,175,55,0.12)', color: '#d4af37' }}
+                  >
+                    {log.type}
+                  </span>
                 </div>
-                <p style={{ color: '#f5f5f5', fontSize: '0.875rem' }} className="mb-2">
-                  {log.signal}
+
+                {/* Title (intel_feed.title) */}
+                <p className="font-semibold mb-1" style={{ color: '#f5f5f5', fontSize: '0.875rem' }}>
+                  {log.title}
                 </p>
-                {log.details && (
-                  <p style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>
-                    {log.details}
+
+                {/* Content preview */}
+                {log.content && (
+                  <p className="line-clamp-2" style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>
+                    {log.content}
                   </p>
                 )}
 
                 {/* Confidence Bar */}
-                <div className="mt-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <span style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>Confidence</span>
-                    <span style={{ color: '#d4af37', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                      {log.confidence.toFixed(1)}%
-                    </span>
+                {log.confidence != null && (
+                  <div className="mt-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span style={{ color: '#a1a1aa', fontSize: '0.75rem' }}>Confidence</span>
+                      <span style={{ color: '#d4af37', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                        {log.confidence}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(212, 175, 55, 0.1)' }}>
+                      <div
+                        className="h-full transition-all duration-700"
+                        style={{
+                          width: `${Math.min(100, log.confidence)}%`,
+                          background: 'linear-gradient(90deg, #d4af37, #c6a85a)',
+                          boxShadow: '0 0 8px rgba(212, 175, 55, 0.4)',
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div
-                    className="h-1.5 rounded-full overflow-hidden"
-                    style={{ background: 'rgba(212, 175, 55, 0.1)' }}
-                  >
-                    <div
-                      className="h-full transition-all duration-700"
-                      style={{
-                        width: `${confidenceBar(log.confidence)}%`,
-                        background: `linear-gradient(90deg, #d4af37, #c6a85a)`,
-                        boxShadow: '0 0 8px rgba(212, 175, 55, 0.4)',
-                      }}
-                    />
-                  </div>
-                </div>
+                )}
 
-                {/* Timestamp */}
+                {/* Timestamp — 24h format */}
                 <div style={{ color: '#a1a1aa', fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                  {new Date(log.timestamp).toLocaleString()}
+                  {new Date(log.created_at).toLocaleString('en-GB', { hour12: false })}
                 </div>
               </div>
             </div>
