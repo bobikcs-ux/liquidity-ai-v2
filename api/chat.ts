@@ -95,30 +95,30 @@ const TABLE_DATA = {
 };
 
 // System context for Gemini - The Strategist (Bulgarian)
-const SYSTEM_CONTEXT = `Ти си Gemini, Intelligence Core на BOBIKCS TERMINAL. 
+const SYSTEM_CONTEXT = `You are Aurelius Intelligence Core of the BOBIKCS TERMINAL.
 
-ИНСТРУКЦИИ:
-- Отговаряш ВИНАГИ на български език
-- Използваш контекста от Table 6.3 (Shipping), Table 7.6 (Cracks) и Table 8.1 (Tax) за своите анализи
-- Ти си дискретен, остър и стратегически AI
-- Даваш точни числови стойности от таблиците
-- Анализираш корелации между енергийни цени и геополитически риск
-- Използваш професионален, институционален език
-- Форматираш отговорите за терминален дисплей (кратки, базирани на данни)
+INSTRUCTIONS:
+- Respond in English
+- Use context from Table 6.3 (Shipping), Table 7.6 (Crude) and Table 8.1 (Energy) for analysis
+- You are discrete, sharp and strategic AI
+- Provide precise numerical values from tables
+- Analyze correlations between energy prices and geopolitical risk
+- Use professional, institutional language
+- Format responses for terminal display (short, data-driven)
 
-НАЛИЧНИ ДАННИ:
+AVAILABLE DATA:
 1. Table 6.3 (t63): Tanker Rates - VLCC $${TABLE_DATA.t63.data.vlcc.baseRate}/day, Bab el-Mandeb Premium: +${TABLE_DATA.t63.data.vlcc.babElMandebPremium}%
 2. Table 7.6 (t76): WTI $${TABLE_DATA.t76.data.wti.price}/bbl, Brent $${TABLE_DATA.t76.data.brent.price}/bbl, Crack Spread: $${TABLE_DATA.t76.data.crackSpread321.value}/bbl
 3. Table 8.1 (t81): Henry Hub $${TABLE_DATA.t81.data.henryHub.price}/MMBtu, TTF €${TABLE_DATA.t81.data.ttf.price}/MWh
 4. Table 9.4 (t94): Shipping Flow - Hormuz ${TABLE_DATA.t94.data.hormuz.flow} mb/d, Bab el-Mandeb ${TABLE_DATA.t94.data.babElMandeb.flow} mb/d
 5. Table 9.5 (t95): Petrodollar Index: ${TABLE_DATA.t95.data.indexValue}
 
-US Inventory: ${(TABLE_DATA.t76.data.inventory.us / 1000000).toFixed(1)}M барела
+US Inventory: ${(TABLE_DATA.t76.data.inventory.us / 1000000).toFixed(1)}M barrels
 OPEC Supply: ${TABLE_DATA.t76.data.opecSupply.value} mb/d
 
-При поздрав отговори кратко и професионално. При въпроси за данни, цитирай конкретни таблици.
+When greeted, respond briefly and professionally. When asked for data, cite specific tables.
 
-СТАТУС: ОНЛАЙН | Данни: LIVE | Режим: СТРАТЕГ`;
+STATUS: ONLINE | Data: LIVE | Mode: STRATEGIST`;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS headers
@@ -141,7 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (systemInit === 'SYSTEM_INIT') {
       return res.status(200).json({
         status: 'ACTIVE',
-        response: 'SOVEREIGN INTELLIGENCE ONLINE. All data feeds connected. Tables t63, t76, t81, t94, t95 loaded. Ready for queries.',
+        response: 'AURELIUS INTELLIGENCE ONLINE. All data feeds connected. Tables t63, t76, t81, t94, t95 loaded. Ready for queries.',
         timestamp: new Date().toISOString(),
         tables: Object.keys(TABLE_DATA)
       });
@@ -161,7 +161,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         status: 'FALLBACK',
         response: generateFallbackResponse(message),
         source: 'LOCAL_TABLE_DATA',
-        note: 'Няма API ключ. Използвам локални данни.',
+        note: 'No API key available. Using local table data.',
         timestamp: new Date().toISOString()
       });
     }
@@ -255,24 +255,24 @@ function generateFallbackResponse(query: string): string {
   }
   
   if (q.includes('status') || q.includes('hi') || q.includes('hello')) {
-    return `SOVEREIGN INTELLIGENCE ACTIVE | Tables Loaded: t63, t76, t81, t94, t95 | WTI: $${TABLE_DATA.t76.data.wti.price} | Bab el-Mandeb Risk: ${(TABLE_DATA.t63.data.acledCorrelation.babElMandeb * 100).toFixed(0)}%`;
+    return `AURELIUS INTELLIGENCE ACTIVE | Tables Loaded: t63, t76, t81, t94, t95 | WTI: $${TABLE_DATA.t76.data.wti.price} | Bab el-Mandeb Risk: ${(TABLE_DATA.t63.data.acledCorrelation.babElMandeb * 100).toFixed(0)}%`;
   }
   
   // Strategic fallback - provide actual analysis instead of generic message
-  const overview = `SOVEREIGN MARKET BRIEF:
+  const overview = `AURELIUS MARKET BRIEF:
 
 WTI: $${TABLE_DATA.t76.data.wti.price}/bbl (${TABLE_DATA.t76.data.wti.change24h > 0 ? '+' : ''}${TABLE_DATA.t76.data.wti.change24h}%)
 Brent: $${TABLE_DATA.t76.data.brent.price}/bbl
 3:2:1 Crack: $${TABLE_DATA.t76.data.crackSpread321.value}/bbl
 
-РИСК ИНДИКАТОРИ:
-• Bab el-Mandeb: ${(TABLE_DATA.t63.data.acledCorrelation.babElMandeb * 100).toFixed(0)}% ACLED корелация
+RISK INDICATORS:
+• Bab el-Mandeb: ${(TABLE_DATA.t63.data.acledCorrelation.babElMandeb * 100).toFixed(0)}% ACLED correlation
 • VLCC Premium: +${TABLE_DATA.t63.data.vlcc.babElMandebPremium}%
 • Hormuz Flow: ${TABLE_DATA.t94.data.hormuz.flow} mb/d
 
 US Inventory: ${(TABLE_DATA.t76.data.inventory.us / 1000000).toFixed(1)}M bbl
 OPEC Supply: ${TABLE_DATA.t76.data.opecSupply.value} mb/d
 
-Задайте конкретен въпрос за детайлен анализ.`;
+Ask a specific question for detailed analysis.`;
   return overview;
 }

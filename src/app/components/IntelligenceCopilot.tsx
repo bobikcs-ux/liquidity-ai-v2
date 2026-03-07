@@ -71,7 +71,7 @@ function IntelligenceCopilotCore() {
           setSystemStatus('ACTIVE');
           setMessages([{
             role: 'system',
-            content: `GEMINI INTELLIGENCE CORE ОНЛАЙН\n\nТаблици заредени: t63, t76, t81, t94, t95\nРежим: СТРАТЕГ\n\nГотов за въпроси.`,
+            content: `AURELIUS INTELLIGENCE CORE: ONLINE\n\nTables Loaded: t63, t76, t81, t94, t95\nMode: STRATEGIST\n\nSystem Ready for Query. Standing by.`,
             timestamp: new Date(),
             status: 'success'
           }]);
@@ -193,7 +193,7 @@ function IntelligenceCopilotCore() {
             <div className="flex items-center gap-2">
               {systemStatus === 'ACTIVE' && (
                 <span className="flex items-center gap-1 text-xs font-mono" style={{ color: DESIGN.matrixGreen }}>
-                  <CheckCircle2 className="w-3 h-3" /> ОНЛАЙН
+                  <CheckCircle2 className="w-3 h-3" /> ONLINE
                 </span>
               )}
               {systemStatus === 'FAIL' && (
@@ -276,7 +276,7 @@ function IntelligenceCopilotCore() {
                       className="text-xs font-mono uppercase tracking-wider"
                       style={{ color: msg.status === 'error' ? '#ef4444' : DESIGN.sovereignSand }}
                     >
-                      {msg.role === 'system' ? 'СИСТЕМА' : 'GEMINI'}
+                      {msg.role === 'system' ? 'SYSTEM' : 'AURELIUS'}
                     </span>
                     <span className="text-xs font-mono" style={{ color: DESIGN.textMuted }}>
                       {msg.timestamp.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
