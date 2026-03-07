@@ -9,6 +9,7 @@
  */
 
 import { supabase } from '../lib/supabase';
+import { fetchMacroData, syncFearGreedToMacroCache } from './macroDataService';
 
 // ============================================================================
 // TYPES
@@ -399,27 +400,42 @@ export async function fetchL1Data(): Promise<L1DataStateExtended> {
   };
 
   // Fetch from all sources in parallel
-  const [yieldCurveResult, coinGeckoData, fearGreed, supabaseSnapshot] = await Promise.all([
-    fetchYieldCurveFromFRED(),
+  // macroData handles DGS10 + WM2NS with its own FRED->Supabase->memory->seed chain
+  const [macroData, coinGeckoData, fearGreed, supabaseSnapshot] = await Promise.all([
+    fetchMacroData(),
     fetchBTCDataFromCoinGecko(),
     fetchFearGreedIndex(),
     fetchLastValidFromSupabase(),
   ]);
-  
-  // Track if FRED returned stale data
-  const yieldCurve = yieldCurveResult.value;
-  if (yieldCurveResult.isStale) {
-    staleFeeds.push('FRED');
+
+  // Sync Fear/Greed into macro cache after fetching it
+  if (fearGreed !== null) {
+    syncFearGreedToMacroCache(fearGreed);
   }
 
-  // Process Yield Curve with STALE_DATA tracking
+  // Derive yieldCurve from macroData.dgs10 (T10Y2Y fallback to DGS10)
+  const yieldCurve = macroData.dgs10.value;
+  const yieldCurveResult = {
+    value: macroData.dgs10.status !== 'FALLBACK' ? yieldCurve : null,
+    isStale: macroData.dgs10.isStale || macroData.dgs10.status === 'FALLBACK',
+  };
+
+  // Track FRED feed status from macroData
+  if (macroData.dgs10.status === 'LIVE') {
+    feedStatus.fred = 'LIVE';
+  } else if (macroData.dgs10.status === 'CACHED') {
+    feedStatus.fred = 'RECONNECTING';
+  } else {
+    feedStatus.fred = 'OFFLINE';
+  }
+  
+  // Process Yield Curve with STALE_DATA tracking — uses macroData.dgs10 already resolved above
   let finalYieldCurve: number | null = null;
   let yieldCurveIsStale = false;
   
-  if (yieldCurve !== null) {
-    finalYieldCurve = yieldCurve;
-    feedStatus.fred = 'LIVE';
-    valueCache.yieldCurve = { value: yieldCurve, timestamp: new Date(), source: 'api' };
+  if (yieldCurveResult.value !== null) {
+    finalYieldCurve = yieldCurveResult.value;
+    valueCache.yieldCurve = { value: yieldCurveResult.value, timestamp: new Date(), source: 'api' };
   } else if (supabaseSnapshot?.yield_spread !== null && supabaseSnapshot?.yield_spread !== undefined) {
     finalYieldCurve = supabaseSnapshot.yield_spread;
     feedStatus.fred = 'RECONNECTING';

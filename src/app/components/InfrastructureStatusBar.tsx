@@ -41,6 +41,7 @@ function sanitizeApiKey(raw: string | undefined): string | undefined {
 // Environment variables — sanitized
 const FMP_API_KEY = sanitizeApiKey(import.meta.env.VITE_FMP_API_KEY as string | undefined);
 const EIA_API_KEY = sanitizeApiKey(import.meta.env.VITE_EIA_API_KEY as string | undefined);
+const FRED_API_KEY = sanitizeApiKey(import.meta.env.VITE_FRED_API_KEY as string | undefined);
 
 // Persistent cache for last known good data
 const lastKnownGoodCache = new Map<string, { timestamp: Date; latencyMs: number }>();
@@ -82,6 +83,46 @@ async function probeSource(id: string): Promise<{
         console.log('[v0] FMP probe: Using endpoint manager. Sanitized key length=' + FMP_API_KEY.length);
         break;
         
+      case 'FRED':
+        if (!FRED_API_KEY) {
+          return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FRED_API_KEY not set' };
+        }
+        // Probe DGS10 (10Y Treasury) — lightweight, single observation
+        url = `https://api.stlouisfed.org/fred/series/observations?series_id=DGS10&api_key=${FRED_API_KEY}&file_type=json&limit=1&sort_order=desc`;
+        maskedUrl = url.replace(FRED_API_KEY, maskKey(FRED_API_KEY));
+        break;
+
+      case 'Supabase': {
+        // Probe macro_metrics table directly
+        const sbUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+        const sbKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+        if (!sbUrl || !sbKey) {
+          return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_CREDENTIALS', errorMessage: 'Supabase credentials not set' };
+        }
+        url = `${sbUrl}/rest/v1/macro_metrics?select=symbol&limit=1`;
+        maskedUrl = `${sbUrl}/rest/v1/macro_metrics?select=symbol&limit=1`;
+        // Supabase REST requires apikey header — use fetch with headers below
+        const sbStart = Date.now();
+        try {
+          const sbRes = await fetch(url, {
+            headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` },
+            signal: AbortSignal.timeout(8000),
+          });
+          const sbLatency = Date.now() - sbStart;
+          if (sbRes.ok) {
+            lastKnownGoodCache.set('Supabase', { timestamp: new Date(), latencyMs: sbLatency });
+            return { status: sbLatency > 4000 ? 'DELAYED' : 'ONLINE', latencyMs: sbLatency, probeUrl: maskedUrl };
+          }
+          return { status: 'OFFLINE', latencyMs: sbLatency, errorCode: sbRes.status, probeUrl: maskedUrl, errorMessage: `HTTP ${sbRes.status}` };
+        } catch (err) {
+          const sbLatency = Date.now() - sbStart;
+          const sbCached = lastKnownGoodCache.get('Supabase');
+          return sbCached
+            ? { status: 'CACHED', latencyMs: sbLatency, probeUrl: maskedUrl, errorMessage: 'Network error - using cached' }
+            : { status: 'OFFLINE', latencyMs: sbLatency, probeUrl: maskedUrl, errorMessage: err instanceof Error ? err.message : 'Network error' };
+        }
+      }
+
       case 'DefiLlama':
         // DefiLlama is public, no auth needed
         url = 'https://stablecoins.llama.fi/stablecoins?includePrices=false';
@@ -181,6 +222,8 @@ async function probeSource(id: string): Promise<{
 }
 
 const SOURCES: { id: string; name: string }[] = [
+  { id: 'FRED', name: 'FRED' },
+  { id: 'Supabase', name: 'Supabase' },
   { id: 'FMP', name: 'FMP' },
   { id: 'DefiLlama', name: 'DefiLlama' },
   { id: 'EIA', name: 'EIA' },
