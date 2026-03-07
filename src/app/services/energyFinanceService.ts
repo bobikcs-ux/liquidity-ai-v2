@@ -20,8 +20,10 @@ const DEFILLAMA_STABLECOINS_API = 'https://stablecoins.llama.fi';
 const EIA_API_BASE = 'https://api.eia.gov/v2';
 const FMP_API_BASE = 'https://financialmodelingprep.com/api/v3';
 
-// FMP API key from environment
+// API keys — read once at module level
 const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY as string | undefined;
+// EIA key: falls back to DEMO_KEY but DEMO_KEY has strict rate limits (5 req/s, 1000 req/day)
+const EIA_API_KEY = (import.meta.env.VITE_EIA_API_KEY as string | undefined) || 'DEMO_KEY';
 
 // Cache — 5 min TTL matching global refresh cycle
 const cache = new Map<string, { data: unknown; timestamp: number }>();
@@ -306,12 +308,23 @@ export async function fetchEnergyData(category: EnergyCategory, apiKey?: string)
   const cached = getCached<EnergyData>(cacheKey);
   if (cached) return cached;
 
-  if (!apiKey) return getMockEnergyData(category);
+  // Use caller-provided key, then module-level env key, then DEMO_KEY
+  const resolvedKey = apiKey || EIA_API_KEY;
+  if (!resolvedKey || resolvedKey === 'DEMO_KEY') {
+    // Only use mock data if we truly have no key
+    return getMockEnergyData(category);
+  }
 
   try {
     const endpoint = getEIAEndpoint(category);
-    const response = await fetch(`${EIA_API_BASE}${endpoint}?api_key=${apiKey}&frequency=weekly&data[0]=value&sort[0][column]=period&sort[0][direction]=desc&length=52`);
-    if (!response.ok) throw new Error(`EIA ${category} failed`);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout for EIA
+    const response = await fetch(
+      `${EIA_API_BASE}${endpoint}?api_key=${resolvedKey}&frequency=weekly&data[0]=value&sort[0][column]=period&sort[0][direction]=desc&length=52`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+    if (!response.ok) throw new Error(`EIA ${category} failed: ${response.status}`);
 
     const data = await response.json();
     const series: EIASeriesData[] = data.response?.data || [];
