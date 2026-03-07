@@ -4,6 +4,8 @@ import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { IntelligenceCopilot } from '../components/IntelligenceCopilot';
 import { MarketCharts } from '../components/MarketCharts';
+import { LiveAlphaTicker } from '../components/LiveAlphaTicker';
+import { CentralIntelligenceTerminal } from '../components/CentralIntelligenceTerminal';
 import ErrorBoundary from '../components/ErrorBoundary';
 
 export function Intelligence() {
@@ -37,13 +39,23 @@ export function Intelligence() {
       <div className="mb-8">
         <h1 className={`text-3xl font-bold mb-2 ${
           isDark || isHybrid ? 'text-white' : 'text-gray-900'
-        }`}>
+        }`} style={{ fontFamily: '"JetBrains Mono", monospace' }}>
           Intelligence Terminal
         </h1>
-        <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
+        <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'} style={{ fontFamily: '"JetBrains Mono", monospace' }}>
           Deep analytics layer
         </p>
       </div>
+
+      {/* Live Alpha Ticker */}
+      <ErrorBoundary componentName="LiveAlphaTicker">
+        <LiveAlphaTicker />
+      </ErrorBoundary>
+
+      {/* Central Intelligence Terminal */}
+      <ErrorBoundary componentName="CentralIntelligenceTerminal">
+        <CentralIntelligenceTerminal />
+      </ErrorBoundary>
 
       {/* Market Charts with Error Boundary */}
       <ErrorBoundary componentName="MarketCharts">
