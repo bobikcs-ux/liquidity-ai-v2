@@ -227,15 +227,23 @@ export async function fetchLiveFXData(): Promise<LiveFXData> {
         
         checkFMPLegacyResponse(resText);
 
-    // Dollar strength: average of (USD vs others) — higher = stronger USD
-    const avgChangePct = pairs
-      .filter(p => !p.label.startsWith('USD/EUR'))
-      .reduce((sum, p) => sum + p.changePct, 0) / (pairs.length - 1);
-    const dollarStrengthIndex = Math.min(100, Math.max(0, 50 + avgChangePct * 5));
+        // Dollar strength: average of (USD vs others) — higher = stronger USD
+        const avgChangePct = pairs
+          .filter(p => !p.label.startsWith('USD/EUR'))
+          .reduce((sum, p) => sum + p.changePct, 0) / (pairs.length - 1);
+        const dollarStrengthIndex = Math.min(100, Math.max(0, 50 + avgChangePct * 5));
 
-    const result: LiveFXData = { pairs, dollarStrengthIndex, lastUpdated: new Date(), source: 'FMP' };
-    setCache(cacheKey, result);
-    return result;
+        const result: LiveFXData = { pairs, dollarStrengthIndex, lastUpdated: new Date(), source: 'FMP' };
+        setCache(cacheKey, result);
+        return result;
+      } catch {
+        // JSON parse failed
+        throw new Error('FMP FX parse error');
+      }
+    }
+    
+    // Non-200 response
+    throw new Error(`FMP FX failed: ${res.status}`);
   } catch {
     return getFXFallback('FALLBACK');
   }
