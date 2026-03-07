@@ -74,13 +74,11 @@ async function probeSource(id: string): Promise<{
         // FMP requires API key - if missing, report as CACHED (using fallback data)
         const rawFmpKey = import.meta.env.VITE_FMP_API_KEY as string | undefined;
         if (!FMP_API_KEY) {
-          console.log('[v0] FMP probe: VITE_FMP_API_KEY not found or invalid. Raw:', rawFmpKey ? `length=${rawFmpKey.length}` : 'undefined');
           return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FMP_API_KEY not set or invalid' };
         }
-        // Use /stable/ endpoint with search-symbol (2026 FMP architecture)
-        url = getFMPProbeUrl(FMP_API_KEY);
+        // Probe WTI futures — same ticker used by fetchOilSpotPrices
+        url = `https://financialmodelingprep.com/api/v3/quote/CL=F?apikey=${FMP_API_KEY}`;
         maskedUrl = url.replace(FMP_API_KEY, maskKey(FMP_API_KEY));
-        console.log('[v0] FMP probe: Using endpoint manager. Sanitized key length=' + FMP_API_KEY.length);
         break;
         
       case 'FRED':
@@ -178,18 +176,13 @@ async function probeSource(id: string): Promise<{
     clearTimeout(timeout);
     const latencyMs = Date.now() - start;
     
-    // Debug log for FMP specifically
-    if (id === 'FMP') {
-      console.log(`[v0] FMP probe response: status=${res.status}, ok=${res.ok}, latency=${latencyMs}ms`);
-      
-      // Check for "Legacy Endpoint" message and auto-switch
-      if (res.status === 200) {
-        try {
-          const text = await res.text();
-          checkForLegacyEndpoint(text);
-        } catch {
-          // Ignore parse errors
-        }
+    // Check for "Legacy Endpoint" message (FMP) and auto-switch
+    if (id === 'FMP' && res.status === 200) {
+      try {
+        const text = await res.text();
+        checkForLegacyEndpoint(text);
+      } catch {
+        // Ignore parse errors
       }
     }
     

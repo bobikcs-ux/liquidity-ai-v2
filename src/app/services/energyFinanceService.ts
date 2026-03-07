@@ -94,16 +94,13 @@ export async function fetchOilSpotPrices(): Promise<OilSpotPrices> {
     return getOilFallback('FALLBACK');
   }
 
-  console.log('[v0] fetchOilSpotPrices: Raw key length=' + (rawKey?.length || 0) + ', Sanitized key length=' + FMP_API_KEY.length);
-
   try {
-    // FMP /stable/ endpoint for commodity quotes — CLUSD = WTI Crude, COLUSD = Brent
+    // Use standard /api/v3 quote endpoint with futures ticker symbols
+    // CL=F = WTI Crude Futures, BZ=F = Brent Crude Futures
     const [wtiRes, brentRes] = await Promise.all([
-      fetch(`${getFMPBaseUrl()}/quote/CLUSD?apikey=${FMP_API_KEY}`),
-      fetch(`${getFMPBaseUrl()}/quote/COLUSD?apikey=${FMP_API_KEY}`),
+      fetch(`https://financialmodelingprep.com/api/v3/quote/CL=F?apikey=${FMP_API_KEY}`),
+      fetch(`https://financialmodelingprep.com/api/v3/quote/BZ=F?apikey=${FMP_API_KEY}`),
     ]);
-
-    console.log(`[v0] FMP oil response: WTI=${wtiRes.status}, Brent=${brentRes.status}`);
 
     // Check responses for "Legacy Endpoint" warning and auto-switch if needed
     if (wtiRes.status === 200) {
