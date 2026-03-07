@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useCallback } from 'react';
 
 const GLOBAL_REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes

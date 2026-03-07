@@ -92,3 +92,4 @@ export function useIntelligenceLogs(autoRefresh = true) {
   };
 }
 
+export default useIntelligenceLogs;
