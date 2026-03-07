@@ -11,6 +11,8 @@ interface DataSourceStatus {
   lastChecked: Date;
   lastKnownGood?: Date;
   errorCode?: number;
+  probeUrl?: string; // Masked URL for debugging
+  errorMessage?: string;
 }
 
 interface InfrastructureStatusBarProps {
@@ -24,10 +26,19 @@ const EIA_API_KEY = import.meta.env.VITE_EIA_API_KEY as string | undefined;
 // Persistent cache for last known good data
 const lastKnownGoodCache = new Map<string, { timestamp: Date; latencyMs: number }>();
 
+// Mask API key for debug display: "sk-abc123xyz" -> "sk-ab...yz"
+function maskKey(key: string | undefined): string {
+  if (!key) return '[MISSING]';
+  if (key.length <= 8) return key.slice(0, 2) + '...' + key.slice(-2);
+  return key.slice(0, 4) + '...' + key.slice(-4);
+}
+
 async function probeSource(id: string): Promise<{ 
   status: 'ONLINE' | 'DELAYED' | 'OFFLINE' | 'CACHED'; 
   latencyMs: number;
   errorCode?: number;
+  probeUrl?: string;
+  errorMessage?: string;
 }> {
   const start = Date.now();
   
@@ -36,43 +47,46 @@ async function probeSource(id: string): Promise<{
   
   try {
     let url = '';
-    let fetchOptions: RequestInit = {};
+    let maskedUrl = '';
     
     switch (id) {
       case 'FMP':
         // FMP requires API key - if missing, report as CACHED (using fallback data)
         if (!FMP_API_KEY) {
-          return { status: 'CACHED', latencyMs: 0 };
+          console.log('[v0] FMP probe: VITE_FMP_API_KEY not found in environment');
+          return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FMP_API_KEY not set' };
         }
-        url = `https://financialmodelingprep.com/api/v3/quote/AAPL?apikey=${FMP_API_KEY}`;
+        // Use CLUSD (WTI Crude) - same endpoint as energyFinanceService
+        url = `https://financialmodelingprep.com/api/v3/quote/CLUSD?apikey=${FMP_API_KEY}`;
+        maskedUrl = `https://financialmodelingprep.com/api/v3/quote/CLUSD?apikey=${maskKey(FMP_API_KEY)}`;
+        console.log('[v0] FMP probe: Key exists, length=' + FMP_API_KEY.length + ', masked=' + maskKey(FMP_API_KEY));
         break;
         
       case 'DefiLlama':
         // DefiLlama is public, no auth needed
         url = 'https://stablecoins.llama.fi/stablecoins?includePrices=false';
+        maskedUrl = url;
         break;
         
       case 'EIA':
         // Use actual EIA API key if available, otherwise use demo key with longer timeout
         const eiaKey = EIA_API_KEY || 'DEMO_KEY';
         url = `https://api.eia.gov/v2/petroleum/pri/spt/data/?api_key=${eiaKey}&length=1`;
+        maskedUrl = `https://api.eia.gov/v2/petroleum/pri/spt/data/?api_key=${maskKey(eiaKey)}&length=1`;
         break;
         
       case 'ACLED':
         // ACLED API requires auth - we mark as CACHED since we use static conflict data
         // Don't actually probe ACLED - it requires registration
-        const cached = lastKnownGoodCache.get('ACLED');
-        if (cached) {
-          return { status: 'CACHED', latencyMs: 0 };
-        }
-        return { status: 'CACHED', latencyMs: 0 };
+        return { status: 'CACHED', latencyMs: 0, probeUrl: 'STATIC_DATA', errorMessage: 'Using static conflict data' };
         
       case 'DBnomics':
         url = 'https://api.db.nomics.world/v22/providers?limit=1';
+        maskedUrl = url;
         break;
         
       default:
-        return { status: 'OFFLINE', latencyMs: 0 };
+        return { status: 'OFFLINE', latencyMs: 0, probeUrl: 'UNKNOWN', errorMessage: 'Unknown source' };
     }
 
     const controller = new AbortController();
@@ -80,23 +94,30 @@ async function probeSource(id: string): Promise<{
     
     const res = await fetch(url, { 
       signal: controller.signal,
-      ...fetchOptions,
     });
     
     clearTimeout(timeout);
     const latencyMs = Date.now() - start;
     
+    // Debug log for FMP specifically
+    if (id === 'FMP') {
+      console.log(`[v0] FMP probe response: status=${res.status}, ok=${res.ok}, latency=${latencyMs}ms`);
+    }
+    
     // Check for auth/rate limit errors
     if (res.status === 401) {
-      return { status: 'OFFLINE', latencyMs, errorCode: 401 };
+      return { status: 'OFFLINE', latencyMs, errorCode: 401, probeUrl: maskedUrl, errorMessage: 'Unauthorized - check API key' };
+    }
+    if (res.status === 403) {
+      return { status: 'OFFLINE', latencyMs, errorCode: 403, probeUrl: maskedUrl, errorMessage: 'Forbidden - API key may be invalid or expired' };
     }
     if (res.status === 429) {
       // Rate limited - return DELAYED with cached data indicator
       const cached = lastKnownGoodCache.get(id);
       if (cached) {
-        return { status: 'CACHED', latencyMs, errorCode: 429 };
+        return { status: 'CACHED', latencyMs, errorCode: 429, probeUrl: maskedUrl, errorMessage: 'Rate limited - using cached data' };
       }
-      return { status: 'DELAYED', latencyMs, errorCode: 429 };
+      return { status: 'DELAYED', latencyMs, errorCode: 429, probeUrl: maskedUrl, errorMessage: 'Rate limited' };
     }
     
     if (res.ok) {
@@ -104,27 +125,28 @@ async function probeSource(id: string): Promise<{
       lastKnownGoodCache.set(id, { timestamp: new Date(), latencyMs });
       
       const status = latencyMs > 4000 ? 'DELAYED' : 'ONLINE';
-      return { status, latencyMs };
+      return { status, latencyMs, probeUrl: maskedUrl };
     }
     
     // Non-OK response - check if we have cached data
     const cached = lastKnownGoodCache.get(id);
     if (cached) {
-      return { status: 'CACHED', latencyMs, errorCode: res.status };
+      return { status: 'CACHED', latencyMs, errorCode: res.status, probeUrl: maskedUrl, errorMessage: `HTTP ${res.status} - using cached` };
     }
     
-    return { status: 'OFFLINE', latencyMs, errorCode: res.status };
+    return { status: 'OFFLINE', latencyMs, errorCode: res.status, probeUrl: maskedUrl, errorMessage: `HTTP ${res.status}` };
     
   } catch (err) {
     const latencyMs = Date.now() - start;
+    const errorMessage = err instanceof Error ? err.message : 'Network error';
     
     // On error, check if we have cached data to fall back to
     const cached = lastKnownGoodCache.get(id);
     if (cached) {
-      return { status: 'CACHED', latencyMs };
+      return { status: 'CACHED', latencyMs, probeUrl: maskedUrl, errorMessage: `${errorMessage} - using cached` };
     }
     
-    return { status: 'OFFLINE', latencyMs };
+    return { status: 'OFFLINE', latencyMs, probeUrl: maskedUrl, errorMessage };
   }
 }
 
@@ -152,7 +174,7 @@ export function InfrastructureStatusBar({ refreshInterval = 5 * 60 * 1000 }: Inf
       const r = results[i];
       const resolved = r.status === 'fulfilled' 
         ? r.value 
-        : { status: 'OFFLINE' as const, latencyMs: 0 };
+        : { status: 'OFFLINE' as const, latencyMs: 0, errorMessage: 'Promise rejected' };
       
       // Preserve lastKnownGood from previous state if this check failed
       const prevSource = prev.find(p => p.id === s.id);
@@ -167,6 +189,8 @@ export function InfrastructureStatusBar({ refreshInterval = 5 * 60 * 1000 }: Inf
         lastChecked: new Date(),
         lastKnownGood,
         errorCode: resolved.errorCode,
+        probeUrl: resolved.probeUrl,
+        errorMessage: resolved.errorMessage,
       };
     }));
     
@@ -254,7 +278,7 @@ export function InfrastructureStatusBar({ refreshInterval = 5 * 60 * 1000 }: Inf
                 background: `${statusColor(ds.status)}0d`,
                 color: statusColor(ds.status),
               }}
-              title={`${ds.name}: ${getStatusLabel(ds)}${ds.latencyMs ? ` (${ds.latencyMs}ms)` : ''}${ds.errorCode ? ` [${ds.errorCode}]` : ''} — checked ${ds.lastChecked.toLocaleTimeString()}`}
+              title={`${ds.name}: ${getStatusLabel(ds)}${ds.latencyMs ? ` (${ds.latencyMs}ms)` : ''}${ds.errorCode ? ` [HTTP ${ds.errorCode}]` : ''}${ds.errorMessage ? ` — ${ds.errorMessage}` : ''}\nURL: ${ds.probeUrl || 'N/A'}\nChecked: ${ds.lastChecked.toLocaleTimeString()}`}
             >
               <StatusIcon s={ds.status} />
               <span>{ds.name}</span>

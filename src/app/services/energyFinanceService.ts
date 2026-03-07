@@ -62,8 +62,11 @@ export async function fetchOilSpotPrices(): Promise<OilSpotPrices> {
   if (cached) return cached;
 
   if (!FMP_API_KEY) {
+    console.log('[v0] fetchOilSpotPrices: VITE_FMP_API_KEY not set, using fallback');
     return getOilFallback('FALLBACK');
   }
+
+  console.log('[v0] fetchOilSpotPrices: FMP_API_KEY exists, length=' + FMP_API_KEY.length);
 
   try {
     // FMP quote endpoint — CLUSD = WTI Crude, COLUSD = Brent
@@ -72,7 +75,9 @@ export async function fetchOilSpotPrices(): Promise<OilSpotPrices> {
       fetch(`${FMP_API_BASE}/quote/COLUSD?apikey=${FMP_API_KEY}`),
     ]);
 
-    if (!wtiRes.ok || !brentRes.ok) throw new Error('FMP oil quote failed');
+    console.log(`[v0] FMP oil response: WTI=${wtiRes.status}, Brent=${brentRes.status}`);
+
+    if (!wtiRes.ok || !brentRes.ok) throw new Error(`FMP oil quote failed: WTI=${wtiRes.status}, Brent=${brentRes.status}`);
 
     const [wtiData, brentData] = await Promise.all([
       wtiRes.json() as Promise<FMPQuote[]>,
