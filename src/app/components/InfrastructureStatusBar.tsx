@@ -19,9 +19,27 @@ interface InfrastructureStatusBarProps {
   refreshInterval?: number;
 }
 
-// Environment variables
-const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY as string | undefined;
-const EIA_API_KEY = import.meta.env.VITE_EIA_API_KEY as string | undefined;
+// SANITIZE: Strip any URL fragments if the env var accidentally contains a full URL
+function sanitizeApiKey(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  // If the key contains 'apikey=' (e.g., full URL pasted), extract just the key
+  if (raw.includes('apikey=')) {
+    const extracted = raw.split('apikey=').pop()?.split('&')[0]?.trim();
+    if (extracted) return extracted;
+  }
+  // If the key contains 'http', it's probably a full URL — extract the last path segment or query param
+  if (raw.includes('http')) {
+    // Try to find a 32-char alphanumeric key anywhere in the string
+    const match = raw.match(/[a-zA-Z0-9]{32}/);
+    if (match) return match[0];
+  }
+  // Otherwise return trimmed key
+  return raw.trim();
+}
+
+// Environment variables — sanitized
+const FMP_API_KEY = sanitizeApiKey(import.meta.env.VITE_FMP_API_KEY as string | undefined);
+const EIA_API_KEY = sanitizeApiKey(import.meta.env.VITE_EIA_API_KEY as string | undefined);
 
 // Persistent cache for last known good data
 const lastKnownGoodCache = new Map<string, { timestamp: Date; latencyMs: number }>();
@@ -52,14 +70,15 @@ async function probeSource(id: string): Promise<{
     switch (id) {
       case 'FMP':
         // FMP requires API key - if missing, report as CACHED (using fallback data)
+        const rawFmpKey = import.meta.env.VITE_FMP_API_KEY as string | undefined;
         if (!FMP_API_KEY) {
-          console.log('[v0] FMP probe: VITE_FMP_API_KEY not found in environment');
-          return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FMP_API_KEY not set' };
+          console.log('[v0] FMP probe: VITE_FMP_API_KEY not found or invalid. Raw:', rawFmpKey ? `length=${rawFmpKey.length}` : 'undefined');
+          return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FMP_API_KEY not set or invalid' };
         }
         // Use CLUSD (WTI Crude) - same endpoint as energyFinanceService
         url = `https://financialmodelingprep.com/api/v3/quote/CLUSD?apikey=${FMP_API_KEY}`;
         maskedUrl = `https://financialmodelingprep.com/api/v3/quote/CLUSD?apikey=${maskKey(FMP_API_KEY)}`;
-        console.log('[v0] FMP probe: Key exists, length=' + FMP_API_KEY.length + ', masked=' + maskKey(FMP_API_KEY));
+        console.log('[v0] FMP probe: Raw key length=' + (rawFmpKey?.length || 0) + ', Sanitized key length=' + FMP_API_KEY.length + ', masked=' + maskKey(FMP_API_KEY));
         break;
         
       case 'DefiLlama':

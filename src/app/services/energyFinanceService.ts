@@ -21,9 +21,27 @@ const EIA_API_BASE = 'https://api.eia.gov/v2';
 const FMP_API_BASE = 'https://financialmodelingprep.com/api/v3';
 
 // API keys — read once at module level
-const FMP_API_KEY = import.meta.env.VITE_FMP_API_KEY as string | undefined;
+// SANITIZE: Strip any URL fragments if the env var accidentally contains a full URL
+function sanitizeApiKey(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  // If the key contains 'apikey=' (e.g., full URL pasted), extract just the key
+  if (raw.includes('apikey=')) {
+    const extracted = raw.split('apikey=').pop()?.split('&')[0]?.trim();
+    if (extracted) return extracted;
+  }
+  // If the key contains 'http', it's probably a full URL — extract the last path segment or query param
+  if (raw.includes('http')) {
+    // Try to find a 32-char alphanumeric key anywhere in the string
+    const match = raw.match(/[a-zA-Z0-9]{32}/);
+    if (match) return match[0];
+  }
+  // Otherwise return trimmed key
+  return raw.trim();
+}
+
+const FMP_API_KEY = sanitizeApiKey(import.meta.env.VITE_FMP_API_KEY as string | undefined);
 // EIA key: falls back to DEMO_KEY but DEMO_KEY has strict rate limits (5 req/s, 1000 req/day)
-const EIA_API_KEY = (import.meta.env.VITE_EIA_API_KEY as string | undefined) || 'DEMO_KEY';
+const EIA_API_KEY = sanitizeApiKey(import.meta.env.VITE_EIA_API_KEY as string | undefined) || 'DEMO_KEY';
 
 // Cache — 5 min TTL matching global refresh cycle
 const cache = new Map<string, { data: unknown; timestamp: number }>();
@@ -61,12 +79,13 @@ export async function fetchOilSpotPrices(): Promise<OilSpotPrices> {
   const cached = getCached<OilSpotPrices>(cacheKey);
   if (cached) return cached;
 
+  const rawKey = import.meta.env.VITE_FMP_API_KEY as string | undefined;
   if (!FMP_API_KEY) {
-    console.log('[v0] fetchOilSpotPrices: VITE_FMP_API_KEY not set, using fallback');
+    console.log('[v0] fetchOilSpotPrices: VITE_FMP_API_KEY not set or invalid. Raw:', rawKey ? `length=${rawKey.length}, starts=${rawKey.slice(0,20)}` : 'undefined');
     return getOilFallback('FALLBACK');
   }
 
-  console.log('[v0] fetchOilSpotPrices: FMP_API_KEY exists, length=' + FMP_API_KEY.length);
+  console.log('[v0] fetchOilSpotPrices: Raw key length=' + (rawKey?.length || 0) + ', Sanitized key length=' + FMP_API_KEY.length);
 
   try {
     // FMP quote endpoint — CLUSD = WTI Crude, COLUSD = Brent
