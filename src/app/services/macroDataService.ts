@@ -220,11 +220,21 @@ async function resolveMetric(
     }
   }
 
-  // 3. Fall back to Supabase cache
+  // 3. Fall back to Supabase cache (FORCE BYPASS when FRED is offline)
   const sbData = await readFromSupabase(symbol);
   if (sbData) {
     const isStale = Date.now() - sbData.fetchedAt.getTime() > STALE_THRESHOLD_MS;
     setMemoryCache(symbol, sbData.value, 'SUPABASE');
+    
+    // DEBUG: Log when Supabase fallback is actively serving data
+    console.warn('FRED_OFFLINE_FALLBACK_ACTIVE', {
+      symbol,
+      value: sbData.value,
+      fetchedAt: sbData.fetchedAt,
+      isStale,
+      source: 'SUPABASE',
+    });
+    
     return {
       symbol,
       value: sbData.value,
@@ -252,9 +262,11 @@ async function resolveMetric(
 
 export async function fetchMacroData(): Promise<MacroDataResult> {
   const fredKey = getFredKey();
+  const rawKey = import.meta.env.VITE_FRED_API_KEY;
 
   if (!fredKey) {
-    console.warn('[MacroData] VITE_FRED_API_KEY not set — FRED calls will be skipped');
+    console.warn('[MacroData] CONFIG_ERROR: VITE_FRED_API_KEY is', rawKey === undefined ? 'undefined' : rawKey === '' ? 'empty string' : `invalid (${typeof rawKey})`);
+    console.warn('[MacroData] FRED calls will be skipped — falling back to Supabase/SEED');
   }
 
   // Fetch all global macro metrics in parallel

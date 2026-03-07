@@ -44,6 +44,9 @@ export interface UseMacroDataReturn {
   overallStatus: 'LIVE' | 'DEGRADED' | 'OFFLINE';
   lastSync: Date | null;
   
+  // Config error flag — true if VITE_FRED_API_KEY is missing
+  configError: boolean;
+  
   // Per-metric status
   metricStatus: {
     dgs10: MacroMetric['status'];
@@ -146,6 +149,10 @@ export function useMacroData(): UseMacroDataReturn {
     fearGreed: data.fearGreed.status,
   } : null;
 
+  // Check if FRED API key is configured
+  const configError = typeof import.meta.env.VITE_FRED_API_KEY !== 'string' || 
+                      import.meta.env.VITE_FRED_API_KEY.trim() === '';
+
   return {
     data,
     isLoading,
@@ -155,6 +162,7 @@ export function useMacroData(): UseMacroDataReturn {
     values,
     overallStatus: data?.overallStatus ?? 'OFFLINE',
     lastSync,
+    configError,
     metricStatus,
   };
 }

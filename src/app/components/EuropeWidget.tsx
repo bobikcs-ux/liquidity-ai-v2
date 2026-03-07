@@ -52,9 +52,10 @@ export const EuropeWidget = memo(function EuropeWidget() {
   const [selectedCountry, setSelectedCountry] = useState<EuroCountryCode | null>(null);
   
   // Live ECB rate from FRED via macroDataService
-  const { display, values, metricStatus, lastSync } = useMacroData();
+  const { display, values, metricStatus, lastSync, configError } = useMacroData();
   const ecbRateLive = values?.ecbRate ?? null;
-  const ecbStatus = metricStatus?.ecbRate ?? 'FALLBACK';
+  const ecbStatus = configError ? 'CONFIG_ERROR' : (metricStatus?.ecbRate ?? 'FALLBACK');
+  const dgs10Status = configError ? 'CONFIG_ERROR' : (metricStatus?.dgs10 ?? 'FALLBACK');
   const dgs10Live = values?.dgs10 ?? null;
   const dgs2Live = values?.dgs2 ?? null;
 
@@ -190,7 +191,16 @@ export const EuropeWidget = memo(function EuropeWidget() {
         <div className="flex items-center justify-between text-xs text-gray-500 font-mono">
           <span>Source: FRED / ECB via Supabase Sync</span>
           <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-none ${ecbStatus === 'LIVE' ? 'bg-green-500' : ecbStatus === 'CACHED' ? 'bg-amber-500' : 'bg-red-500'}`} />
+            <span className={`w-2 h-2 rounded-none ${
+              ecbStatus === 'CONFIG_ERROR' ? 'bg-purple-500' :
+              ecbStatus === 'LIVE' ? 'bg-green-500' : 
+              ecbStatus === 'CACHED' ? 'bg-amber-500' : 'bg-red-500'
+            }`} />
+            <span className="text-xs">
+              {ecbStatus === 'CONFIG_ERROR' ? 'CONFIG_ERROR' : 
+               ecbStatus === 'CACHED' ? 'CACHED' :
+               ecbStatus === 'LIVE' ? 'LIVE' : 'OFFLINE'}
+            </span>
             <span>{lastSync ? lastSync.toLocaleTimeString() : '--:--'}</span>
           </div>
         </div>

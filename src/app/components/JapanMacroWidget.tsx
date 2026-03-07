@@ -176,14 +176,14 @@ const MacroCard = memo(function MacroCard({
  */
 export const JapanMacroWidget = memo(function JapanMacroWidget() {
   const { japan, refresh } = useAsianIntelligence();
-  const { display, values, metricStatus, lastSync } = useMacroData();
+  const { display, values, metricStatus, lastSync, configError } = useMacroData();
   const [view, setView] = useState<JapanView>('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Use live BoJ rate from FRED via macroDataService
   const bojRateLive = values?.bojRate ?? null;
   const bojRateDisplay = display.bojRate;
-  const bojStatus = metricStatus?.bojRate ?? 'FALLBACK';
+  const bojStatus = configError ? 'CONFIG_ERROR' : (metricStatus?.bojRate ?? 'FALLBACK');
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -207,7 +207,7 @@ export const JapanMacroWidget = memo(function JapanMacroWidget() {
                 JAPAN MACRO LAYER
               </h2>
               <p className="text-xs text-gray-500 font-mono mt-1">
-                e-Stat API // Real-time Economic Intelligence
+                FRED / BoJ via Supabase Sync
               </p>
             </div>
             <button
@@ -361,7 +361,16 @@ export const JapanMacroWidget = memo(function JapanMacroWidget() {
         <div className="flex items-center justify-between text-xs text-gray-500 font-mono">
           <span>Source: FRED / BoJ via Supabase Sync</span>
           <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-none ${bojStatus === 'LIVE' ? 'bg-green-500' : bojStatus === 'CACHED' ? 'bg-amber-500' : 'bg-red-500'}`} />
+            <span className={`w-2 h-2 rounded-none ${
+              bojStatus === 'CONFIG_ERROR' ? 'bg-purple-500' :
+              bojStatus === 'LIVE' ? 'bg-green-500' : 
+              bojStatus === 'CACHED' ? 'bg-amber-500' : 'bg-red-500'
+            }`} />
+            <span className="text-xs">
+              {bojStatus === 'CONFIG_ERROR' ? 'CONFIG_ERROR' : 
+               bojStatus === 'CACHED' ? 'CACHED' :
+               bojStatus === 'LIVE' ? 'LIVE' : 'OFFLINE'}
+            </span>
             <span>{lastSync ? lastSync.toLocaleTimeString() : japan.lastUpdated ? new Date(japan.lastUpdated).toLocaleTimeString() : '--:--'}</span>
           </div>
         </div>
