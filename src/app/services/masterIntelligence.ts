@@ -1,3 +1,13 @@
+import { supabase } from '../lib/supabase';
+
+// ============================================
+// V104 ARCHITECTURE: SUPABASE CRON PIPELINE
+// ============================================
+// All data is pre-fetched by Supabase Edge Functions (cron)
+// and stored in materialized views for instant access.
+// NO direct API calls - maximum speed & security.
+// ============================================
+
 // 1. Interface for market data
 export interface MarketContext {
   yieldCurve: string | null;
@@ -8,46 +18,128 @@ export interface MarketContext {
   btcDominance: number;
 }
 
-// 2. Main function to fetch all market data
+// 2. Fetch FRED data from Supabase materialized view
+async function fetchFREDFromSupabase(): Promise<string> {
+  if (!supabase) {
+    console.warn('[v104] Supabase not configured, using fallback');
+    return 'N/A';
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('market_data_cache')
+      .select('value')
+      .eq('data_type', 'fred_yield_curve')
+      .order('cached_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.warn('[v104] FRED cache miss, using fallback');
+      return 'N/A';
+    }
+
+    return data.value || 'N/A';
+  } catch (err) {
+    console.error('[v104] FRED fetch error:', err);
+    return 'N/A';
+  }
+}
+
+// 3. Fetch Fear & Greed data from Supabase materialized view
+async function fetchFearGreedFromSupabase(): Promise<{ value: string; label: string }> {
+  if (!supabase) {
+    return { value: '50', label: 'Neutral' };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('market_data_cache')
+      .select('value, label')
+      .eq('data_type', 'fear_greed_index')
+      .order('cached_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.warn('[v104] Fear/Greed cache miss');
+      return { value: '50', label: 'Neutral' };
+    }
+
+    return { 
+      value: data.value || '50', 
+      label: data.label || 'Neutral' 
+    };
+  } catch (err) {
+    console.error('[v104] Fear/Greed fetch error:', err);
+    return { value: '50', label: 'Neutral' };
+  }
+}
+
+// 4. Fetch BTC data from Supabase materialized view
+async function fetchBTCFromSupabase(): Promise<{ price: number; change: number; dominance: number }> {
+  if (!supabase) {
+    return { price: 0, change: 0, dominance: 0 };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('market_data_cache')
+      .select('value, change_24h, dominance')
+      .eq('data_type', 'btc_price')
+      .order('cached_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.warn('[v104] BTC cache miss');
+      return { price: 0, change: 0, dominance: 0 };
+    }
+
+    return {
+      price: parseFloat(data.value) || 0,
+      change: parseFloat(data.change_24h) || 0,
+      dominance: parseFloat(data.dominance) || 0
+    };
+  } catch (err) {
+    console.error('[v104] BTC fetch error:', err);
+    return { price: 0, change: 0, dominance: 0 };
+  }
+}
+
+// 5. Main function to fetch all market data from Supabase cache
 export const fetchAllMarketData = async (): Promise<MarketContext> => {
   try {
-    const [fredRes, fngRes, globalRes, cgRes] = await Promise.all([
-      // FRED (Macro) - uses loaded API key
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key=${import.meta.env.VITE_FRED_API_KEY}&file_type=json&limit=1&sort_order=desc`)
-        .then(res => res.json())
-        .catch(() => ({ observations: [{ value: 'N/A' }] })),
-      
-      // Alternative.me (Sentiment)
-      fetch('https://api.alternative.me/fng/')
-        .then(res => res.json())
-        .catch(() => ({ data: [{ value: '50', value_classification: 'Neutral' }] })),
-      
-      // Alternative.me (Global Data)
-      fetch('https://api.alternative.me/v2/global/')
-        .then(res => res.json())
-        .catch(() => ({ data: { bitcoin_percentage_of_market_cap: 0 } })),
-      
-      // CoinGecko (Public Price - no key needed)
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
-        .then(res => res.json())
-        .catch(() => ({ bitcoin: { usd: 0, usd_24h_change: 0 } }))
+    // Parallel fetch from Supabase materialized views
+    const [fredData, fngData, btcData] = await Promise.all([
+      fetchFREDFromSupabase(),
+      fetchFearGreedFromSupabase(),
+      fetchBTCFromSupabase()
     ]);
 
     return {
-      yieldCurve: fredRes.observations?.[0]?.value || "N/A",
-      fearGreedValue: fngRes.data?.[0]?.value || "50",
-      fearGreedLabel: fngRes.data?.[0]?.value_classification || "Neutral",
-      btcPrice: cgRes.bitcoin?.usd || 0,
-      btcChange: cgRes.bitcoin?.usd_24h_change || 0,
-      btcDominance: globalRes.data?.bitcoin_percentage_of_market_cap || 0
+      yieldCurve: fredData,
+      fearGreedValue: fngData.value,
+      fearGreedLabel: fngData.label,
+      btcPrice: btcData.price,
+      btcChange: btcData.change,
+      btcDominance: btcData.dominance
     };
   } catch (error) {
-    console.error("Master Fetch Error:", error);
-    throw error;
+    console.error('[v104] Master Fetch Error:', error);
+    // Return safe defaults
+    return {
+      yieldCurve: 'N/A',
+      fearGreedValue: '50',
+      fearGreedLabel: 'Neutral',
+      btcPrice: 0,
+      btcChange: 0,
+      btcDominance: 0
+    };
   }
 };
 
-// 3. Function to build the AI prompt
+// 6. Function to build the AI prompt
 export const buildBlackSwanPrompt = (context: MarketContext): string => {
   return `
 System: Act as a Black Swan Risk Analyst.
@@ -63,12 +155,11 @@ Format: Bullet points for Risk Level, Liquidity State, and Final Warning.
   `.trim();
 };
 
-// 4. Function that talks to Gemini API
+// 7. Function that talks to Gemini API
 export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<string> => {
   const GEMINI_KEY = import.meta.env.VITE_GOOGLE_AI_KEY;
   
   if (!GEMINI_KEY) {
-    // Return a mock analysis when no API key is available
     return generateMockAnalysis(context);
   }
 
@@ -101,12 +192,12 @@ export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<stri
     const data = await response.json();
     return data.candidates?.[0]?.content?.parts?.[0]?.text || generateMockAnalysis(context);
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error('[v104] Gemini API Error:', error);
     return generateMockAnalysis(context);
   }
 };
 
-// 5. Mock analysis fallback
+// 8. Mock analysis fallback
 const generateMockAnalysis = (context: MarketContext): string => {
   const fearGreed = parseInt(context.fearGreedValue) || 50;
   const yieldValue = parseFloat(context.yieldCurve || '0');
@@ -130,7 +221,7 @@ const generateMockAnalysis = (context: MarketContext): string => {
   }
 
   return `
-**BLACK SWAN RISK ASSESSMENT**
+**BLACK SWAN RISK ASSESSMENT** [v104 Pipeline]
 
 • **Risk Level:** ${riskLevel}
 • **Survival Probability:** ${survivalProb}%
@@ -144,14 +235,14 @@ const generateMockAnalysis = (context: MarketContext): string => {
 
 **Final Warning:**
 ${riskLevel === 'ELEVATED' 
-  ? '⚠️ Defensive positioning recommended. Reduce leverage and increase hedges.'
+  ? 'Defensive positioning recommended. Reduce leverage and increase hedges.'
   : riskLevel === 'EUPHORIA WARNING'
-  ? '⚠️ Market complacency detected. Consider profit-taking and protective puts.'
-  : '✓ Continue monitoring. No immediate action required.'}
+  ? 'Market complacency detected. Consider profit-taking and protective puts.'
+  : 'Continue monitoring. No immediate action required.'}
   `.trim();
 };
 
-// 6. Combined scan function for easy use
+// 9. Combined scan function for easy use
 export const runMasterScan = async (): Promise<{
   context: MarketContext;
   analysis: string;
