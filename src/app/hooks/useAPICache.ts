@@ -121,36 +121,29 @@ export function useCoinGeckoData<T = any>(endpoint: string, enabled = true) {
 }
 
 /**
- * Hook: Multi-endpoint batch fetch with SWR
- * Fetches all endpoints in parallel, caches individually
+ * Utility: Batch fetch multiple endpoints (non-hook, use in effects/callbacks)
+ * Fetches all endpoints in parallel, returns results map
  */
-export function useMultipleAPICalls<T extends Record<string, any>>(
+export async function fetchMultipleAPIs(
   requests: Record<string, { url: string; source: 'fred' | 'fmp' | 'coingecko' }>
-) {
-  const results: T = {} as T;
-  const isLoading = false;
-  let hasError = false;
+): Promise<Record<string, { data: unknown; error: Error | null }>> {
+  const entries = Object.entries(requests);
+  const promises = entries.map(async ([key, { url, source }]) => {
+    try {
+      let fetcher;
+      if (source === 'fred') fetcher = fredFetcher;
+      else if (source === 'fmp') fetcher = fmpFetcher;
+      else fetcher = coinGeckoFetcher;
 
-  for (const [key, { url, source }] of Object.entries(requests)) {
-    let result;
-    if (source === 'fred') {
-      result = useFREDData(url);
-    } else if (source === 'fmp') {
-      result = useFMPData(url);
-    } else {
-      result = useCoinGeckoData(url);
+      const data = await fetcher(url);
+      return [key, { data, error: null }] as const;
+    } catch (err) {
+      return [key, { data: null, error: err as Error }] as const;
     }
+  });
 
-    (results as any)[key] = result;
-    if (result.isLoading) (isLoading as any) = true;
-    if (result.error) hasError = true;
-  }
-
-  return {
-    results,
-    isLoading,
-    hasError,
-  };
+  const results = await Promise.all(promises);
+  return Object.fromEntries(results);
 }
 
 /**
@@ -177,6 +170,6 @@ export default {
   useFREDData,
   useFMPData,
   useCoinGeckoData,
-  useMultipleAPICalls,
+  fetchMultipleAPIs,
   shouldRefreshCache,
 };
