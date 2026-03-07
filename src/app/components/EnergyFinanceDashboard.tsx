@@ -56,7 +56,6 @@ import {
   generateMarketFlowSignal,
   formatLargeNumber,
   formatPercentChange,
-  fetchOilSpotPrices,
 } from '../services/energyFinanceService';
 import { PaywallOverlay } from './PaywallOverlay';
 import { useSubscription } from '../context/SubscriptionContext';
