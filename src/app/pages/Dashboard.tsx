@@ -7,32 +7,50 @@ import { ResourceShockEngine } from '../components/ResourceShockEngine';
 import { ConflictTransmissionModel } from '../components/ConflictTransmissionModel';
 import { EmploymentDisruptionLayer } from '../components/EmploymentDisruptionLayer';
 import { NarrativeShockModel } from '../components/NarrativeShockModel';
-import { resyncMacroDashboard } from '../services/MacroDataService';
+import { resyncMacroDashboard, type DashboardSync } from '../services/MacroDataService';
 
 export function Dashboard() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   
+  // V104: State for materialized view data
   const [fredStatus, setFredStatus] = useState<'ONLINE' | 'FALLBACK' | 'DELAYED'>('FALLBACK');
   const [fredValue, setFredValue] = useState<number>(0);
+  const [yieldCurve, setYieldCurve] = useState<number>(0);
+  const [realYield, setRealYield] = useState<number>(0);
+  const [m2Momentum, setM2Momentum] = useState<number>(0);
+  const [btcPrice, setBtcPrice] = useState<number>(0);
+  const [btcChange, setBtcChange] = useState<number>(0);
+  const [fearGreed, setFearGreed] = useState<string>('50');
+  const [lastSync, setLastSync] = useState<string>('');
 
-  // Re-sync macro dashboard on component mount
+  // V104: Re-sync from materialized views on component mount
   useEffect(() => {
-    const syncMacroData = async () => {
+    const syncFromMaterializedViews = async () => {
       try {
-        console.log('[v0] Dashboard: RE-SYNCING macro data...');
-        const macroData = await resyncMacroDashboard();
-        setFredStatus(macroData.US?.status || 'FALLBACK');
-        setFredValue(macroData.US?.fredValue || 0);
-        console.log('[v0] Dashboard: Macro data synced. FRED Status:', macroData.US?.status);
+        const data: DashboardSync = await resyncMacroDashboard();
+        
+        // Macro snapshot (FRED, yield curve, etc.)
+        setFredStatus(data.macro.US?.status || 'FALLBACK');
+        setFredValue(data.macro.US?.fredValue || 0);
+        setYieldCurve(data.macro.US?.yieldCurve || 0);
+        setRealYield(data.macro.US?.realYield || 0);
+        setM2Momentum(data.macro.US?.m2Momentum || 0);
+        
+        // Liquidity snapshot (BTC, Fear & Greed)
+        setBtcPrice(data.liquidity.btcPrice || 0);
+        setBtcChange(data.liquidity.btcChange || 0);
+        setFearGreed(data.liquidity.fearGreedValue?.toString() || '50');
+        
+        setLastSync(data.syncedAt);
       } catch (err) {
-        console.error('[v0] Dashboard: Failed to sync macro data:', err);
+        console.error('[Dashboard] Materialized view sync failed:', err);
         setFredStatus('FALLBACK');
       }
     };
 
-    syncMacroData();
+    syncFromMaterializedViews();
   }, []);
   
   const cardStyle = `rounded-xl shadow-sm border p-6 transition-all duration-500 ${
@@ -192,9 +210,9 @@ export function Dashboard() {
           <div className="space-y-3">
             {[
               { label: 'FRED Value', val: fredValue?.toFixed(2) || '---', trend: 'neutral', source: fredStatus === 'ONLINE' ? '✓ Live' : '◯ Fallback' },
-              { label: 'Real Yield', val: '2.34%', trend: 'neutral' },
-              { label: 'M2 Momentum', val: '+3.2%', trend: 'up' },
-              { label: 'Yield Curve', val: '-0.23', trend: 'down' },
+              { label: 'Real Yield', val: realYield ? `${realYield.toFixed(2)}%` : '---', trend: realYield > 0 ? 'up' : 'down' },
+              { label: 'M2 Momentum', val: m2Momentum ? `${m2Momentum > 0 ? '+' : ''}${m2Momentum.toFixed(1)}%` : '---', trend: m2Momentum > 0 ? 'up' : 'down' },
+              { label: 'Yield Curve', val: yieldCurve ? yieldCurve.toFixed(2) : '---', trend: yieldCurve < 0 ? 'down' : 'neutral' },
               { label: 'VIX Terminal', val: currentRegime.volatilityIndex, trend: 'neutral' },
             ].map((m, i) => (
               <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2">

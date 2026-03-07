@@ -1,20 +1,83 @@
 import { supabase } from '../lib/supabase';
 
-export interface MacroSnapshot {
+/**
+ * V104 Architecture - Materialized View Interfaces
+ * Data is populated by ingest_all_sources() via pg_cron every 10 mins
+ */
+
+export interface MacroSnapshotData {
   US?: {
-    GDP?: number;
-    unemployment?: number;
-    inflation?: number;
     yieldCurve?: number;
     fredValue?: number;
+    realYield?: number;
+    m2Momentum?: number;
     timestamp?: string;
     status: 'ONLINE' | 'DELAYED' | 'FALLBACK';
   };
-  EU?: Record<string, any>;
-  China?: Record<string, any>;
-  Japan?: Record<string, any>;
-  India?: Record<string, any>;
-  BRICS?: Record<string, any>;
+}
+
+export interface LiquiditySnapshotData {
+  btcPrice?: number;
+  btcChange?: number;
+  btcDominance?: number;
+  fearGreedValue?: number;
+  fearGreedLabel?: string;
+  timestamp?: string;
+  status: 'ONLINE' | 'DELAYED' | 'FALLBACK';
+}
+
+export interface EnergySnapshotData {
+  oilPrice?: number;
+  gasPrice?: number;
+  timestamp?: string;
+  status: 'ONLINE' | 'DELAYED' | 'FALLBACK';
+}
+
+export interface FREDResponse {
+  value: number;
+  timestamp: string;
+  status: 'ONLINE' | 'FALLBACK' | 'DELAYED';
+}
+
+/**
+ * Fetches FRED data from macro_snapshot materialized view
+ * V104: Uses `created` column for timestamps
+ * Pipeline: Populated by ingest_all_sources() every 10 mins
+ */
+export async function fetchFREDFromSupabase(): Promise<FREDResponse> {
+  if (!supabase) {
+    console.warn('Supabase not configured. Returning fallback FRED data.');
+    return { value: 0, timestamp: new Date().toISOString(), status: 'FALLBACK' };
+  }
+
+  try {
+    // Query macro_snapshot materialized view for FRED data
+    const { data, error } = await supabase
+      .from('macro_snapshot')
+      .select('fred_value, created')
+      .order('created', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error('[MacroDataService] macro_snapshot query error:', error);
+      return { value: 0, timestamp: new Date().toISOString(), status: 'FALLBACK' };
+    }
+
+    if (!data || data.fred_value === null || data.fred_value === undefined) {
+      console.warn('[MacroDataService] No FRED data in macro_snapshot');
+      return { value: 0, timestamp: data?.created || new Date().toISOString(), status: 'FALLBACK' };
+    }
+
+    return {
+      value: data.fred_value,
+      timestamp: data.created || new Date().toISOString(),
+      status: 'ONLINE'
+    };
+  } catch (err) {
+    console.error('[MacroDataService] Error fetching FRED:', err);
+    return { value: 0, timestamp: new Date().toISOString(), status: 'FALLBACK' };
+  }
 }
 
 export interface FREDResponse {
@@ -100,110 +163,137 @@ export async function fetchFREDFromSupabase(): Promise<FREDResponse> {
 }
 
 /**
- * Fetches macro snapshot from Supabase materialized view
- * Returns US macro data with FRED as ONLINE status
+ * Fetches full macro snapshot from macro_snapshot materialized view
+ * V104: Uses `created` column, populated by ingest_all_sources()
  */
-export async function fetchMacroSnapshot(): Promise<MacroSnapshot> {
+export async function fetchMacroSnapshot(): Promise<MacroSnapshotData> {
   if (!supabase) {
-    console.warn('Supabase not configured. Returning fallback macro data.');
-    return {
-      US: {
-        status: 'FALLBACK',
-        timestamp: new Date().toISOString()
-      }
-    };
+    return { US: { status: 'FALLBACK', timestamp: new Date().toISOString() } };
   }
 
   try {
-    // Get FRED data
-    const fredData = await fetchFREDFromSupabase();
-
-    // Fetch macro_snapshot materialized view for US region
     const { data, error } = await supabase
       .from('macro_snapshot')
-      .select('*')
-      .eq('region', 'US')
-      .order('fetched_at', { ascending: false })
+      .select('fred_value, yield_curve, real_yield, m2_momentum, created')
+      .order('created', { ascending: false })
       .limit(1)
       .single();
 
-    if (error) {
-      console.error('[v0] Macro snapshot query error:', error);
-      return {
-        US: {
-          fredValue: fredData.value,
-          status: fredData.status,
-          timestamp: fredData.timestamp
-        }
-      };
+    if (error || !data) {
+      console.error('[MacroDataService] macro_snapshot error:', error);
+      return { US: { status: 'FALLBACK', timestamp: new Date().toISOString() } };
     }
-
-    if (!data) {
-      console.warn('[v0] No macro snapshot data found');
-      return {
-        US: {
-          fredValue: fredData.value,
-          status: fredData.status,
-          timestamp: fredData.timestamp
-        }
-      };
-    }
-
-    // Parse JSONB data from snapshot
-    const snapshotData = data.snapshot_data || {};
-    
-    console.log('[v0] Macro snapshot fetched:', {
-      region: 'US',
-      fredStatus: fredData.status,
-      fetched_at: data.fetched_at
-    });
 
     return {
       US: {
-        GDP: snapshotData.GDP,
-        unemployment: snapshotData.unemployment,
-        inflation: snapshotData.inflation,
-        yieldCurve: snapshotData.yieldCurve,
-        fredValue: fredData.value,
-        timestamp: fredData.timestamp,
-        status: fredData.status
+        fredValue: data.fred_value,
+        yieldCurve: data.yield_curve,
+        realYield: data.real_yield,
+        m2Momentum: data.m2_momentum,
+        timestamp: data.created,
+        status: 'ONLINE'
       }
     };
   } catch (err) {
-    console.error('[v0] Error fetching macro snapshot:', err);
-    return {
-      US: {
-        status: 'FALLBACK',
-        timestamp: new Date().toISOString()
-      }
-    };
+    console.error('[MacroDataService] Error:', err);
+    return { US: { status: 'FALLBACK', timestamp: new Date().toISOString() } };
   }
 }
 
 /**
- * Re-syncs all macro data with dashboard
- * Returns combined macro snapshot with live FRED data
+ * Fetches liquidity data from liquidity_snapshot materialized view
+ * V104: Uses `created` column, populated by ingest_all_sources()
  */
-export async function resyncMacroDashboard(): Promise<MacroSnapshot> {
-  console.log('[v0] RE-SYNCING DASHBOARD: Fetching fresh macro data...');
-  
-  try {
-    const macroSnapshot = await fetchMacroSnapshot();
-    
-    console.log('[v0] Dashboard re-sync complete:', {
-      fredStatus: macroSnapshot.US?.status,
-      fredValue: macroSnapshot.US?.fredValue,
-      timestamp: macroSnapshot.US?.timestamp
-    });
-
-    return macroSnapshot;
-  } catch (err) {
-    console.error('[v0] Dashboard re-sync failed:', err);
-    return {
-      US: {
-        status: 'FALLBACK',
-        timestamp: new Date().toISOString()
-      }
-    };
+export async function fetchLiquiditySnapshot(): Promise<LiquiditySnapshotData> {
+  if (!supabase) {
+    return { status: 'FALLBACK', timestamp: new Date().toISOString() };
   }
+
+  try {
+    const { data, error } = await supabase
+      .from('liquidity_snapshot')
+      .select('btc_price, btc_change, btc_dominance, fear_greed_value, fear_greed_label, created')
+      .order('created', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.error('[MacroDataService] liquidity_snapshot error:', error);
+      return { status: 'FALLBACK', timestamp: new Date().toISOString() };
+    }
+
+    return {
+      btcPrice: data.btc_price,
+      btcChange: data.btc_change,
+      btcDominance: data.btc_dominance,
+      fearGreedValue: data.fear_greed_value,
+      fearGreedLabel: data.fear_greed_label,
+      timestamp: data.created,
+      status: 'ONLINE'
+    };
+  } catch (err) {
+    console.error('[MacroDataService] Error:', err);
+    return { status: 'FALLBACK', timestamp: new Date().toISOString() };
+  }
+}
+
+/**
+ * Fetches energy data from energy_snapshot materialized view
+ * V104: Uses `created` column, populated by ingest_all_sources()
+ */
+export async function fetchEnergySnapshot(): Promise<EnergySnapshotData> {
+  if (!supabase) {
+    return { status: 'FALLBACK', timestamp: new Date().toISOString() };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('energy_snapshot')
+      .select('oil_price, gas_price, created')
+      .order('created', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.error('[MacroDataService] energy_snapshot error:', error);
+      return { status: 'FALLBACK', timestamp: new Date().toISOString() };
+    }
+
+    return {
+      oilPrice: data.oil_price,
+      gasPrice: data.gas_price,
+      timestamp: data.created,
+      status: 'ONLINE'
+    };
+  } catch (err) {
+    console.error('[MacroDataService] Error:', err);
+    return { status: 'FALLBACK', timestamp: new Date().toISOString() };
+  }
+}
+
+/**
+ * V104: Combined dashboard sync from all materialized views
+ * Queries: macro_snapshot, liquidity_snapshot, energy_snapshot
+ * Uses: `created` column for all timestamps
+ */
+export interface DashboardSync {
+  macro: MacroSnapshotData;
+  liquidity: LiquiditySnapshotData;
+  energy: EnergySnapshotData;
+  syncedAt: string;
+}
+
+export async function resyncMacroDashboard(): Promise<DashboardSync> {
+  const [macro, liquidity, energy] = await Promise.all([
+    fetchMacroSnapshot(),
+    fetchLiquiditySnapshot(),
+    fetchEnergySnapshot()
+  ]);
+
+  return {
+    macro,
+    liquidity,
+    energy,
+    syncedAt: new Date().toISOString()
+  };
 }

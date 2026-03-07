@@ -1,4 +1,4 @@
-import { fetchFREDFromSupabase } from './MacroDataService';
+import { fetchMacroSnapshot, fetchLiquiditySnapshot } from './MacroDataService';
 
 // 1. Interface for market data
 export interface MarketContext {
@@ -11,38 +11,27 @@ export interface MarketContext {
   fredStatus: 'ONLINE' | 'FALLBACK' | 'DELAYED';
 }
 
-// 2. Main function to fetch all market data
+/**
+ * V104: Fetches all market data from Supabase materialized views
+ * Sources: macro_snapshot, liquidity_snapshot (populated by ingest_all_sources())
+ * Uses: `created` column for timestamps
+ */
 export const fetchAllMarketData = async (): Promise<MarketContext> => {
   try {
-    const fredSupabaseData = await fetchFREDFromSupabase()
-      .catch(() => ({ value: 0, timestamp: new Date().toISOString(), status: 'FALLBACK' as const }));
-
-    const [fngRes, globalRes, cgRes] = await Promise.all([
-      
-      // Alternative.me (Sentiment)
-      fetch('https://api.alternative.me/fng/')
-        .then(res => res.json())
-        .catch(() => ({ data: [{ value: '50', value_classification: 'Neutral' }] })),
-      
-      // Alternative.me (Global Data)
-      fetch('https://api.alternative.me/v2/global/')
-        .then(res => res.json())
-        .catch(() => ({ data: { bitcoin_percentage_of_market_cap: 0 } })),
-      
-      // CoinGecko (Public Price - no key needed)
-      fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true')
-        .then(res => res.json())
-        .catch(() => ({ bitcoin: { usd: 0, usd_24h_change: 0 } }))
+    // V104: Fetch from materialized views instead of direct API calls
+    const [macroData, liquidityData] = await Promise.all([
+      fetchMacroSnapshot(),
+      fetchLiquiditySnapshot()
     ]);
 
     return {
-      yieldCurve: fredSupabaseData.value?.toString() || "N/A",
-      fearGreedValue: fngRes.data?.[0]?.value || "50",
-      fearGreedLabel: fngRes.data?.[0]?.value_classification || "Neutral",
-      btcPrice: cgRes.bitcoin?.usd || 0,
-      btcChange: cgRes.bitcoin?.usd_24h_change || 0,
-      btcDominance: globalRes.data?.bitcoin_percentage_of_market_cap || 0,
-      fredStatus: fredSupabaseData.status
+      yieldCurve: macroData.US?.yieldCurve?.toString() || macroData.US?.fredValue?.toString() || "N/A",
+      fearGreedValue: liquidityData.fearGreedValue?.toString() || "50",
+      fearGreedLabel: liquidityData.fearGreedLabel || "Neutral",
+      btcPrice: liquidityData.btcPrice || 0,
+      btcChange: liquidityData.btcChange || 0,
+      btcDominance: liquidityData.btcDominance || 0,
+      fredStatus: macroData.US?.status || 'FALLBACK'
     };
   } catch (error) {
     console.error("Master Fetch Error:", error);
