@@ -19,6 +19,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useAsianIntelligence, getYenCarryColor } from '../hooks/useAsianIntelligence';
+import { useMacroData } from '../hooks/useMacroData';
 import type { JapanMacroState, YenCarryTradeData } from '../types/japan-india';
 
 // Rising Sun color palette
@@ -88,7 +89,7 @@ const YenCarryMonitor = memo(function YenCarryMonitor({
       {/* Rate Comparison Bar */}
       <div className="mt-4 pt-4 border-t border-red-900/30">
         <div className="flex justify-between text-xs text-gray-500 mb-2">
-          <span>JPY Rate: {data.jpy_overnight_rate}%</span>
+          <span>BoJ Rate: {bojRateLive !== null ? `${bojRateLive.toFixed(2)}%` : data.jpy_overnight_rate + '%'}</span>
           <span>USD Rate: {data.usd_overnight_rate}%</span>
         </div>
         <div className="h-2 bg-gray-900 rounded-none overflow-hidden">
@@ -175,8 +176,14 @@ const MacroCard = memo(function MacroCard({
  */
 export const JapanMacroWidget = memo(function JapanMacroWidget() {
   const { japan, refresh } = useAsianIntelligence();
+  const { display, values, metricStatus, lastSync } = useMacroData();
   const [view, setView] = useState<JapanView>('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Use live BoJ rate from FRED via macroDataService
+  const bojRateLive = values?.bojRate ?? null;
+  const bojRateDisplay = display.bojRate;
+  const bojStatus = metricStatus?.bojRate ?? 'FALLBACK';
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -352,8 +359,11 @@ export const JapanMacroWidget = memo(function JapanMacroWidget() {
       {/* Footer */}
       <div className="px-6 py-3 border-t border-red-900/30 bg-red-950/10">
         <div className="flex items-center justify-between text-xs text-gray-500 font-mono">
-          <span>Source: e-Stat (Japan Statistics Bureau)</span>
-          <span>{japan.lastUpdated ? new Date(japan.lastUpdated).toLocaleTimeString() : '--:--'}</span>
+          <span>Source: FRED / BoJ via Supabase Sync</span>
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-none ${bojStatus === 'LIVE' ? 'bg-green-500' : bojStatus === 'CACHED' ? 'bg-amber-500' : 'bg-red-500'}`} />
+            <span>{lastSync ? lastSync.toLocaleTimeString() : japan.lastUpdated ? new Date(japan.lastUpdated).toLocaleTimeString() : '--:--'}</span>
+          </div>
         </div>
       </div>
     </div>

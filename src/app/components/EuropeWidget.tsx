@@ -27,6 +27,7 @@ import {
   getCountryFlag,
   getStressLevelColor
 } from '../services/europeSovereignService';
+import { useMacroData } from '../hooks/useMacroData';
 
 // Cache for data
 let cachedData: {
@@ -49,6 +50,13 @@ export const EuropeWidget = memo(function EuropeWidget() {
   const [sovereignIndex, setSovereignIndex] = useState<EuropeSovereignIndex | null>(null);
   const [debtSignals, setDebtSignals] = useState<DebtStressSignal[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<EuroCountryCode | null>(null);
+  
+  // Live ECB rate from FRED via macroDataService
+  const { display, values, metricStatus, lastSync } = useMacroData();
+  const ecbRateLive = values?.ecbRate ?? null;
+  const ecbStatus = metricStatus?.ecbRate ?? 'FALLBACK';
+  const dgs10Live = values?.dgs10 ?? null;
+  const dgs2Live = values?.dgs2 ?? null;
 
   const fetchData = useCallback(async () => {
     // Check cache
@@ -116,7 +124,7 @@ export const EuropeWidget = memo(function EuropeWidget() {
             </div>
             <div>
               <h3 className="text-white font-bold text-sm">EUROPE SOVEREIGN</h3>
-              <p className="text-blue-300 text-xs font-mono">Eurostat // ECB Data</p>
+              <p className="text-blue-300 text-xs font-mono">FRED / ECB via Supabase Sync</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -176,6 +184,17 @@ export const EuropeWidget = memo(function EuropeWidget() {
           />
         )}
       </div>
+
+      {/* Footer with sync status */}
+      <div className="px-4 py-2 border-t border-blue-900/50 bg-blue-950/20">
+        <div className="flex items-center justify-between text-xs text-gray-500 font-mono">
+          <span>Source: FRED / ECB via Supabase Sync</span>
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-none ${ecbStatus === 'LIVE' ? 'bg-green-500' : ecbStatus === 'CACHED' ? 'bg-amber-500' : 'bg-red-500'}`} />
+            <span>{lastSync ? lastSync.toLocaleTimeString() : '--:--'}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 });
@@ -225,6 +244,27 @@ const OverviewView = memo(function OverviewView({
         </div>
       </div>
 
+      {/* US Treasury Yields (Live from FRED) */}
+      <div className="bg-blue-950/20 border border-blue-800/30 rounded-none p-3 mb-4">
+        <div className="text-gray-400 text-xs font-mono mb-2">US TREASURY (FRED LIVE)</div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center">
+            <div className="text-xs text-gray-500">10Y</div>
+            <div className="text-lg font-bold text-white">{dgs10Live !== null ? `${dgs10Live.toFixed(2)}%` : '--'}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-gray-500">2Y</div>
+            <div className="text-lg font-bold text-white">{dgs2Live !== null ? `${dgs2Live.toFixed(2)}%` : '--'}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs text-gray-500">SPREAD</div>
+            <div className={`text-lg font-bold ${dgs10Live && dgs2Live && (dgs10Live - dgs2Live) < 0 ? 'text-red-400' : 'text-green-400'}`}>
+              {dgs10Live !== null && dgs2Live !== null ? `${(dgs10Live - dgs2Live).toFixed(2)}%` : '--'}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Index Components */}
       <div className="grid grid-cols-2 gap-3">
         {Object.entries(index.components).map(([key, value]) => (
@@ -264,9 +304,12 @@ const OverviewView = memo(function OverviewView({
           </div>
         </div>
         <div className="bg-gray-900/50 border border-gray-800 rounded-none p-3 text-center">
-          <div className="text-gray-500 text-xs font-mono mb-1">ECB RATE</div>
+          <div className="flex items-center justify-center gap-1 text-gray-500 text-xs font-mono mb-1">
+            <span>ECB RATE</span>
+            <span className={`w-1.5 h-1.5 rounded-none ${ecbStatus === 'LIVE' ? 'bg-green-500' : ecbStatus === 'CACHED' ? 'bg-amber-500' : 'bg-red-500'}`} />
+          </div>
           <div className="text-lg font-bold text-blue-400">
-            {data.ecb_rate?.toFixed(2)}%
+            {ecbRateLive !== null ? ecbRateLive.toFixed(2) : data.ecb_rate?.toFixed(2)}%
           </div>
         </div>
       </div>

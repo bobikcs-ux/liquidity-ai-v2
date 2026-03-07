@@ -540,7 +540,7 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">ASIAN INTELLIGENCE LAYER</h3>
-              <p className="text-xs text-gray-500 font-mono">Japan e-Stat // India GST Portal</p>
+              <p className="text-xs text-gray-500 font-mono">FRED / BoJ via Supabase Sync</p>
             </div>
           </div>
           
@@ -558,7 +558,7 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
             </div>
             <div>
               <h3 className="text-lg font-bold text-white">WESTERN INTELLIGENCE LAYER</h3>
-              <p className="text-xs text-gray-500 font-mono">Eurostat // RBA // ABS Data</p>
+              <p className="text-xs text-gray-500 font-mono">FRED / ECB via Supabase Sync</p>
             </div>
           </div>
           
