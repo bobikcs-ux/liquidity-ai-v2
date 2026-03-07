@@ -56,9 +56,11 @@ import {
   generateMarketFlowSignal,
   formatLargeNumber,
   formatPercentChange,
+  fetchOilSpotPrices,
 } from '../services/energyFinanceService';
 import { PaywallOverlay } from './PaywallOverlay';
 import { useSubscription } from '../context/SubscriptionContext';
+import { useAutoRefresh } from '../hooks/useAutoRefresh';
 
 // =============================================================================
 // INSTITUTIONAL DESIGN TOKENS
@@ -72,9 +74,9 @@ const DESIGN = {
     elevated: '#1a1a22',
   },
   accent: {
-    gold: '#A3937B',
-    goldSoft: '#B8A892',
-    goldMuted: 'rgba(163, 147, 123, 0.10)',
+    gold: '#d4af37',
+    goldSoft: '#c6a85a',
+    goldMuted: 'rgba(212, 175, 55, 0.10)',
   },
   status: {
     success: '#2ecc71',
@@ -651,11 +653,8 @@ export function EnergyFinanceDashboard() {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000); // 5 minute refresh
-    return () => clearInterval(interval);
-  }, [fetchData]);
+  // Global 5-min auto-refresh via shared hook
+  useAutoRefresh(fetchData);
 
   return (
     <div className="w-full" style={{ background: 'transparent' }}>
