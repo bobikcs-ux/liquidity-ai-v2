@@ -1,3 +1,5 @@
+import { fetchFREDFromSupabase } from './MacroDataService';
+
 // 1. Interface for market data
 export interface MarketContext {
   yieldCurve: string | null;
@@ -6,16 +8,16 @@ export interface MarketContext {
   btcPrice: number;
   btcChange: number;
   btcDominance: number;
+  fredStatus: 'ONLINE' | 'FALLBACK' | 'DELAYED';
 }
 
 // 2. Main function to fetch all market data
 export const fetchAllMarketData = async (): Promise<MarketContext> => {
   try {
-    const [fredRes, fngRes, globalRes, cgRes] = await Promise.all([
-      // FRED (Macro) - uses loaded API key
-      fetch(`https://api.stlouisfed.org/fred/series/observations?series_id=T10Y2Y&api_key=${import.meta.env.VITE_FRED_API_KEY}&file_type=json&limit=1&sort_order=desc`)
-        .then(res => res.json())
-        .catch(() => ({ observations: [{ value: 'N/A' }] })),
+    const fredSupabaseData = await fetchFREDFromSupabase()
+      .catch(() => ({ value: 0, timestamp: new Date().toISOString(), status: 'FALLBACK' as const }));
+
+    const [fngRes, globalRes, cgRes] = await Promise.all([
       
       // Alternative.me (Sentiment)
       fetch('https://api.alternative.me/fng/')
@@ -34,12 +36,13 @@ export const fetchAllMarketData = async (): Promise<MarketContext> => {
     ]);
 
     return {
-      yieldCurve: fredRes.observations?.[0]?.value || "N/A",
+      yieldCurve: fredSupabaseData.value?.toString() || "N/A",
       fearGreedValue: fngRes.data?.[0]?.value || "50",
       fearGreedLabel: fngRes.data?.[0]?.value_classification || "Neutral",
       btcPrice: cgRes.bitcoin?.usd || 0,
       btcChange: cgRes.bitcoin?.usd_24h_change || 0,
-      btcDominance: globalRes.data?.bitcoin_percentage_of_market_cap || 0
+      btcDominance: globalRes.data?.bitcoin_percentage_of_market_cap || 0,
+      fredStatus: fredSupabaseData.status
     };
   } catch (error) {
     console.error("Master Fetch Error:", error);

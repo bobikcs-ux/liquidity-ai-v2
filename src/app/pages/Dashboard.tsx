@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TrendingUp, AlertTriangle, Activity, DollarSign, ShieldAlert, Cpu } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { AICopilot } from '../components/AICopilot';
@@ -7,11 +7,33 @@ import { ResourceShockEngine } from '../components/ResourceShockEngine';
 import { ConflictTransmissionModel } from '../components/ConflictTransmissionModel';
 import { EmploymentDisruptionLayer } from '../components/EmploymentDisruptionLayer';
 import { NarrativeShockModel } from '../components/NarrativeShockModel';
+import { resyncMacroDashboard } from '../services/MacroDataService';
 
 export function Dashboard() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
+  
+  const [fredStatus, setFredStatus] = useState<'ONLINE' | 'FALLBACK' | 'DELAYED'>('FALLBACK');
+  const [fredValue, setFredValue] = useState<number>(0);
+
+  // Re-sync macro dashboard on component mount
+  useEffect(() => {
+    const syncMacroData = async () => {
+      try {
+        console.log('[v0] Dashboard: RE-SYNCING macro data...');
+        const macroData = await resyncMacroDashboard();
+        setFredStatus(macroData.US?.status || 'FALLBACK');
+        setFredValue(macroData.US?.fredValue || 0);
+        console.log('[v0] Dashboard: Macro data synced. FRED Status:', macroData.US?.status);
+      } catch (err) {
+        console.error('[v0] Dashboard: Failed to sync macro data:', err);
+        setFredStatus('FALLBACK');
+      }
+    };
+
+    syncMacroData();
+  }, []);
   
   const cardStyle = `rounded-xl shadow-sm border p-6 transition-all duration-500 ${
     isDark ? 'bg-[#0a0f1a] border-blue-900/40' : 
@@ -55,6 +77,13 @@ export function Dashboard() {
             <div className="w-10 h-10 rounded-full border border-blue-500/30 animate-spin-slow absolute"></div>
             <Cpu className="w-5 h-5 text-blue-400" />
           </div>
+        </div>
+
+        {/* FRED Status Indicator */}
+        <div className="flex items-center gap-3 bg-green-950/20 px-4 py-2 rounded-xl border border-green-500/30 backdrop-blur-sm">
+          <div className={`w-2 h-2 rounded-full ${fredStatus === 'ONLINE' ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
+          <span className="text-xs font-mono text-green-400 uppercase">FRED: {fredStatus}</span>
+          {fredStatus === 'ONLINE' && <span className="text-xs font-mono text-green-300">Live via Supabase</span>}
         </div>
       </div>
 
@@ -162,13 +191,17 @@ export function Dashboard() {
           </div>
           <div className="space-y-3">
             {[
+              { label: 'FRED Value', val: fredValue?.toFixed(2) || '---', trend: 'neutral', source: fredStatus === 'ONLINE' ? '✓ Live' : '◯ Fallback' },
               { label: 'Real Yield', val: '2.34%', trend: 'neutral' },
               { label: 'M2 Momentum', val: '+3.2%', trend: 'up' },
               { label: 'Yield Curve', val: '-0.23', trend: 'down' },
               { label: 'VIX Terminal', val: currentRegime.volatilityIndex, trend: 'neutral' },
             ].map((m, i) => (
               <div key={i} className="flex justify-between items-end border-b border-white/5 pb-2">
-                <span className="text-[11px] font-mono text-gray-400 uppercase">{m.label}</span>
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-mono text-gray-400 uppercase">{m.label}</span>
+                  {i === 0 && <span className="text-[9px] font-mono text-green-400 mt-0.5">{m.source}</span>}
+                </div>
                 <span className={`text-base font-bold font-mono ${m.trend === 'up' ? 'text-green-500' : m.trend === 'down' ? 'text-red-500' : 'text-white'}`}>
                   {m.val}
                 </span>
