@@ -98,32 +98,28 @@ function getFredKey(): string | undefined {
 
 async function fetchFromFRED(
   seriesId: string,
-  fredKey: string
+  _fredKey: string // Key is now handled server-side
 ): Promise<number | null> {
   try {
-    const url =
-      `${FRED_BASE}?series_id=${seriesId}&api_key=${fredKey}` +
-      `&file_type=json&limit=1&sort_order=desc`;
+    // Use internal API route to bypass CORS - server fetches from FRED
+    const url = `/api/macro/fred?series=${encodeURIComponent(seriesId)}`;
 
-    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
 
     if (!res.ok) {
-      console.warn(`[MacroData] FRED ${seriesId} returned HTTP ${res.status}`);
+      const errorData = await res.json().catch(() => ({}));
+      console.warn(`[MacroData] FRED ${seriesId} API returned ${res.status}:`, errorData);
       return null;
     }
 
     const json = await res.json();
-    const rawValue: string | undefined = json?.observations?.[0]?.value;
-
-    if (!rawValue || rawValue === '.' || rawValue === 'N/A') {
-      console.warn(`[MacroData] FRED ${seriesId} value is missing or N/A`);
+    
+    if (json.status !== 'LIVE' || typeof json.value !== 'number') {
+      console.warn(`[MacroData] FRED ${seriesId} returned non-LIVE status:`, json);
       return null;
     }
 
-    const parsed = parseFloat(rawValue);
-    if (isNaN(parsed)) return null;
-
-    return parsed;
+    return json.value;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.warn(`[MacroData] FRED ${seriesId} fetch error: ${msg}`);
