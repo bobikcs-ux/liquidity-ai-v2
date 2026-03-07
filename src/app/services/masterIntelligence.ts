@@ -3,12 +3,50 @@ import { supabase } from '../lib/supabase';
 // ============================================
 // V104 ARCHITECTURE: SUPABASE CRON PIPELINE
 // ============================================
-// All data is pre-fetched by Supabase Edge Functions (cron)
+// All data is pre-fetched by sovereign-ingest-all cron job
 // and stored in materialized views for instant access.
 // NO direct API calls - maximum speed & security.
 // ============================================
+// VIEWS: macro_snapshot, energy_snapshot, liquidity_snapshot, geopolitics_snapshot
+// TIMESTAMP COLUMN: created
+// ============================================
 
-// 1. Interface for market data
+export interface MacroSnapshot {
+  yield_curve_10y2y: number | null;
+  fear_greed_value: number | null;
+  fear_greed_label: string | null;
+  dxy_value: number | null;
+  vix_value: number | null;
+  created: string;
+}
+
+export interface EnergySnapshot {
+  btc_price: number | null;
+  btc_change_24h: number | null;
+  btc_dominance: number | null;
+  eth_price: number | null;
+  eth_change_24h: number | null;
+  total_market_cap: number | null;
+  created: string;
+}
+
+export interface LiquiditySnapshot {
+  fed_balance_sheet: number | null;
+  reverse_repo: number | null;
+  tga_balance: number | null;
+  net_liquidity: number | null;
+  m2_supply: number | null;
+  created: string;
+}
+
+export interface GeopoliticsSnapshot {
+  gpr_index: number | null;
+  threat_level: string | null;
+  active_conflicts: number | null;
+  sanctions_count: number | null;
+  created: string;
+}
+
 export interface MarketContext {
   yieldCurve: string | null;
   fearGreedValue: string;
@@ -16,138 +54,173 @@ export interface MarketContext {
   btcPrice: number;
   btcChange: number;
   btcDominance: number;
+  dxy: number | null;
+  vix: number | null;
+  netLiquidity: number | null;
+  gprIndex: number | null;
+  threatLevel: string | null;
 }
 
-// 2. Fetch FRED data from Supabase materialized view
-async function fetchFREDFromSupabase(): Promise<string> {
+// Fetch from macro_snapshot view
+async function fetchMacroSnapshot(): Promise<MacroSnapshot | null> {
   if (!supabase) {
-    console.warn('[v104] Supabase not configured, using fallback');
-    return 'N/A';
+    console.warn('[v104] Supabase not configured');
+    return null;
   }
 
   try {
     const { data, error } = await supabase
-      .from('market_data_cache')
-      .select('value')
-      .eq('data_type', 'fred_yield_curve')
-      .order('cached_at', { ascending: false })
+      .from('macro_snapshot')
+      .select('*')
+      .order('created', { ascending: false })
       .limit(1)
       .single();
 
-    if (error || !data) {
-      console.warn('[v104] FRED cache miss, using fallback');
-      return 'N/A';
+    if (error) {
+      console.warn('[v104] macro_snapshot fetch error:', error.message);
+      return null;
     }
 
-    return data.value || 'N/A';
+    return data;
   } catch (err) {
-    console.error('[v104] FRED fetch error:', err);
-    return 'N/A';
+    console.error('[v104] macro_snapshot error:', err);
+    return null;
   }
 }
 
-// 3. Fetch Fear & Greed data from Supabase materialized view
-async function fetchFearGreedFromSupabase(): Promise<{ value: string; label: string }> {
+// Fetch from energy_snapshot view
+async function fetchEnergySnapshot(): Promise<EnergySnapshot | null> {
   if (!supabase) {
-    return { value: '50', label: 'Neutral' };
+    return null;
   }
 
   try {
     const { data, error } = await supabase
-      .from('market_data_cache')
-      .select('value, label')
-      .eq('data_type', 'fear_greed_index')
-      .order('cached_at', { ascending: false })
+      .from('energy_snapshot')
+      .select('*')
+      .order('created', { ascending: false })
       .limit(1)
       .single();
 
-    if (error || !data) {
-      console.warn('[v104] Fear/Greed cache miss');
-      return { value: '50', label: 'Neutral' };
+    if (error) {
+      console.warn('[v104] energy_snapshot fetch error:', error.message);
+      return null;
     }
 
-    return { 
-      value: data.value || '50', 
-      label: data.label || 'Neutral' 
-    };
+    return data;
   } catch (err) {
-    console.error('[v104] Fear/Greed fetch error:', err);
-    return { value: '50', label: 'Neutral' };
+    console.error('[v104] energy_snapshot error:', err);
+    return null;
   }
 }
 
-// 4. Fetch BTC data from Supabase materialized view
-async function fetchBTCFromSupabase(): Promise<{ price: number; change: number; dominance: number }> {
+// Fetch from liquidity_snapshot view
+async function fetchLiquiditySnapshot(): Promise<LiquiditySnapshot | null> {
   if (!supabase) {
-    return { price: 0, change: 0, dominance: 0 };
+    return null;
   }
 
   try {
     const { data, error } = await supabase
-      .from('market_data_cache')
-      .select('value, change_24h, dominance')
-      .eq('data_type', 'btc_price')
-      .order('cached_at', { ascending: false })
+      .from('liquidity_snapshot')
+      .select('*')
+      .order('created', { ascending: false })
       .limit(1)
       .single();
 
-    if (error || !data) {
-      console.warn('[v104] BTC cache miss');
-      return { price: 0, change: 0, dominance: 0 };
+    if (error) {
+      console.warn('[v104] liquidity_snapshot fetch error:', error.message);
+      return null;
     }
 
-    return {
-      price: parseFloat(data.value) || 0,
-      change: parseFloat(data.change_24h) || 0,
-      dominance: parseFloat(data.dominance) || 0
-    };
+    return data;
   } catch (err) {
-    console.error('[v104] BTC fetch error:', err);
-    return { price: 0, change: 0, dominance: 0 };
+    console.error('[v104] liquidity_snapshot error:', err);
+    return null;
   }
 }
 
-// 5. Main function to fetch all market data from Supabase cache
+// Fetch from geopolitics_snapshot view
+async function fetchGeopoliticsSnapshot(): Promise<GeopoliticsSnapshot | null> {
+  if (!supabase) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('geopolitics_snapshot')
+      .select('*')
+      .order('created', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.warn('[v104] geopolitics_snapshot fetch error:', error.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('[v104] geopolitics_snapshot error:', err);
+    return null;
+  }
+}
+
+// Main function: fetch all market data from Supabase materialized views
 export const fetchAllMarketData = async (): Promise<MarketContext> => {
   try {
-    // Parallel fetch from Supabase materialized views
-    const [fredData, fngData, btcData] = await Promise.all([
-      fetchFREDFromSupabase(),
-      fetchFearGreedFromSupabase(),
-      fetchBTCFromSupabase()
+    // Parallel fetch from all 4 materialized views
+    const [macro, energy, liquidity, geopolitics] = await Promise.all([
+      fetchMacroSnapshot(),
+      fetchEnergySnapshot(),
+      fetchLiquiditySnapshot(),
+      fetchGeopoliticsSnapshot()
     ]);
 
     return {
-      yieldCurve: fredData,
-      fearGreedValue: fngData.value,
-      fearGreedLabel: fngData.label,
-      btcPrice: btcData.price,
-      btcChange: btcData.change,
-      btcDominance: btcData.dominance
+      yieldCurve: macro?.yield_curve_10y2y?.toFixed(2) ?? 'N/A',
+      fearGreedValue: macro?.fear_greed_value?.toString() ?? '50',
+      fearGreedLabel: macro?.fear_greed_label ?? 'Neutral',
+      btcPrice: energy?.btc_price ?? 0,
+      btcChange: energy?.btc_change_24h ?? 0,
+      btcDominance: energy?.btc_dominance ?? 0,
+      dxy: macro?.dxy_value ?? null,
+      vix: macro?.vix_value ?? null,
+      netLiquidity: liquidity?.net_liquidity ?? null,
+      gprIndex: geopolitics?.gpr_index ?? null,
+      threatLevel: geopolitics?.threat_level ?? null
     };
   } catch (error) {
     console.error('[v104] Master Fetch Error:', error);
-    // Return safe defaults
     return {
       yieldCurve: 'N/A',
       fearGreedValue: '50',
       fearGreedLabel: 'Neutral',
       btcPrice: 0,
       btcChange: 0,
-      btcDominance: 0
+      btcDominance: 0,
+      dxy: null,
+      vix: null,
+      netLiquidity: null,
+      gprIndex: null,
+      threatLevel: null
     };
   }
 };
 
-// 6. Function to build the AI prompt
+// Build the AI prompt with full v104 data
 export const buildBlackSwanPrompt = (context: MarketContext): string => {
   return `
 System: Act as a Black Swan Risk Analyst.
-Data Input:
-- Yield Curve (10Y-2Y): ${context.yieldCurve} (Negative means recession risk)
+Data Input (from Supabase Materialized Views):
+- Yield Curve (10Y-2Y): ${context.yieldCurve} (Negative = recession risk)
 - Fear & Greed: ${context.fearGreedValue} (${context.fearGreedLabel})
-- Bitcoin Price: $${context.btcPrice.toLocaleString()} (${context.btcChange.toFixed(2)}% 24h)
+- Bitcoin: $${context.btcPrice.toLocaleString()} (${context.btcChange.toFixed(2)}% 24h)
 - BTC Dominance: ${context.btcDominance.toFixed(1)}%
+- DXY: ${context.dxy ?? 'N/A'}
+- VIX: ${context.vix ?? 'N/A'}
+- Net Liquidity: ${context.netLiquidity ? '$' + (context.netLiquidity / 1e12).toFixed(2) + 'T' : 'N/A'}
+- GPR Index: ${context.gprIndex ?? 'N/A'} (Threat: ${context.threatLevel ?? 'Unknown'})
 
 Task: Provide a short, aggressive professional analysis.
 Calculate a "Survival Probability" percentage.
@@ -155,7 +228,7 @@ Format: Bullet points for Risk Level, Liquidity State, and Final Warning.
   `.trim();
 };
 
-// 7. Function that talks to Gemini API
+// Gemini AI analysis
 export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<string> => {
   const GEMINI_KEY = import.meta.env.VITE_GOOGLE_AI_KEY;
   
@@ -170,17 +243,10 @@ export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<stri
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 500,
-          }
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 500 }
         })
       }
     );
@@ -197,20 +263,21 @@ export const analyzeBlackSwanRisk = async (context: MarketContext): Promise<stri
   }
 };
 
-// 8. Mock analysis fallback
+// Mock analysis fallback
 const generateMockAnalysis = (context: MarketContext): string => {
   const fearGreed = parseInt(context.fearGreedValue) || 50;
   const yieldValue = parseFloat(context.yieldCurve || '0');
+  const vix = context.vix ?? 20;
   
   let riskLevel = 'MODERATE';
   let survivalProb = 78;
   let liquidityState = 'Stable';
   
-  if (fearGreed < 25 || yieldValue < -0.5) {
+  if (fearGreed < 25 || yieldValue < -0.5 || vix > 30) {
     riskLevel = 'ELEVATED';
     survivalProb = 62;
     liquidityState = 'Tightening';
-  } else if (fearGreed > 75) {
+  } else if (fearGreed > 75 || vix < 12) {
     riskLevel = 'EUPHORIA WARNING';
     survivalProb = 71;
     liquidityState = 'Overextended';
@@ -232,6 +299,9 @@ const generateMockAnalysis = (context: MarketContext): string => {
 - Sentiment: ${context.fearGreedLabel} (${context.fearGreedValue}/100)
 - BTC: $${context.btcPrice.toLocaleString()} (${context.btcChange >= 0 ? '+' : ''}${context.btcChange.toFixed(2)}%)
 - BTC Dominance: ${context.btcDominance.toFixed(1)}%
+- VIX: ${context.vix ?? 'N/A'}
+- Net Liquidity: ${context.netLiquidity ? '$' + (context.netLiquidity / 1e12).toFixed(2) + 'T' : 'N/A'}
+- Geopolitical Threat: ${context.threatLevel ?? 'Unknown'}
 
 **Final Warning:**
 ${riskLevel === 'ELEVATED' 
@@ -242,7 +312,7 @@ ${riskLevel === 'ELEVATED'
   `.trim();
 };
 
-// 9. Combined scan function for easy use
+// Combined scan function
 export const runMasterScan = async (): Promise<{
   context: MarketContext;
   analysis: string;
