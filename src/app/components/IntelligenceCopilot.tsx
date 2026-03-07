@@ -279,7 +279,7 @@ function IntelligenceCopilotCore() {
                       {msg.role === 'system' ? 'SYSTEM' : 'AURELIUS'}
                     </span>
                     <span className="text-xs font-mono" style={{ color: DESIGN.textMuted }}>
-                      {msg.timestamp.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
+                      {msg.timestamp.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </span>
                   </div>
                 )}
@@ -298,7 +298,7 @@ function IntelligenceCopilotCore() {
                 {msg.role === 'user' && (
                   <div className="flex justify-end mt-1">
                     <span className="text-xs font-mono" style={{ color: DESIGN.textMuted }}>
-                      {msg.timestamp.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' })}
+                      {msg.timestamp.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}
                     </span>
                   </div>
                 )}
