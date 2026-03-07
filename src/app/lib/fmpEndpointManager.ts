@@ -1,11 +1,11 @@
-'use client';
-
 /**
  * Shared API endpoint management for FMP
  * Coordinates between InfrastructureStatusBar (probe) and energyFinanceService (fetcher)
+ * This is a pure service module - no React or 'use client' needed
  */
 
-export let FMP_USE_STABLE_ENDPOINT = true;
+// Session-level flag: switches to legacy /api/v3 if /stable/ returns "Legacy Endpoint"
+let FMP_USE_STABLE_ENDPOINT = true;
 
 export function checkForLegacyEndpoint(responseText: string): void {
   if (responseText.includes('Legacy Endpoint') && FMP_USE_STABLE_ENDPOINT) {

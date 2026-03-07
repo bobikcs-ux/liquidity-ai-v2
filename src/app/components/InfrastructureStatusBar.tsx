@@ -45,9 +45,6 @@ const EIA_API_KEY = sanitizeApiKey(import.meta.env.VITE_EIA_API_KEY as string | 
 // Persistent cache for last known good data
 const lastKnownGoodCache = new Map<string, { timestamp: Date; latencyMs: number }>();
 
-// Global session flag: if FMP /stable/ endpoint returns "Legacy Endpoint", switch to /api/v3
-let fmpUseStable = true;
-
 // Mask API key for debug display: "sk-abc123xyz" -> "sk-ab...yz"
 function maskKey(key: string | undefined): string {
   if (!key) return '[MISSING]';
