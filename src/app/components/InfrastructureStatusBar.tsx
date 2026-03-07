@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Activity, AlertCircle, WifiOff, Wifi, RefreshCw, Database } from 'lucide-react';
+import { getFMPProbeUrl, checkForLegacyEndpoint } from '../lib/fmpEndpointManager';
 
 interface DataSourceStatus {
   id: string;
@@ -44,6 +45,9 @@ const EIA_API_KEY = sanitizeApiKey(import.meta.env.VITE_EIA_API_KEY as string | 
 // Persistent cache for last known good data
 const lastKnownGoodCache = new Map<string, { timestamp: Date; latencyMs: number }>();
 
+// Global session flag: if FMP /stable/ endpoint returns "Legacy Endpoint", switch to /api/v3
+let fmpUseStable = true;
+
 // Mask API key for debug display: "sk-abc123xyz" -> "sk-ab...yz"
 function maskKey(key: string | undefined): string {
   if (!key) return '[MISSING]';
@@ -75,10 +79,10 @@ async function probeSource(id: string): Promise<{
           console.log('[v0] FMP probe: VITE_FMP_API_KEY not found or invalid. Raw:', rawFmpKey ? `length=${rawFmpKey.length}` : 'undefined');
           return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FMP_API_KEY not set or invalid' };
         }
-        // Use CLUSD (WTI Crude) - same endpoint as energyFinanceService
-        url = `https://financialmodelingprep.com/api/v3/quote/CLUSD?apikey=${FMP_API_KEY}`;
-        maskedUrl = `https://financialmodelingprep.com/api/v3/quote/CLUSD?apikey=${maskKey(FMP_API_KEY)}`;
-        console.log('[v0] FMP probe: Raw key length=' + (rawFmpKey?.length || 0) + ', Sanitized key length=' + FMP_API_KEY.length + ', masked=' + maskKey(FMP_API_KEY));
+        // Use /stable/ endpoint with search-symbol (2026 FMP architecture)
+        url = getFMPProbeUrl(FMP_API_KEY);
+        maskedUrl = url.replace(FMP_API_KEY, maskKey(FMP_API_KEY));
+        console.log('[v0] FMP probe: Using endpoint manager. Sanitized key length=' + FMP_API_KEY.length);
         break;
         
       case 'DefiLlama':
@@ -121,6 +125,16 @@ async function probeSource(id: string): Promise<{
     // Debug log for FMP specifically
     if (id === 'FMP') {
       console.log(`[v0] FMP probe response: status=${res.status}, ok=${res.ok}, latency=${latencyMs}ms`);
+      
+      // Check for "Legacy Endpoint" message and auto-switch
+      if (res.status === 200) {
+        try {
+          const text = await res.text();
+          checkForLegacyEndpoint(text);
+        } catch {
+          // Ignore parse errors
+        }
+      }
     }
     
     // Check for auth/rate limit errors

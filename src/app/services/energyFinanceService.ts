@@ -14,11 +14,12 @@ import type {
   MarketFlowSignal,
   EIASeriesData,
 } from '../types/energy-finance';
+import { getFMPBaseUrl, checkForLegacyEndpoint } from '../lib/fmpEndpointManager';
 
 // API Base URLs
 const DEFILLAMA_STABLECOINS_API = 'https://stablecoins.llama.fi';
 const EIA_API_BASE = 'https://api.eia.gov/v2';
-const FMP_API_BASE = 'https://financialmodelingprep.com/api/v3';
+// FMP: Use the endpoint manager to coordinate between probe and fetcher
 
 // API keys — read once at module level
 // SANITIZE: Strip any URL fragments if the env var accidentally contains a full URL
@@ -59,6 +60,14 @@ function setCache(key: string, data: unknown): void {
   cache.set(key, { data, timestamp: Date.now() });
 }
 
+/**
+ * Check if FMP response contains "Legacy Endpoint" string.
+ * If so, automatically switch to legacy endpoint for this session (via shared manager).
+ */
+function checkFMPLegacyResponse(responseText: string): void {
+  checkForLegacyEndpoint(responseText);
+}
+
 // =============================================================================
 // FMP — Real-Time WTI & Brent Spot Prices
 // =============================================================================
@@ -88,39 +97,50 @@ export async function fetchOilSpotPrices(): Promise<OilSpotPrices> {
   console.log('[v0] fetchOilSpotPrices: Raw key length=' + (rawKey?.length || 0) + ', Sanitized key length=' + FMP_API_KEY.length);
 
   try {
-    // FMP quote endpoint — CLUSD = WTI Crude, COLUSD = Brent
+    // FMP /stable/ endpoint for commodity quotes — CLUSD = WTI Crude, COLUSD = Brent
     const [wtiRes, brentRes] = await Promise.all([
-      fetch(`${FMP_API_BASE}/quote/CLUSD?apikey=${FMP_API_KEY}`),
-      fetch(`${FMP_API_BASE}/quote/COLUSD?apikey=${FMP_API_KEY}`),
+      fetch(`${getFMPBaseUrl()}/quote/CLUSD?apikey=${FMP_API_KEY}`),
+      fetch(`${getFMPBaseUrl()}/quote/COLUSD?apikey=${FMP_API_KEY}`),
     ]);
 
     console.log(`[v0] FMP oil response: WTI=${wtiRes.status}, Brent=${brentRes.status}`);
 
+    // Check responses for "Legacy Endpoint" warning and auto-switch if needed
+    if (wtiRes.status === 200) {
+      const wtiText = await wtiRes.text();
+      checkFMPLegacyResponse(wtiText);
+      try {
+        // Re-parse if we checked for legacy
+        const wtiData = JSON.parse(wtiText) as FMPQuote[];
+        const brentText = await brentRes.text();
+        checkFMPLegacyResponse(brentText);
+        const brentData = JSON.parse(brentText) as FMPQuote[];
+
+        const wti = wtiData[0];
+        const brent = brentData[0];
+
+        if (!wti || !brent) throw new Error('FMP returned empty quotes');
+
+        const result: OilSpotPrices = {
+          wtiPrice: wti.price,
+          wtiChange: wti.change,
+          wtiChangePct: wti.changesPercentage,
+          brentPrice: brent.price,
+          brentChange: brent.change,
+          brentChangePct: brent.changesPercentage,
+          lastUpdated: new Date(),
+          source: 'FMP',
+        };
+
+        setCache(cacheKey, result);
+        return result;
+      } catch (parseErr) {
+        console.log('[v0] FMP parse error, falling back:', parseErr);
+        throw new Error('FMP parse error');
+      }
+    }
+
     if (!wtiRes.ok || !brentRes.ok) throw new Error(`FMP oil quote failed: WTI=${wtiRes.status}, Brent=${brentRes.status}`);
-
-    const [wtiData, brentData] = await Promise.all([
-      wtiRes.json() as Promise<FMPQuote[]>,
-      brentRes.json() as Promise<FMPQuote[]>,
-    ]);
-
-    const wti = wtiData[0];
-    const brent = brentData[0];
-
-    if (!wti || !brent) throw new Error('FMP returned empty quotes');
-
-    const result: OilSpotPrices = {
-      wtiPrice: wti.price,
-      wtiChange: wti.change,
-      wtiChangePct: wti.changesPercentage,
-      brentPrice: brent.price,
-      brentChange: brent.change,
-      brentChangePct: brent.changesPercentage,
-      lastUpdated: new Date(),
-      source: 'FMP',
-    };
-
-    setCache(cacheKey, result);
-    return result;
   } catch {
     return getOilFallback('FALLBACK');
   }
@@ -177,27 +197,35 @@ export async function fetchLiveFXData(): Promise<LiveFXData> {
 
   try {
     const symbols = FX_SYMBOLS.map(f => f.symbol).join(',');
-    const res = await fetch(`${FMP_API_BASE}/quote/${symbols}?apikey=${FMP_API_KEY}`);
-    if (!res.ok) throw new Error('FMP FX quote failed');
+    // Use /stable/ endpoint for FX quotes
+    const res = await fetch(`${getFMPBaseUrl()}/quote/${symbols}?apikey=${FMP_API_KEY}`);
+    
+    // Check for "Legacy Endpoint" response
+    if (res.status === 200) {
+      const resText = await res.text();
+      checkForLegacyEndpoint(resText);
+      
+      try {
+        const quotes: FMPQuote[] = JSON.parse(resText);
+        if (!quotes || quotes.length === 0) throw new Error('FMP FX empty response');
 
-    const quotes: FMPQuote[] = await res.json();
-    if (!quotes || quotes.length === 0) throw new Error('FMP FX empty response');
+        const pairs: FXPair[] = FX_SYMBOLS.map(def => {
+          const q = quotes.find(q => q.symbol === def.symbol);
+          const rate = q ? (def.invert ? +(1 / q.price).toFixed(5) : q.price) : 0;
+          const change = q ? q.change : 0;
+          const changePct = q ? q.changesPercentage : 0;
 
-    const pairs: FXPair[] = FX_SYMBOLS.map(def => {
-      const q = quotes.find(q => q.symbol === def.symbol);
-      const rate = q ? (def.invert ? +(1 / q.price).toFixed(5) : q.price) : 0;
-      const change = q ? q.change : 0;
-      const changePct = q ? q.changesPercentage : 0;
-
-      return {
-        symbol: def.symbol,
-        label: def.label,
-        rate,
-        change,
-        changePct,
-        trend: changePct > 0.05 ? 'up' : changePct < -0.05 ? 'down' : 'flat',
-      };
-    });
+          return {
+            symbol: def.symbol,
+            label: def.label,
+            rate,
+            change,
+            changePct,
+            trend: changePct > 0.05 ? 'up' : changePct < -0.05 ? 'down' : 'flat',
+          };
+        });
+        
+        checkFMPLegacyResponse(resText);
 
     // Dollar strength: average of (USD vs others) — higher = stronger USD
     const avgChangePct = pairs
