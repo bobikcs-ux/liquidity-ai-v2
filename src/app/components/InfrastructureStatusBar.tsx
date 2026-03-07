@@ -92,6 +92,24 @@ async function probeSource(id: string): Promise<{
         maskedUrl = url.replace(FRED_API_KEY, maskKey(FRED_API_KEY));
         break;
 
+      case 'ECB':
+        if (!FRED_API_KEY) {
+          return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FRED_API_KEY not set' };
+        }
+        // Probe ECB Main Refinancing Rate (ECBMAINREF)
+        url = `https://api.stlouisfed.org/fred/series/observations?series_id=ECBMAINREF&api_key=${FRED_API_KEY}&file_type=json&limit=1&sort_order=desc`;
+        maskedUrl = url.replace(FRED_API_KEY, maskKey(FRED_API_KEY));
+        break;
+
+      case 'BoJ':
+        if (!FRED_API_KEY) {
+          return { status: 'CACHED', latencyMs: 0, probeUrl: 'NO_API_KEY', errorMessage: 'VITE_FRED_API_KEY not set' };
+        }
+        // Probe Bank of Japan Policy Rate (INTDSRJPM193N)
+        url = `https://api.stlouisfed.org/fred/series/observations?series_id=INTDSRJPM193N&api_key=${FRED_API_KEY}&file_type=json&limit=1&sort_order=desc`;
+        maskedUrl = url.replace(FRED_API_KEY, maskKey(FRED_API_KEY));
+        break;
+
       case 'Supabase': {
         // Probe macro_metrics table directly
         const sbUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -223,6 +241,8 @@ async function probeSource(id: string): Promise<{
 
 const SOURCES: { id: string; name: string }[] = [
   { id: 'FRED', name: 'FRED' },
+  { id: 'ECB', name: 'ECB' },
+  { id: 'BoJ', name: 'BoJ' },
   { id: 'Supabase', name: 'Supabase' },
   { id: 'FMP', name: 'FMP' },
   { id: 'DefiLlama', name: 'DefiLlama' },

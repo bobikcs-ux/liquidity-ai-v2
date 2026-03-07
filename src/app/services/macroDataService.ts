@@ -29,7 +29,11 @@ export interface MacroMetric {
 
 export interface MacroDataResult {
   dgs10: MacroMetric;       // 10Y Treasury yield (%)
+  dgs2: MacroMetric;        // 2Y Treasury yield (%)
   wm2ns: MacroMetric;       // M2 Money Supply (billions USD)
+  ecbRate: MacroMetric;     // ECB Main Refinancing Rate (%)
+  bojRate: MacroMetric;     // Bank of Japan Policy Rate (%)
+  oecd: MacroMetric;        // OECD Composite Leading Indicator
   fearGreed: MacroMetric;   // Fear & Greed Index (0-100)
   overallStatus: 'LIVE' | 'DEGRADED' | 'OFFLINE';
 }
@@ -45,7 +49,11 @@ const STALE_THRESHOLD_MS = 15 * 60 * 1000; // 15 minutes = stale
 // Hardcoded seed values (last known good prints as of early 2026)
 const SEEDS: Record<string, number> = {
   DGS10: 4.28,
+  DGS2: 4.12,
   WM2NS: 21200,
+  ECBMAINREF: 3.75,
+  INTDSRJPM193N: -0.10,
+  LI0201GYM186S: 102.5,
   FEAR_GREED: 52,
 };
 
@@ -249,10 +257,14 @@ export async function fetchMacroData(): Promise<MacroDataResult> {
     console.warn('[MacroData] VITE_FRED_API_KEY not set — FRED calls will be skipped');
   }
 
-  // Fetch DGS10 and WM2NS from FRED (Fear/Greed is handled by l1DataNervousSystem)
-  const [dgs10Raw, wm2nsRaw] = await Promise.all([
+  // Fetch all global macro metrics in parallel
+  const [dgs10Raw, dgs2Raw, wm2nsRaw, ecbRateRaw, bojRateRaw, oecdRaw] = await Promise.all([
     resolveMetric('DGS10', fredKey),
+    resolveMetric('DGS2', fredKey),
     resolveMetric('WM2NS', fredKey),
+    resolveMetric('ECBMAINREF', fredKey),
+    resolveMetric('INTDSRJPM193N', fredKey),
+    resolveMetric('LI0201GYM186S', fredKey),
   ]);
 
   // Fear/Greed comes from alternative.me — use seed if unavailable
@@ -276,18 +288,22 @@ export async function fetchMacroData(): Promise<MacroDataResult> {
       };
 
   // Overall status
-  const allMetrics = [dgs10Raw, wm2nsRaw, fearGreed];
+  const allMetrics = [dgs10Raw, dgs2Raw, wm2nsRaw, ecbRateRaw, bojRateRaw, oecdRaw, fearGreed];
   const liveCount = allMetrics.filter(m => m.status === 'LIVE').length;
   const fallbackCount = allMetrics.filter(m => m.status === 'FALLBACK').length;
 
   const overallStatus: MacroDataResult['overallStatus'] =
     liveCount === 0 && fallbackCount > 0 ? 'OFFLINE'
-    : liveCount < 2 ? 'DEGRADED'
+    : liveCount < 3 ? 'DEGRADED'
     : 'LIVE';
 
   return {
     dgs10: dgs10Raw,
+    dgs2: dgs2Raw,
     wm2ns: wm2nsRaw,
+    ecbRate: ecbRateRaw,
+    bojRate: bojRateRaw,
+    oecd: oecdRaw,
     fearGreed,
     overallStatus,
   };
