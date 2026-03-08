@@ -77,15 +77,15 @@ export function useSnapshotFirst(): UseSnapshotFirstReturn {
     };
   }, [refresh]);
 
-  // Derive status
+  // Derive status — 'SEED' = no live data, treated as offline
   const allStatuses = [
     data?.energy?.status,
     data?.macro?.status,
     data?.geopolitics?.status,
   ].filter(Boolean);
-  
+
   const liveCount = allStatuses.filter(s => s === 'LIVE').length;
-  const offlineCount = allStatuses.filter(s => s === 'OFFLINE').length;
+  const seedCount = allStatuses.filter(s => s === 'SEED').length;
 
   return {
     data,
@@ -102,7 +102,7 @@ export function useSnapshotFirst(): UseSnapshotFirstReturn {
     // Status
     isLive: liveCount === allStatuses.length && allStatuses.length > 0,
     isDegraded: liveCount > 0 && liveCount < allStatuses.length,
-    isOffline: offlineCount === allStatuses.length || allStatuses.length === 0,
+    isOffline: seedCount === allStatuses.length || allStatuses.length === 0,
   };
 }
 

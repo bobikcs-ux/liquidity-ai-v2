@@ -59,6 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const value = parseFloat(rawValue);
       
+      // 1. Upsert into macro_metrics (symbol-row format for macroDataService)
       const { error: upsertError } = await supabase
         .from('macro_metrics')
         .upsert({
@@ -74,6 +75,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         latencyMs: Date.now() - start,
         error: upsertError?.message,
       };
+    }
+  }
+
+  // After FRED loop, write a consolidated global row to macro_data JSONB table
+  const macroGlobalStart = Date.now();
+  try {
+    // Read freshly upserted values from macro_metrics for JSONB row
+    const { data: freshMetrics } = await supabase
+      .from('macro_metrics')
+      .select('symbol, value')
+      .in('symbol', ['DGS10', 'DGS2', 'WM2NS', 'FEAR_GREED']);
+
+    if (freshMetrics && freshMetrics.length > 0) {
+      const m = new Map(freshMetrics.map(r => [r.symbol, Number(r.value)]));
+      const dgs10 = m.get('DGS10') ?? 4.28;
+      const dgs2 = m.get('DGS2') ?? 4.12;
+      await supabase.from('macro_data').insert({
+        region: 'global',
+        series: {
+          dgs10,
+          dgs2,
+          spread: parseFloat((dgs10 - dgs2).toFixed(3)),
+          wm2ns: m.get('WM2NS') ?? 21200,
+          fear_greed: m.get('FEAR_GREED') ?? 52,
+        },
+        fetched_at: new Date().toISOString(),
+      });
+      results['MACRO_DATA_GLOBAL'] = { status: 'SYNCED', latencyMs: Date.now() - macroGlobalStart };
+    }
+  } catch (err) {
+    results['MACRO_DATA_GLOBAL'] = { status: 'ERROR', latencyMs: Date.now() - macroGlobalStart, error: err instanceof Error ? err.message : 'Unknown' };
     } catch (err) {
       results[`FRED_${seriesId}`] = {
         status: 'ERROR',
@@ -103,12 +135,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const brent = brentData[0];
 
         if (wti?.price && brent?.price) {
-          await supabase.from('energy_snapshot').upsert([
-            { symbol: 'WTI', value: wti.price, source: 'FMP', fetched_at: new Date().toISOString() },
-            { symbol: 'BRENT', value: brent.price, source: 'FMP', fetched_at: new Date().toISOString() },
-          ], { onConflict: 'symbol' });
-          
-          results['FMP_OIL'] = { status: 'SYNCED', latencyMs: Date.now() - oilStart };
+        // energy_data uses JSONB series — insert a new row (latest-first read)
+        await supabase.from('energy_data').insert({
+          series: {
+            wti: wti.price,
+            brent: brent.price,
+            wti_change: wti.changesPercentage ?? 0,
+            brent_change: brent.changesPercentage ?? 0,
+          },
+          fetched_at: new Date().toISOString(),
+        });
+        results['FMP_OIL'] = { status: 'SYNCED', latencyMs: Date.now() - oilStart };
         } else {
           results['FMP_OIL'] = { status: 'NO_DATA', latencyMs: Date.now() - oilStart };
         }
@@ -133,13 +170,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const value = data?.response?.data?.[0]?.value;
       
       if (value) {
-        await supabase.from('energy_snapshot').upsert({
-          symbol: 'NATGAS',
-          value: parseFloat(value),
-          source: 'EIA',
+        // energy_data JSONB — insert row with natgas merged into series
+        // We insert a separate row; the frontend always reads latest ORDER BY fetched_at DESC
+        await supabase.from('energy_data').insert({
+          series: { natgas: parseFloat(value) },
           fetched_at: new Date().toISOString(),
-        }, { onConflict: 'symbol' });
-        
+        });
         results['EIA_NATGAS'] = { status: 'SYNCED', latencyMs: Date.now() - eiaStart };
       } else {
         results['EIA_NATGAS'] = { status: 'NO_DATA', latencyMs: Date.now() - eiaStart };
