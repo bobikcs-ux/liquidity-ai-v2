@@ -11,6 +11,7 @@ import type {
   DebtStressSignal,
   EuropeSovereignIndex,
 } from '../types/europe-australia';
+import { supabase } from '../lib/supabase';
 
 // Eurostat API base URL
 const EUROSTAT_BASE = 'https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data';
@@ -167,13 +168,40 @@ export async function fetchEurozoneMacroData(): Promise<EurozoneMacroData> {
   const validInflation = countries.filter(c => c.inflation_rate !== null);
   const validUnemployment = countries.filter(c => c.unemployment_rate !== null);
 
+  // avg_inflation from Eurostat — if API returned 0 (silent failure), fall back to macro_data.series.cpi
+  let avgInflationFromEurostat = validInflation.length > 0
+    ? validInflation.reduce((sum, c) => sum + c.inflation_rate!, 0) / validInflation.length
+    : 0;
+
+  if (avgInflationFromEurostat === 0) {
+    try {
+      const { data: euRow } = await supabase
+        .from('macro_data')
+        .select('series')
+        .eq('region', 'eu')
+        .order('fetched_at', { ascending: false })
+        .limit(1)
+        .single();
+      const series = euRow?.series as Record<string, number> | null;
+      // Use inflation_rate if present, fall back to cpi
+      const fallback = series?.inflation_rate ?? series?.cpi ?? 0;
+      if (fallback > 0) {
+        avgInflationFromEurostat = fallback;
+        // Backfill country-level inflation with the aggregate fallback so DebtStress calcs work
+        for (const c of countries) {
+          if (c.inflation_rate === null) c.inflation_rate = fallback;
+        }
+      }
+    } catch {
+      // Supabase fallback unavailable — leave at 0 and let UI show '--'
+    }
+  }
+
   const aggregates = {
     avg_gdp_growth: validGDP.length > 0
       ? validGDP.reduce((sum, c) => sum + c.gdp_growth!, 0) / validGDP.length
       : 0,
-    avg_inflation: validInflation.length > 0
-      ? validInflation.reduce((sum, c) => sum + c.inflation_rate!, 0) / validInflation.length
-      : 0,
+    avg_inflation: avgInflationFromEurostat,
     avg_unemployment: validUnemployment.length > 0
       ? validUnemployment.reduce((sum, c) => sum + c.unemployment_rate!, 0) / validUnemployment.length
       : 0,

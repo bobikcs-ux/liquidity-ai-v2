@@ -163,13 +163,24 @@ const SRIGauge = memo(function SRIGauge({
       </div>
       
       {/* Main SRI Score */}
-      <div className="text-center mb-8">
-        <div className={`text-7xl font-bold tabular-nums tracking-tight ${getSRIColor(score)}`}>
+      <div className="text-center mb-8 relative">
+        {/* Amber pulse ring — visible when SRI is in contraction risk zone (40–69) */}
+        {score >= 40 && score < 70 && (
+          <span className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="inline-block w-28 h-28 rounded-full border-2 border-[#A3937B] opacity-60 animate-ping" />
+          </span>
+        )}
+        <div className={`text-7xl font-bold tabular-nums tracking-tight relative z-10 ${getSRIColor(score)}`}>
           {score}
         </div>
         <div className={`text-xs font-mono ${SOVEREIGN.text.secondary} mt-2`}>
           COMPOSITE SCORE
         </div>
+        {score >= 40 && score < 70 && (
+          <div className="mt-1 text-[10px] font-mono tracking-widest text-[#A3937B] animate-pulse">
+            AMBER — CONTRACTION RISK
+          </div>
+        )}
       </div>
       
       {/* Component Breakdown */}
@@ -250,9 +261,11 @@ const FlowSignalBanner = memo(function FlowSignalBanner({
 const SignalsPanel = memo(function SignalsPanel({
   signals,
   onAcknowledge,
+  onSourceClick,
 }: {
   signals: SovereignRiskSignal[];
   onAcknowledge: (id: string) => void;
+  onSourceClick?: (source: string) => void;
 }) {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -302,11 +315,23 @@ const SignalsPanel = memo(function SignalsPanel({
                   {signal.description}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
-                  {(signal.data_sources || []).map((source) => (
-                    <span key={source} className={`text-xs font-mono px-1.5 py-0.5 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
-                      {source}
-                    </span>
-                  ))}
+                  {(signal.data_sources || []).map((source) => {
+                    const isClickable = source === 'EIA' || source === 'DEFILLAMA';
+                    return isClickable ? (
+                      <button
+                        key={source}
+                        onClick={() => onSourceClick?.(source)}
+                        className={`text-xs font-mono px-1.5 py-0.5 rounded-none transition-colors cursor-pointer ${SOVEREIGN.bg.tertiary} text-[#A3937B] hover:bg-[#A3937B]/20 hover:text-[#B8A892] border border-[#A3937B]/30 hover:border-[#A3937B]/60`}
+                        title={`Jump to ${source} data section`}
+                      >
+                        {source} ↗
+                      </button>
+                    ) : (
+                      <span key={source} className={`text-xs font-mono px-1.5 py-0.5 rounded-none ${SOVEREIGN.bg.tertiary} ${SOVEREIGN.text.secondary}`}>
+                        {source}
+                      </span>
+                    );
+                  })}
                   <span className={`text-xs font-mono ${SOVEREIGN.text.secondary}`}>
                     {new Date(signal.created_at).toLocaleTimeString()}
                   </span>
@@ -449,6 +474,19 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
     refresh,
   } = useSovereignIntelligence();
 
+  // Scroll to data section when a source tag is clicked
+  const handleSourceClick = useCallback((source: string) => {
+    const anchorId = source === 'EIA' ? 'energy-section' : source === 'DEFILLAMA' ? 'defi-section' : null;
+    if (!anchorId) return;
+    const el = document.getElementById(anchorId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      // If section doesn't exist on this page, navigate to DataSources with hash
+      window.location.href = `/data-sources#${anchorId}`;
+    }
+  }, []);
+
   if (loading && !currentPulse) {
     return (
       <div className={`min-h-screen ${SOVEREIGN.bg.primary} flex items-center justify-center`}>
@@ -518,6 +556,7 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
             <SignalsPanel
               signals={recentSignals}
               onAcknowledge={acknowledgeSignal}
+              onSourceClick={handleSourceClick}
             />
           </div>
 
