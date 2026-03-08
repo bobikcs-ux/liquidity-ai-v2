@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/sync-macro",
+      "path": "/api/cron/sync-all",
       "schedule": "*/5 * * * *"
     }
   ],

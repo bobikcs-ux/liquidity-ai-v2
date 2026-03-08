@@ -3,6 +3,7 @@ import { GLOBAL_FEAR_GREED_VALUE, GLOBAL_FEAR_GREED_LABEL } from '../hooks/useMa
 import { fetchL1Data, formatL1Value } from './l1DataNervousSystem';
 import { fetchGlobalRegionData, type GlobalRegionData } from './globalRegionService';
 import { fetchMacroData, type MacroDataResult } from './macroDataService';
+import { fetchGlobalSnapshot, type GlobalSnapshot } from './snapshotFirstService';
 
 // 1. Interface for market data
 export interface MarketContext {
@@ -23,6 +24,13 @@ export interface MarketContext {
 export interface GlobalMasterContext extends MarketContext {
   macro: MacroDataResult | null;
   regions: GlobalRegionData | null;
+}
+
+// Snapshot-First context — <100ms latency, reads ONLY from Supabase
+export interface SnapshotFirstContext {
+  snapshot: GlobalSnapshot;
+  latencyMs: number;
+  status: 'LIVE' | 'DEGRADED' | 'OFFLINE';
 }
 
 // 2. Enhanced function using L1 Data Nervous System
@@ -312,4 +320,55 @@ export const runGlobalMasterScan = async (): Promise<{
   const context = await fetchGlobalMasterContext();
   const analysis = await analyzeBlackSwanRisk(context);
   return { context, analysis };
+};
+
+// ============================================================================
+// 9. SNAPSHOT-FIRST ARCHITECTURE — <100ms latency
+// Reads ONLY from Supabase. External APIs are synced by background Edge Functions.
+// ============================================================================
+
+export const fetchSnapshotFirst = async (): Promise<SnapshotFirstContext> => {
+  const start = Date.now();
+  const snapshot = await fetchGlobalSnapshot();
+  const latencyMs = Date.now() - start;
+
+  // Derive overall status
+  const statuses = [
+    snapshot.energy.status,
+    snapshot.macro.status,
+    snapshot.geopolitics.status,
+  ];
+  const liveCount = statuses.filter(s => s === 'LIVE').length;
+  const status = liveCount === 3 ? 'LIVE' : liveCount >= 1 ? 'DEGRADED' : 'OFFLINE';
+
+  return { snapshot, latencyMs, status };
+};
+
+// 10. Convert snapshot to MarketContext for compatibility with existing analysis
+export const snapshotToMarketContext = (snapshot: GlobalSnapshot): MarketContext => {
+  const fearGreed = snapshot.macro.fearGreed.value;
+  const yieldCurve = snapshot.macro.dgs10.value - snapshot.macro.dgs2.value;
+
+  return {
+    yieldCurve: yieldCurve.toFixed(2),
+    fearGreedValue: String(Math.round(fearGreed)),
+    fearGreedLabel: fearGreed < 25 ? 'Extreme Fear' : fearGreed < 45 ? 'Fear' : fearGreed < 55 ? 'Neutral' : fearGreed < 75 ? 'Greed' : 'Extreme Greed',
+    btcPrice: 0, // Not in snapshot tables yet
+    btcChange: 0,
+    btcDominance: 0,
+    dataSourcesOk: snapshot.energy.status === 'LIVE' && snapshot.macro.status === 'LIVE',
+  };
+};
+
+// 11. Run analysis using snapshot-first data
+export const runSnapshotFirstScan = async (): Promise<{
+  context: MarketContext;
+  snapshot: GlobalSnapshot;
+  analysis: string;
+  latencyMs: number;
+}> => {
+  const { snapshot, latencyMs } = await fetchSnapshotFirst();
+  const context = snapshotToMarketContext(snapshot);
+  const analysis = await analyzeBlackSwanRisk(context);
+  return { context, snapshot, analysis, latencyMs };
 };
