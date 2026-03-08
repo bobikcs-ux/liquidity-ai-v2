@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Database, TrendingUp, Lock, Activity, AlertCircle, Info, Plus, X, Loader2, CheckCircle } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { sendStructuredEmail, EMAIL_REGEX } from '../components/ProModal';
+import { useModelAccuracy } from '../hooks/useModelAccuracy';
 
 // Tooltip component
 function Tooltip({ content, children }: { content: string; children: React.ReactNode }) {
@@ -256,6 +257,7 @@ export function DataSources() {
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const modelAccuracy = useModelAccuracy();
   
   return (
     <>
@@ -461,11 +463,32 @@ export function DataSources() {
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Last Update</span>
-                <span className="text-gray-900">March 2026</span>
+                <span className="text-gray-900">
+                  {modelAccuracy.isLoading ? (
+                    <span className="inline-flex items-center gap-1 text-gray-400">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Computing...
+                    </span>
+                  ) : modelAccuracy.lastUpdate ? (
+                    modelAccuracy.lastUpdate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                  ) : 'March 2026'}
+                </span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Accuracy</span>
-                <span className="text-green-600 font-semibold">94.1%</span>
+                {modelAccuracy.isLoading ? (
+                  <span className="inline-flex items-center gap-1 text-gray-400 font-semibold">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Live calc...</span>
+                  </span>
+                ) : modelAccuracy.accuracy !== null ? (
+                  <span className={`font-semibold ${modelAccuracy.accuracy >= 80 ? 'text-green-600' : modelAccuracy.accuracy >= 60 ? 'text-amber-600' : 'text-red-500'}`}
+                    title={`${modelAccuracy.hits} hits / ${modelAccuracy.sampleSize} evaluated signals`}>
+                    {modelAccuracy.accuracy}%
+                  </span>
+                ) : (
+                  <span className="text-gray-400 font-semibold" title={modelAccuracy.error ?? 'Calculating...'}>--</span>
+                )}
               </div>
             </div>
           </div>
@@ -486,11 +509,31 @@ export function DataSources() {
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Last Update</span>
-                <span className="text-gray-900">March 2026</span>
+                <span className="text-gray-900">
+                  {modelAccuracy.isLoading ? (
+                    <span className="inline-flex items-center gap-1 text-gray-400">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Computing...
+                    </span>
+                  ) : modelAccuracy.lastUpdate ? (
+                    modelAccuracy.lastUpdate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                  ) : 'March 2026'}
+                </span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Accuracy</span>
-                <span className="text-green-600 font-semibold">89.3%</span>
+                {modelAccuracy.isLoading ? (
+                  <span className="inline-flex items-center gap-1 text-gray-400 font-semibold">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Live calc...</span>
+                  </span>
+                ) : modelAccuracy.accuracy !== null ? (
+                  <span className={`font-semibold ${modelAccuracy.accuracy >= 80 ? 'text-green-600' : modelAccuracy.accuracy >= 60 ? 'text-amber-600' : 'text-red-500'}`}>
+                    {modelAccuracy.accuracy}%
+                  </span>
+                ) : (
+                  <span className="text-gray-400 font-semibold">--</span>
+                )}
               </div>
             </div>
           </div>
@@ -511,11 +554,32 @@ export function DataSources() {
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Last Update</span>
-                <span className="text-gray-900">March 2026</span>
+                <span className="text-gray-900">
+                  {modelAccuracy.isLoading ? (
+                    <span className="inline-flex items-center gap-1 text-gray-400">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Computing...
+                    </span>
+                  ) : modelAccuracy.lastUpdate ? (
+                    modelAccuracy.lastUpdate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                  ) : 'March 2026'}
+                </span>
               </div>
               <div>
                 <span className="text-gray-500 block mb-1">Accuracy</span>
-                <span className="text-green-600 font-semibold">91.7%</span>
+                {modelAccuracy.isLoading ? (
+                  <span className="inline-flex items-center gap-1 text-gray-400 font-semibold">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Live calc...</span>
+                  </span>
+                ) : modelAccuracy.accuracy !== null ? (
+                  <span className={`font-semibold ${modelAccuracy.accuracy >= 80 ? 'text-green-600' : modelAccuracy.accuracy >= 60 ? 'text-amber-600' : 'text-red-500'}`}
+                    title={`Based on ${modelAccuracy.sampleSize} evaluated signals`}>
+                    {modelAccuracy.accuracy}%
+                  </span>
+                ) : (
+                  <span className="text-gray-400 font-semibold">--</span>
+                )}
               </div>
             </div>
           </div>
