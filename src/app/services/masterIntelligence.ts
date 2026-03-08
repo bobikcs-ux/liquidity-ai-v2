@@ -1,6 +1,8 @@
 import { supabase } from '../lib/supabase';
 import { GLOBAL_FEAR_GREED_VALUE, GLOBAL_FEAR_GREED_LABEL } from '../hooks/useMarketSnapshot';
 import { fetchL1Data, formatL1Value } from './l1DataNervousSystem';
+import { fetchGlobalRegionData, type GlobalRegionData } from './globalRegionService';
+import { fetchMacroData, type MacroDataResult } from './macroDataService';
 
 // 1. Interface for market data
 export interface MarketContext {
@@ -15,6 +17,12 @@ export interface MarketContext {
   regime?: string;
   balanceSheetDelta?: number;
   dataSourcesOk?: boolean;
+}
+
+// Extended context with global regions
+export interface GlobalMasterContext extends MarketContext {
+  macro: MacroDataResult | null;
+  regions: GlobalRegionData | null;
 }
 
 // 2. Enhanced function using L1 Data Nervous System
@@ -277,6 +285,31 @@ export const runMasterScan = async (): Promise<{
   analysis: string;
 }> => {
   const context = await fetchAllMarketData();
+  const analysis = await analyzeBlackSwanRisk(context);
+  return { context, analysis };
+};
+
+// 7. Global Master Context — fetches all regional snapshots + macro data in parallel
+export const fetchGlobalMasterContext = async (): Promise<GlobalMasterContext> => {
+  const [baseContext, macro, regions] = await Promise.all([
+    fetchAllMarketDataL1(),
+    fetchMacroData(),
+    fetchGlobalRegionData(),
+  ]);
+
+  return {
+    ...baseContext,
+    macro,
+    regions,
+  };
+};
+
+// 8. Run global scan with all 5 regions + macro data
+export const runGlobalMasterScan = async (): Promise<{
+  context: GlobalMasterContext;
+  analysis: string;
+}> => {
+  const context = await fetchGlobalMasterContext();
   const analysis = await analyzeBlackSwanRisk(context);
   return { context, analysis };
 };

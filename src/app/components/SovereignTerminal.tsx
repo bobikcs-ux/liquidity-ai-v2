@@ -38,6 +38,7 @@ import { JapanMacroWidget } from './JapanMacroWidget';
 import { IndiaFiscalWidget } from './IndiaFiscalWidget';
 import { EuropeWidget } from './EuropeWidget';
 import { AustraliaWidget } from './AustraliaWidget';
+import { GlobalHeatmap } from './GlobalHeatmap';
 
 // ============================================================================
 // SAFE ICON COMPONENT - Prevents UI crash if icon is missing
@@ -525,6 +526,11 @@ export const SovereignTerminal = memo(function SovereignTerminal() {
             <MarketPulseMetrics pulse={currentPulse} />
             <CorrelationMatrix matrix={correlationMatrix} />
           </div>
+        </div>
+
+        {/* Global Macro Heatmap - All 6 Regions */}
+        <div className="mt-8 pt-8 border-t border-[#A3937B]/15">
+          <GlobalHeatmap />
         </div>
 
         {/* BRICS Intelligence Layer */}
