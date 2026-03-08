@@ -62,25 +62,44 @@ export function useSovereignIntelligence() {
     }
 
     try {
-      // Fetch data from multiple sources in parallel
-      const [stablecoinData, energyData] = await Promise.all([
+      // Fetch live macro_metrics for Fear & Greed and DGS10
+      const [stablecoinData, energyData, macroMetricsResult] = await Promise.all([
         fetchStablecoinLiquidity(),
         fetchEnergyData(),
+        supabase
+          .from('macro_metrics')
+          .select('symbol, value')
+          .in('symbol', ['FEAR_GREED', 'DGS10', 'DGS2']),
       ]);
+
+      // Parse live macro metrics
+      const metricsMap: Record<string, number> = {};
+      for (const row of (macroMetricsResult.data ?? [])) {
+        metricsMap[row.symbol] = Number(row.value);
+      }
+      const fearGreed = metricsMap['FEAR_GREED'] ?? 50;
+      const dgs10 = metricsMap['DGS10'] ?? 4.13;
+      const dgs2 = metricsMap['DGS2'] ?? 3.97;
+
+      // systemic_risk is stored normalised (0–1 from VIX/100); denormalise to 0–100 for SRI calc
+      const rawSystemicRisk = marketSnapshot?.systemic_risk ?? 0.35;
+      const vixEquivalent = rawSystemicRisk > 1 ? rawSystemicRisk : rawSystemicRisk * 100;
 
       // Build SRI inputs
       const sriInputs: SRIInputs = {
         stablecoinMcap: stablecoinData.totalMcap,
         stablecoinMcapChange7d: stablecoinData.change7d,
-        fedBalanceSheet: 7200000000000, // Mock - would come from FRED
-        m2MoneySupply: 20800000000000, // Mock - would come from FRED
+        fedBalanceSheet: 7200000000000,
+        m2MoneySupply: metricsMap['WM2NS'] ? metricsMap['WM2NS'] * 1e9 : 20800000000000,
         crudeOilPrice: energyData.crudeOil.price,
         crudeOilPriceChange: energyData.crudeOil.change,
         naturalGasPrice: energyData.naturalGas.price,
         naturalGasPriceChange: energyData.naturalGas.change,
-        btcVolatility: marketSnapshot?.btc_volatility ?? 45,
-        systemicRisk: marketSnapshot?.systemic_risk ?? 35,
-        yieldSpread: marketSnapshot?.yield_spread ?? -0.3,
+        btcVolatility: marketSnapshot?.btc_volatility ?? 52,
+        // Pass vix-equivalent (0–100 scale) and fearGreed so calculateSRI can use both
+        systemicRisk: vixEquivalent,
+        fearGreed,
+        yieldSpread: dgs10 - dgs2,
       };
 
       // Calculate SRI

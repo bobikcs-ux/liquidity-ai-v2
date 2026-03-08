@@ -126,10 +126,11 @@ export interface SRIInputs {
   freightIndexChange?: number; // percentage change
   containerCostIndex?: number; // Container shipping cost index
   
-  // Market Metrics (from existing market_snapshots)
+  // Market Metrics (from existing market_snapshots + macro_metrics)
   btcVolatility: number;
-  systemicRisk: number;
+  systemicRisk: number;   // VIX-equivalent, 0–100 scale
   yieldSpread: number;
+  fearGreed?: number;     // 0 = Extreme Fear, 100 = Extreme Greed (from macro_metrics FEAR_GREED)
 }
 
 export interface SRIResult {

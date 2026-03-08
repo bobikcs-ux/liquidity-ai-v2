@@ -132,18 +132,30 @@ export function calculateSRI(inputs: SRIInputs): SRIResult {
   ));
   
   // Crypto Score (0-100)
-  // High volatility = higher risk
+  // systemicRisk is now VIX-equivalent (0–100). High VIX + Extreme Fear = high score.
+  // Fear & Greed: 0 = Extreme Fear (risk up), 100 = Extreme Greed (risk up differently)
+  const fearGreedRisk = inputs.fearGreed !== undefined
+    ? (inputs.fearGreed <= 20 ? 35 : inputs.fearGreed <= 35 ? 20 : inputs.fearGreed >= 75 ? 15 : 0)
+    : 0;
+  const vixRisk = inputs.systemicRisk > 30 ? 30 : inputs.systemicRisk > 20 ? 20 : inputs.systemicRisk > 15 ? 10 : 0;
   const cryptoScore = Math.min(100, Math.max(0,
-    inputs.btcVolatility * 1.2 +
-    (inputs.systemicRisk > 50 ? 20 : 0)
+    inputs.btcVolatility * 0.6 +
+    vixRisk +
+    fearGreedRisk
   ));
   
   // Macro Score (0-100)
-  // Inverted yield curve = higher risk
+  // Tight spread (not inverted but near-zero) = still elevated risk at high rates
+  // DGS10 > 4% means Fed is restrictive — add rate-shock pressure
+  const yieldSpread = inputs.yieldSpread;
+  const dgs10Pressure = inputs.fearGreed !== undefined && yieldSpread > 0 && yieldSpread < 0.3
+    ? 20  // compressed spread — near-inversion risk
+    : 0;
   const macroScore = Math.min(100, Math.max(0,
     50 +
-    (inputs.yieldSpread < 0 ? 30 : inputs.yieldSpread < 0.5 ? 15 : 0) +
-    (inputs.yieldSpread < -0.5 ? 20 : 0)
+    (yieldSpread < 0 ? 30 : yieldSpread < 0.5 ? 15 : 0) +
+    (yieldSpread < -0.5 ? 20 : 0) +
+    dgs10Pressure
   ));
   
   // Weighted composite score (Updated with transport cost factor)
