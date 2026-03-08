@@ -23,6 +23,11 @@ export interface L1DataState {
   btcChange24h: number | null;
   fearGreedIndex: number | null;
   
+  // Systemic risk metrics (from macro worker)
+  systemicRisk: number | null;
+  survivalProbability: number | null;
+  regime: 'normal' | 'stress' | 'crisis' | null;
+  
   // Connection status
   status: 'LIVE' | 'RECONNECTING' | 'DEGRADED' | 'OFFLINE';
   lastUpdate: Date | null;
@@ -33,6 +38,7 @@ export interface L1DataState {
     coingecko: 'LIVE' | 'RECONNECTING' | 'OFFLINE';
     fearGreed: 'LIVE' | 'RECONNECTING' | 'OFFLINE';
     supabase: 'LIVE' | 'RECONNECTING' | 'OFFLINE';
+    macroWorker: 'LIVE' | 'RECONNECTING' | 'OFFLINE';
   };
   
   // Error tracking
@@ -376,6 +382,36 @@ async function fetchLastValidFromSupabase(): Promise<SupabaseSnapshot | null> {
 }
 
 // ============================================================================
+// MACRO WORKER SNAPSHOT FETCH
+// ============================================================================
+
+async function fetchMacroWorkerSnapshot() {
+  try {
+    const res = await fetch('/api/macro/worker', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    if (!res.ok) {
+      console.warn(`[L1] Macro worker returned ${res.status}, using fallback`);
+      return null;
+    }
+
+    const { snapshot, error } = await res.json();
+    if (error || !snapshot) {
+      console.warn('[L1] Macro worker error:', error);
+      return null;
+    }
+
+    return snapshot;
+  } catch (err: any) {
+    console.warn('[L1] Macro worker fetch failed:', err.message);
+    return null;
+  }
+}
+
+// ============================================================================
 // MAIN L1 DATA FETCH
 // ============================================================================
 
@@ -397,15 +433,17 @@ export async function fetchL1Data(): Promise<L1DataStateExtended> {
     coingecko: 'RECONNECTING',
     fearGreed: 'RECONNECTING',
     supabase: 'RECONNECTING',
+    macroWorker: 'RECONNECTING',
   };
 
   // Fetch from all sources in parallel
   // macroData handles DGS10 + WM2NS with its own FRED->Supabase->memory->seed chain
-  const [macroData, coinGeckoData, fearGreed, supabaseSnapshot] = await Promise.all([
+  const [macroData, coinGeckoData, fearGreed, supabaseSnapshot, macroWorkerSnapshot] = await Promise.all([
     fetchMacroData(),
     fetchBTCDataFromCoinGecko(),
     fetchFearGreedIndex(),
     fetchLastValidFromSupabase(),
+    fetchMacroWorkerSnapshot(),
   ]);
 
   // Sync Fear/Greed into macro cache after fetching it
@@ -547,12 +585,31 @@ export async function fetchL1Data(): Promise<L1DataStateExtended> {
 
   const isStaleData = staleFeeds.length > 0 || isDataStale();
 
+  // Process macro worker snapshot for systemic risk
+  let systemicRisk: number | null = null;
+  let survivalProbability: number | null = null;
+  let regime: 'normal' | 'stress' | 'crisis' | null = null;
+  
+  if (macroWorkerSnapshot) {
+    systemicRisk = macroWorkerSnapshot.systemic_risk;
+    survivalProbability = macroWorkerSnapshot.survival_probability;
+    regime = macroWorkerSnapshot.regime;
+    feedStatus.macroWorker = 'LIVE';
+    console.log('[L1] Macro worker snapshot loaded:', { systemicRisk, survivalProbability, regime });
+  } else {
+    feedStatus.macroWorker = 'OFFLINE';
+    errors.push('Macro worker: Systemic risk metrics unavailable');
+  }
+
   return {
     btcDominance: finalBtcDominance,
     yieldCurve: finalYieldCurve,
     btcPrice: finalBtcPrice,
     btcChange24h: coinGeckoData.btcChange24h,
     fearGreedIndex: finalFearGreed,
+    systemicRisk,
+    survivalProbability,
+    regime,
     status: overallStatus,
     lastUpdate: anyLiveFeed ? new Date() : lastSuccessfulFetch,
     feedStatus,
