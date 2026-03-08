@@ -492,9 +492,11 @@ export function UnifiedLayout() {
         </div>
       </div>
 
-      {/* Desktop Sidebar - Adjusts position based on GlobalStatusBar presence */}
+      {/* Desktop Sidebar - Adjusts position based on GlobalStatusBar + alert banner presence */}
       <aside className={`hidden lg:block fixed left-0 bottom-0 border-r z-[90] transition-all duration-300 ${
-        (isDark || isHybrid) ? 'top-[140px]' : 'top-[104px]'
+        (isDark || isHybrid)
+          ? (systemAlert && !alertDismissed ? 'top-[172px]' : 'top-[140px]')
+          : 'top-[104px]'
       } ${
         sidebarCollapsed ? 'w-20' : 'w-64'
       } ${

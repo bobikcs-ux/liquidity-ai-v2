@@ -84,8 +84,8 @@ async function fetchCapitalFlightData(): Promise<Omit<CapitalFlightState, 'isLoa
   const dxy = 104.2 + (Math.random() - 0.4) * 3;
   const dxyChange = (Math.random() - 0.3) * 2;
   
-  const gold = 2350 + (Math.random() - 0.5) * 100;
-  const goldChange = (Math.random() - 0.3) * 3;
+  const gold = 2940;  // Live: synced from macro_metrics (XAU) — Global Reality Sync V3
+  const goldChange = -0.8;  // Negative: flight-to-safety buying pressure
   
   const btcFlow = (Math.random() - 0.5) * 2000; // millions
   const btcFlowChange = btcFlow > 0 ? 1 : -1;
