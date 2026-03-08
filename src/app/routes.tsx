@@ -8,6 +8,11 @@ import { DataSources } from "./pages/DataSources";
 import { Profile } from "./pages/Profile";
 import { BlackSwanTerminal } from "./pages/BlackSwanTerminal";
 import { CapitalSurvival } from "./pages/CapitalSurvival";
+import { AGITerminal } from "./pages/AGITerminal";
+import { EnergyFinance } from "./pages/EnergyFinance";
+import { Sovereign } from "./pages/Sovereign";
+import { Citadel } from "./pages/Citadel";
+import { Triad } from "./pages/Triad";
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +44,10 @@ export const router = createBrowserRouter([
         element: <CapitalSurvival />,
       },
       {
+        path: "agi-terminal",
+        element: <AGITerminal />,
+      },
+      {
         path: "reports",
         element: <Reports />,
       },
@@ -49,6 +58,22 @@ export const router = createBrowserRouter([
       {
         path: "profile",
         element: <Profile />,
+      },
+      {
+        path: "energy-finance",
+        element: <EnergyFinance />,
+      },
+      {
+        path: "sovereign",
+        element: <Sovereign />,
+      },
+      {
+        path: "citadel",
+        element: <Citadel />,
+      },
+      {
+        path: "triad",
+        element: <Triad />,
       },
     ],
   },

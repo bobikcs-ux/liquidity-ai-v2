@@ -3,6 +3,59 @@
 :root {
   --font-size: 16px;
   
+  /* ========================================
+     GLOBAL DESIGN SYSTEM - THE SOVEREIGN PALETTE
+     Bloomberg-Grade Financial UI System
+     ======================================== */
+  
+  /* Primary Background - Deep Night (#0b0b0f) */
+  --ios-bg-primary: #0b0b0f;
+  --ios-bg-panel: #121218;
+  --ios-bg-card: #16161d;
+  --ios-bg-elevated: #1a1a22;
+  
+  /* Accent Colors - Elegant Gold (Primary: #d4af37, Secondary: #c6a85a) */
+  --ios-gold: #d4af37;
+  --ios-gold-soft: #c6a85a;
+  --ios-gold-hover: #dfc050;
+  --ios-gold-muted: rgba(212, 175, 55, 0.12);
+  --ios-gold-glow: rgba(212, 175, 55, 0.20);
+  
+  /* Silver Accent Alternative */
+  --ios-silver: #C0C0C0;
+  --ios-silver-muted: rgba(192, 192, 192, 0.15);
+  
+  /* Neutral Steel */
+  --ios-steel: #7a8a99;
+  --ios-steel-muted: rgba(122, 138, 153, 0.15);
+  
+  /* Status Colors - Financial Grade (High Contrast on Dark) */
+  --ios-success: #2ecc71;
+  --ios-warning: #ffb020;
+  --ios-crisis: #ff3b5c;
+  --ios-info: #7a8a99;
+  
+  /* High Contrast Text Colors for Accessibility */
+  --ios-text-warning: #ffb020;
+  --ios-text-danger: #ff7a8a;
+  
+  /* Text Colors - WCAG AA Compliant on Dark Backgrounds */
+  --ios-text-primary: #f5f5f5;
+  --ios-text-secondary: #a1a1aa;
+  --ios-text-muted: #a1a1aa;
+  
+  /* Borders - Subtle Gold Tint */
+  --ios-border: rgba(212, 175, 55, 0.08);
+  --ios-border-active: rgba(212, 175, 55, 0.20);
+  
+  /* Glow Effects - Subtle Gold */
+  --ios-glow-gold: 0 0 12px rgba(212, 175, 55, 0.15);
+  --ios-glow-gold-strong: 0 0 20px rgba(212, 175, 55, 0.25);
+  --ios-glow-crisis: 0 0 15px rgba(255, 59, 92, 0.20);
+  --ios-glow-crisis-strong: 0 0 25px rgba(255, 59, 92, 0.35);
+  --ios-glow-success: 0 0 12px rgba(46, 204, 113, 0.18);
+  --ios-glow-warning: 0 0 12px rgba(255, 176, 32, 0.18);
+  
   /* Adaptive Financial UI Colors */
   /* Light Mode (Stable/Expansionary) */
   --light-bg: #F8F9FA;
@@ -17,16 +70,16 @@
   --hybrid-border: #374151;
   
   /* Terminal Mode (Stress) */
-  --terminal-bg: #0F1419;
-  --terminal-card: #1a2332;
-  --terminal-text: #f9fafb;
-  --terminal-border: #1e3a8a;
+  --terminal-bg: var(--ios-bg-primary);
+  --terminal-card: var(--ios-bg-panel);
+  --terminal-text: var(--ios-text-primary);
+  --terminal-border: var(--ios-border);
   
-  /* Dossier Color Palette */
+  /* Dossier Color Palette - Elegant Gold */
   --dossier-void: #020502;
-  --dossier-gold: #D4C6A9;
-  --dossier-green: #00FF41;
-  --dossier-red: #E63946;
+  --dossier-gold: #d4af37;
+  --dossier-green: #2ecc71;
+  --dossier-red: var(--ios-crisis);
   --dossier-ghost: #1A1A1A;
   --dossier-white: #E0E0E0;
   
@@ -280,4 +333,332 @@
 
 .black-swan-terminal .text-purple-400 {
   color: #c084fc !important;
+}
+
+/* Intelligence Operating System Global Styles */
+.ios-terminal {
+  background: var(--ios-bg-primary);
+  color: var(--ios-text-primary);
+  font-family: 'JetBrains Mono', 'Inter', monospace;
+}
+
+.ios-panel {
+  background: var(--ios-bg-panel);
+  border: 1px solid var(--ios-border);
+  border-radius: 0;
+}
+
+.ios-panel-elevated {
+  background: var(--ios-bg-card);
+  border: 1px solid var(--ios-border-active);
+}
+
+/* Intelligence OS Glow Effects */
+.ios-glow-gold {
+  box-shadow: var(--ios-glow-gold);
+}
+
+.ios-glow-crisis {
+  box-shadow: var(--ios-glow-crisis);
+}
+
+.ios-glow-success {
+  box-shadow: var(--ios-glow-success);
+}
+
+/* Subtle sovereign accent border on hover */
+.ios-hover-glow {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.ios-hover-glow:hover {
+  box-shadow: 0 0 10px rgba(163, 147, 123, 0.12);
+  border-color: var(--ios-border-active);
+}
+
+/* Intelligence OS Text Styles */
+.ios-text-gold {
+  color: var(--ios-gold);
+}
+
+.ios-text-steel {
+  color: var(--ios-steel);
+}
+
+/* Active navigation glow */
+.ios-nav-active {
+  background: var(--ios-gold-muted);
+  border-left: 2px solid var(--ios-gold);
+  box-shadow: inset 0 0 15px rgba(163, 147, 123, 0.08);
+}
+
+/* Stale data indicator */
+.ios-stale-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: rgba(255, 159, 67, 0.15);
+  border: 1px solid rgba(255, 159, 67, 0.3);
+  border-radius: 2px;
+  font-size: 9px;
+  color: var(--ios-warning);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ========================================
+   SYSTEMIC RISK LEVEL SYSTEM
+   ======================================== */
+
+/* Risk Level Bar */
+.risk-level-bar {
+  height: 3px;
+  background: linear-gradient(90deg, 
+    var(--ios-success) 0%, 
+    var(--ios-success) 25%, 
+    var(--ios-warning) 25%, 
+    var(--ios-warning) 50%, 
+    #ff6b4a 50%, 
+    #ff6b4a 75%, 
+    var(--ios-crisis) 75%, 
+    var(--ios-crisis) 100%
+  );
+  border-radius: 2px;
+}
+
+/* Risk Level Indicators */
+.risk-safe { color: var(--ios-success); }
+.risk-elevated { color: var(--ios-warning); }
+.risk-high { color: #ff6b4a; }
+.risk-critical { color: var(--ios-crisis); }
+.risk-systemic { 
+  color: var(--ios-crisis); 
+  text-shadow: 0 0 10px rgba(255, 59, 92, 0.5);
+}
+
+/* Crisis Edge Pulse - Subtle red glow around dashboard edges */
+@keyframes crisis-edge-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 30px rgba(255, 59, 92, 0.1);
+  }
+  50% {
+    box-shadow: inset 0 0 50px rgba(255, 59, 92, 0.2);
+  }
+}
+
+.crisis-edge-active {
+  animation: crisis-edge-pulse 3s ease-in-out infinite;
+  border: 1px solid rgba(255, 59, 92, 0.2);
+}
+
+/* Crisis pulse animation - Subtle version */
+@keyframes crisis-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 59, 92, 0.2);
+    border-color: rgba(255, 59, 92, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 59, 92, 0.35);
+    border-color: rgba(255, 59, 92, 0.5);
+  }
+}
+
+.ios-crisis-pulse {
+  animation: crisis-pulse 2s ease-in-out infinite;
+}
+
+/* Sovereign pulse for alerts */
+@keyframes gold-pulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba(163, 147, 123, 0.15);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(163, 147, 123, 0.25);
+  }
+}
+
+.ios-gold-pulse {
+  animation: gold-pulse 2.5s ease-in-out infinite;
+}
+
+/* Grid overlay for panels - Finely etched glass effect */
+.ios-grid-overlay {
+  background-image: 
+    linear-gradient(rgba(163, 147, 123, 0.012) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(163, 147, 123, 0.012) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Skeleton loader for Intelligence OS */
+@keyframes ios-skeleton {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.ios-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--ios-bg-panel) 0%,
+    var(--ios-bg-elevated) 50%,
+    var(--ios-bg-panel) 100%
+  );
+  background-size: 200% 100%;
+  animation: ios-skeleton 1.5s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+/* ========================================
+   INSTITUTIONAL PANEL STYLES
+   ======================================== */
+
+.institutional-panel {
+  background: var(--ios-bg-panel);
+  border: 1px solid rgba(163, 147, 123, 0.06);
+  padding: 1.5rem;
+}
+
+.institutional-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(163, 147, 123, 0.08);
+}
+
+.institutional-panel-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ios-gold);
+}
+
+/* Full-width chart containers */
+.chart-container-full {
+  width: 100%;
+  min-height: 300px;
+  background: var(--ios-bg-card);
+  border: 1px solid rgba(163, 147, 123, 0.04);
+  padding: 1rem;
+}
+
+/* ========================================
+   MOBILE RESPONSIVE UTILITIES
+   ======================================== */
+
+/* Swipe panel container */
+.swipe-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.swipe-container::-webkit-scrollbar {
+  display: none;
+}
+
+.swipe-panel {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  min-width: 100%;
+}
+
+/* Stack panels vertically on mobile */
+@media (max-width: 768px) {
+  .mobile-stack {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  
+  .mobile-stack > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .mobile-full-width {
+    width: 100vw !important;
+    margin-left: -1rem !important;
+    margin-right: -1rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .mobile-hide {
+    display: none !important;
+  }
+  
+  /* Prevent chart overflow */
+  .chart-container-full {
+    min-height: 250px;
+    overflow: hidden;
+  }
+}
+
+/* ========================================
+   DATA SOURCE STATUS INDICATORS
+   ======================================== */
+
+.data-source-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+.data-source-online {
+  background: rgba(46, 204, 113, 0.1);
+  border: 1px solid rgba(46, 204, 113, 0.3);
+  color: var(--ios-success);
+}
+
+.data-source-delayed {
+  background: rgba(255, 176, 32, 0.1);
+  border: 1px solid rgba(255, 176, 32, 0.3);
+  color: var(--ios-warning);
+}
+
+.data-source-offline {
+  background: rgba(255, 59, 92, 0.1);
+  border: 1px solid rgba(255, 59, 92, 0.3);
+  color: var(--ios-crisis);
+}
+
+.data-source-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.data-source-dot-online {
+  background: var(--ios-success);
+  box-shadow: 0 0 6px var(--ios-success);
+}
+
+.data-source-dot-delayed {
+  background: var(--ios-warning);
+  box-shadow: 0 0 6px var(--ios-warning);
+  animation: pulse-delayed 2s infinite;
+}
+
+.data-source-dot-offline {
+  background: var(--ios-crisis);
+}
+
+@keyframes pulse-delayed {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

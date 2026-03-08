@@ -16,7 +16,7 @@ export function Page04() {
           <div className="border-2 border-[#D4C6A9] bg-[#1A1A1A]/40 p-6 relative">
             {/* Scan ID Header */}
             <div className="flex justify-between items-center mb-4 pb-3 border-b border-[#1A1A1A]">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#D4C6A9]">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#D4C6A9]">
                 SCAN_ID: POST_001
               </div>
               <div className="text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50">
@@ -51,19 +51,19 @@ export function Page04() {
           {/* HUD Indicators */}
           <div className="grid grid-cols-3 gap-4 mt-4">
             <div className="border border-[#E63946] bg-[#E63946]/5 p-3">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-1">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-1">
                 AI_SLOP_DETECTED
               </div>
               <div className="text-[20px] text-[#E63946]">95%</div>
             </div>
             <div className="border border-[#E63946] bg-[#E63946]/5 p-3">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-1">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-1">
                 GENERIC_HOOK
               </div>
               <div className="text-[20px] text-[#E63946]">88%</div>
             </div>
             <div className="border border-[#E63946] bg-[#E63946]/5 p-3">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-1">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-1">
                 EMOJI_CRUTCH
               </div>
               <div className="text-[20px] text-[#E63946]">100%</div>

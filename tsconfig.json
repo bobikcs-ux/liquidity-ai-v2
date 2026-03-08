@@ -1,26 +1,33 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["vite/client"],
 
-    /* Режим на компилация */
-    "moduleResolution": "bundler",
+    /* Module Resolution */
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Пътища */
+    /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@/components/*": ["src/app/components/*"],
+      "@/services/*": ["src/app/services/*"],
+      "@/hooks/*": ["src/app/hooks/*"],
+      "@/lib/*": ["src/app/lib/*"],
+      "@/types/*": ["src/app/types/*"]
     },
 
-    /* Важни за Vercel и Vite */
+    /* Strict Type Checking */
     "strict": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
@@ -28,6 +35,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.d.ts", "src/vite-env.d.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

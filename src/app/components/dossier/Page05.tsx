@@ -29,7 +29,7 @@ export function Page05() {
               </div>
 
               <div className="relative z-10">
-                <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-3">
+                <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-3">
                   DEPRECATED_VERSION
                 </div>
                 <div className="text-[11px] leading-[1.7] tracking-[0.02em] text-[#E0E0E0] opacity-70 mb-4">
@@ -86,7 +86,7 @@ export function Page05() {
           {/* RIGHT: Optimized Version */}
           <div className="relative">
             <div className="border-2 border-[#D4C6A9] bg-[#D4C6A9]/5 p-4">
-              <div className="text-[10px] tracking-[0.08em] uppercase text-[#D4C6A9] mb-3">
+              <div className="text-xs tracking-[0.08em] uppercase text-[#D4C6A9] mb-3">
                 OPTIMIZED_MONOLITH_SIGNAL
               </div>
               <div className="text-[11px] leading-[1.7] tracking-[0.02em] text-[#E0E0E0] mb-4">
@@ -121,10 +121,10 @@ export function Page05() {
           <div className="space-y-4 mb-6">
             <div>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-[10px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
+                <span className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
                   MARKET_ATTENTION
                 </span>
-                <span className="text-[10px] text-[#E0E0E0]">20% → 85%</span>
+                <span className="text-xs text-[#E0E0E0]">20% → 85%</span>
               </div>
               <div className="flex gap-2 items-center">
                 <div className="h-6 bg-[#E63946] flex items-center justify-center text-[8px] text-[#020502]" style={{ width: '20%' }}>
@@ -140,10 +140,10 @@ export function Page05() {
           {/* Progress Bar */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-[10px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
+              <span className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
                 AUTHORITY_RECOGNITION
               </span>
-              <span className="text-[10px] text-[#00FF41]">98%</span>
+              <span className="text-xs text-[#00FF41]">98%</span>
             </div>
             <div className="h-2 bg-[#1A1A1A] border border-[#1A1A1A] relative overflow-hidden">
               <div
