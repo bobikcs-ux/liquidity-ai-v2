@@ -77,150 +77,146 @@ export function MarketSnapshotPanel() {
 
   return (
     <div className="space-y-4">
-      {/* Header with status and refresh */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: currentStatusColor }}
-          />
-          <span className="text-xs font-mono font-bold tracking-widest" style={{ color: '#A3937B' }}>
-            MARKET SNAPSHOT
-          </span>
-          <span className="text-[10px] font-mono" style={{ color: '#8b8b8b' }}>
-            {lastUpdateTime}
-          </span>
+      {/* Header: Terminal Title */}
+      <div className="flex items-center justify-between border-b" style={{ borderColor: 'rgba(101, 162, 158, 0.3)', paddingBottom: '12px' }}>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div
+              className="w-3 h-3 rounded-full animate-pulse"
+              style={{ backgroundColor: currentStatusColor }}
+            />
+            <span className="text-sm font-mono font-bold tracking-widest" style={{ color: '#66fcf1' }}>
+              INTELLIGENCE TERMINAL
+            </span>
+            <span className="text-[11px] font-mono tracking-widest px-2 py-1 rounded" 
+              style={{ background: 'rgba(101, 162, 158, 0.15)', color: '#45a29e' }}>
+              LIVE MARKET SNAPSHOTS
+            </span>
+          </div>
         </div>
         <button
           onClick={handleRefresh}
           disabled={loading}
-          className="p-1 rounded hover:opacity-70 transition-opacity disabled:opacity-50"
-          style={{ color: '#A3937B' }}
+          className="p-1.5 rounded hover:opacity-70 transition-opacity disabled:opacity-50"
+          style={{ color: '#66fcf1' }}
           title="Refresh market data"
         >
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Main metrics grid */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-        {/* Yield Curve Spread */}
-        <div
-          className="rounded-lg p-3 border"
-          style={{ borderColor: 'rgba(163,147,123,0.15)', background: 'rgba(163,147,123,0.04)' }}
-        >
-          <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
-            YIELD SPREAD
+      {/* Main metrics in terminal style */}
+      <div className="space-y-3 p-4 rounded-lg" style={{ background: 'rgba(11, 12, 16, 0.5)', border: '1px solid rgba(101, 162, 158, 0.2)' }}>
+        {/* Yield Spread Row */}
+        <div className="flex justify-between items-center text-sm font-mono">
+          <span style={{ color: '#45a29e' }}>Region:</span>
+          <span style={{ color: '#f1c40f' }}>{latest?.region || 'GLOBAL'}</span>
+        </div>
+
+        {/* DGS10 & DGS2 Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>DGS10:</span>
+            <span style={{ color: '#f1c40f' }}>{latest?.dgs10?.toFixed(2) || '--'}%</span>
           </div>
-          <div className="text-lg font-bold font-mono" style={{ color: '#A3937B' }}>
-            {formatted.yieldCurve}
-          </div>
-          <div className="text-[9px] font-mono mt-1" style={{ color: '#8b8b8b' }}>
-            {latest?.yield_spread !== null && latest?.yield_spread < 0 ? '📉 Inverted' : '📈 Steep'}
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>DGS2:</span>
+            <span style={{ color: '#f1c40f' }}>{latest?.dgs2?.toFixed(2) || '--'}%</span>
           </div>
         </div>
 
-        {/* BTC Price */}
-        <div
-          className="rounded-lg p-3 border"
-          style={{ borderColor: 'rgba(163,147,123,0.15)', background: 'rgba(163,147,123,0.04)' }}
-        >
-          <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
-            BTC PRICE
+        {/* Yield Spread & VIX */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>Yield Spread:</span>
+            <span style={{ color: '#f1c40f' }}>{formatted.yieldCurve}</span>
           </div>
-          <div className="text-lg font-bold font-mono" style={{ color: '#A3937B' }}>
-            {formatted.btcPrice}
-          </div>
-          <div className="text-[9px] font-mono mt-1" style={{ color: '#8b8b8b' }}>
-            {latest?.btc_dominance?.toFixed(1)}% DOM
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>VIX:</span>
+            <span style={{ color: '#f1c40f' }}>{latest?.vix?.toFixed(2) || '--'}</span>
           </div>
         </div>
 
-        {/* Survival Probability */}
-        <div
-          className="rounded-lg p-3 border"
-          style={{
-            borderColor: 'rgba(163,147,123,0.15)',
-            background: 'rgba(163,147,123,0.04)',
-          }}
-        >
-          <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
-            SURVIVAL PROB
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid rgba(101, 162, 158, 0.2)', margin: '12px 0' }} />
+
+        {/* BTC Price & Dominance */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>BTC Price:</span>
+            <span style={{ color: '#f1c40f' }}>${latest?.btc_price?.toLocaleString() || '--'}</span>
           </div>
-          <div className="text-lg font-bold font-mono" style={{ color: '#22c55e' }}>
-            {formatted.survivalProbability}
-          </div>
-          <div className="text-[9px] font-mono mt-1" style={{ color: '#8b8b8b' }}>
-            {latest?.survival_probability !== null && latest.survival_probability > 0.95
-              ? '✅ Healthy'
-              : '⚠️ Watch'}
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>BTC Dominance:</span>
+            <span style={{ color: '#f1c40f' }}>{latest?.btc_dominance?.toFixed(1) || '--'}%</span>
           </div>
         </div>
 
-        {/* Systemic Risk */}
-        <div
-          className="rounded-lg p-3 border"
-          style={{
-            borderColor: 'rgba(163,147,123,0.15)',
-            background: 'rgba(163,147,123,0.04)',
-          }}
-        >
-          <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
-            SYSTEMIC RISK
+        {/* Volatility & Fear/Greed */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>Volatility:</span>
+            <span style={{ color: '#f1c40f' }}>{latest?.btc_volatility?.toFixed(3) || '--'}</span>
           </div>
-          <div className="text-lg font-bold font-mono" style={{ color: getStatusColor(latest?.systemic_risk) }}>
-            {formatted.systemicRisk}
-          </div>
-          <div className="text-[9px] font-mono mt-1" style={{ color: '#8b8b8b' }}>
-            {latest?.regime ? latest.regime.toUpperCase() : 'UNKNOWN'}
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>Fear/Greed:</span>
+            <span style={{ color: '#f1c40f' }}>{latest?.fear_greed || '--'}</span>
           </div>
         </div>
 
-        {/* VaR 95 */}
-        <div
-          className="rounded-lg p-3 border"
-          style={{ borderColor: 'rgba(163,147,123,0.15)', background: 'rgba(163,147,123,0.04)' }}
-        >
-          <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
-            VAR @ 95%
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid rgba(101, 162, 158, 0.2)', margin: '12px 0' }} />
+
+        {/* Systemic Risk Metrics */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>Systemic Risk:</span>
+            <span style={{ color: getStatusColor(latest?.systemic_risk) }}>
+              {formatted.systemicRisk}
+            </span>
           </div>
-          <div className="text-lg font-bold font-mono" style={{ color: '#A3937B' }}>
-            {formatted.var95}
-          </div>
-          <div className="text-[9px] font-mono mt-1" style={{ color: '#8b8b8b' }}>
-            Drawdown risk
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>Regime:</span>
+            <span style={{ color: getRegimeColor(latest?.regime) }}>
+              {latest?.regime?.toUpperCase() || 'UNKNOWN'}
+            </span>
           </div>
         </div>
 
-        {/* Fear & Greed */}
-        <div
-          className="rounded-lg p-3 border"
-          style={{ borderColor: 'rgba(163,147,123,0.15)', background: 'rgba(163,147,123,0.04)' }}
-        >
-          <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
-            FEAR & GREED
+        {/* Survival Probability & VaR */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>Survival Prob:</span>
+            <span style={{ color: '#22c55e' }}>
+              {formatted.survivalProbability}
+            </span>
           </div>
-          <div className="text-lg font-bold font-mono" style={{ color: '#A3937B' }}>
-            {GLOBAL_FEAR_GREED_VALUE}
-          </div>
-          <div className="text-[9px] font-mono mt-1" style={{ color: '#8b8b8b' }}>
-            {GLOBAL_FEAR_GREED_LABEL}
+          <div className="flex justify-between items-center text-sm font-mono">
+            <span style={{ color: '#45a29e' }}>VaR @ 95%:</span>
+            <span style={{ color: '#f1c40f' }}>{formatted.var95}</span>
           </div>
         </div>
 
         {/* Rate Shock */}
-        <div
-          className="rounded-lg p-3 border"
-          style={{ borderColor: 'rgba(163,147,123,0.15)', background: 'rgba(163,147,123,0.04)' }}
-        >
-          <div className="text-[10px] font-mono tracking-widest mb-1" style={{ color: '#8b8b8b' }}>
-            RATE SHOCK
-          </div>
-          <div className="text-lg font-bold font-mono" style={{ color: '#A3937B' }}>
+        <div className="flex justify-between items-center text-sm font-mono">
+          <span style={{ color: '#45a29e' }}>Rate Shock:</span>
+          <span style={{ color: '#f1c40f' }}>
             {latest?.rate_shock !== null ? `${(latest.rate_shock * 100).toFixed(1)}%` : 'N/A'}
+          </span>
+        </div>
+
+        {/* Divider */}
+        <div style={{ borderTop: '1px solid rgba(101, 162, 158, 0.2)', margin: '12px 0' }} />
+
+        {/* Footer: Timestamp & Data Quality */}
+        <div className="flex justify-between items-center text-xs font-mono">
+          <div style={{ color: '#8b8b8b' }}>
+            Fetched At: <span style={{ color: '#f1c40f' }}>{lastUpdateTime}</span>
           </div>
-          <div className="text-[9px] font-mono mt-1" style={{ color: '#8b8b8b' }}>
-            Fed risk
+          <div style={{ color: '#8b8b8b' }}>
+            {dataStatus?.status === 'GREEN' && <span style={{ color: '#22c55e' }}>✓ LIVE</span>}
+            {dataStatus?.status === 'YELLOW' && <span style={{ color: '#f59e0b' }}>⚠ STALE</span>}
+            {dataStatus?.status === 'RED' && <span style={{ color: '#ef4444' }}>✗ OFFLINE</span>}
           </div>
         </div>
       </div>
@@ -228,14 +224,13 @@ export function MarketSnapshotPanel() {
       {/* Data quality indicator */}
       {dataStatus && (
         <div
-          className="text-[10px] font-mono flex items-center gap-2"
-          style={{ color: '#8b8b8b' }}
+          className="text-[11px] font-mono flex items-center gap-2 p-2 rounded"
+          style={{ background: 'rgba(101, 162, 158, 0.08)', color: '#8b8b8b' }}
         >
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: currentStatusColor }} />
-          {dataStatus.status === 'GREEN' && 'Fresh data (< 15 min)'}
-          {dataStatus.status === 'YELLOW' && 'Data is stale (15-60 min)'}
-          {dataStatus.status === 'RED' && 'Data offline (> 60 min)'}
-          <span>• {dataStatus.snapshots_24h || 0} snapshots in 24h</span>
+          {dataStatus.status === 'GREEN' && '24h snapshots: ' + (dataStatus.snapshots_24h || 0)}
+          {dataStatus.status === 'YELLOW' && 'Stale data detected'}
+          {dataStatus.status === 'RED' && 'Data offline'}
         </div>
       )}
     </div>
