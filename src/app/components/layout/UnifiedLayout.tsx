@@ -56,6 +56,7 @@ import { useUserRole } from '../../context/UserRoleContext';
 import { DataSourceStatusCompact } from '../DataSourceStatus';
 import { GlobalStatusBar } from '../GlobalStatusBar';
 import { useYieldWall } from '../../hooks/useYieldWall';
+import { SystemStatusPanel } from '../SystemStatusPanel';
 
 // Merged navigation - same items for desktop and mobile
 const navItems = [
@@ -80,7 +81,6 @@ export function UnifiedLayout() {
   const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const { isPro } = useUserRole();
   const { logs } = useIntelligenceLogs(true);
-  const yieldWall = useYieldWall();
   
   // Pin the latest SYSTEM_ALERT (REALITY_DIVERGENCE) if present, auto-dismiss after 60s
   const [alertDismissed, setAlertDismissed] = React.useState(false);
@@ -166,30 +166,6 @@ export function UnifiedLayout() {
       {/* Global Status Bar - Thin fixed header for institutional terminal feel */}
       {(isDark || isHybrid) && (
         <GlobalStatusBar className="fixed top-0 left-0 right-0 z-50" />
-      )}
-
-      {/* YIELD WALL breach banner — shown when DGS10 >= 4.50% */}
-      {yieldWall.activeBreach && (isDark || isHybrid) && (
-        <div
-          className="fixed left-0 right-0 z-[115] flex items-center gap-3 px-4 py-2 animate-pulse"
-          style={{
-            top: (systemAlert && !alertDismissed) ? '68px' : (isDark || isHybrid) ? '36px' : '0',
-            background: 'rgba(255, 59, 92, 0.18)',
-            borderBottom: '2px solid rgba(255, 59, 92, 0.7)',
-            backdropFilter: 'blur(4px)',
-          }}
-        >
-          <AlertTriangle className="w-4 h-4 flex-shrink-0 text-[#ff3b5c]" />
-          <span className="text-xs font-mono font-bold text-[#ff3b5c] tracking-widest uppercase mr-2">
-            {yieldWall.activeBreach.alert_title}
-          </span>
-          <span className="text-xs font-mono text-zinc-300 truncate flex-1 hidden sm:block">
-            DGS10: {yieldWall.currentDGS10?.toFixed(2)}% — {yieldWall.activeBreach.alert_message.slice(0, 100)}...
-          </span>
-          <Link to="/prophecy-log" className="text-[10px] font-mono text-[#ff3b5c]/70 hover:text-[#ff3b5c] flex-shrink-0 underline">
-            VIEW LOG
-          </Link>
-        </div>
       )}
 
       {/* REALITY_DIVERGENCE banner — shown when a SYSTEM_ALERT is in intel_feed */}
@@ -615,6 +591,11 @@ export function UnifiedLayout() {
           isDark || isHybrid ? 'border-[#A3937B]/12' : 'border-gray-200'
         }`}>
           <div className="w-full max-w-screen-xl mx-auto px-4 md:px-6 lg:px-10">
+            {/* System Health Panel */}
+            <div className="mb-6">
+              <SystemStatusPanel />
+            </div>
+
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex flex-col md:flex-row items-center gap-4">
                 <div className={`text-sm ${isDark || isHybrid ? 'text-gray-400' : 'text-gray-600'}`}>

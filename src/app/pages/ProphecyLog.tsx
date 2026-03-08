@@ -103,53 +103,40 @@ export function ProphecyLog() {
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-bold" style={{ color: text }}>PROPHECY LOG</h1>
             <span className="text-xs font-mono font-bold px-2 py-0.5 rounded tracking-widest"
-              style={{ background: 'rgba(255,59,92,0.12)', color: '#ff3b5c', border: '1px solid rgba(255,59,92,0.3)' }}>
-              GLOBAL_ALERT
+              style={{ background: 'rgba(163,147,123,0.12)', color: '#A3937B', border: '1px solid rgba(163,147,123,0.3)' }}>
+              EXPERIMENTAL
             </span>
           </div>
           <p className="text-sm font-mono" style={{ color: muted }}>
-            AURELIUS prediction record — every call logged, every outcome verified.
+            Experimental Intelligence Module — Real-time prediction tracking with verified outcomes from database sources only.
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4" style={{ color: '#A3937B' }} />
-          <span className="text-xs font-mono" style={{ color: muted }}>UNASSAILABLE TRACK RECORD</span>
         </div>
       </div>
 
-      {/* Yield Wall Status */}
-      {yieldWall.isWatching && (
+      {/* Yield Wall Status — quiet monitoring only, no broadcasts */}
+      {yieldWall.isWatching && yieldWall.breachedThresholds.length > 0 && (
         <div
           className="rounded-xl p-4 flex items-center gap-4 flex-wrap"
           style={{
-            background: yieldWall.activeBreach
-              ? 'rgba(255,59,92,0.08)'
-              : 'rgba(163,147,123,0.05)',
-            border: `1px solid ${yieldWall.activeBreach ? 'rgba(255,59,92,0.4)' : 'rgba(163,147,123,0.2)'}`,
+            background: 'rgba(163,147,123,0.05)',
+            border: '1px solid rgba(163,147,123,0.2)',
           }}
         >
-          <AlertTriangle className="w-5 h-5 flex-shrink-0"
-            style={{ color: yieldWall.activeBreach ? '#ff3b5c' : '#A3937B' }} />
+          <AlertTriangle className="w-5 h-5 flex-shrink-0" style={{ color: '#A3937B' }} />
           <div className="flex-1">
-            <div className="text-xs font-mono font-bold tracking-widest mb-0.5"
-              style={{ color: yieldWall.activeBreach ? '#ff3b5c' : '#A3937B' }}>
-              {yieldWall.activeBreach ? yieldWall.activeBreach.alert_title : 'YIELD WALL MONITOR — ACTIVE'}
+            <div className="text-xs font-mono font-bold tracking-widest mb-0.5" style={{ color: '#A3937B' }}>
+              YIELD WALL MONITOR — QUIET MODE
             </div>
             <div className="text-xs font-mono" style={{ color: muted }}>
-              {yieldWall.activeBreach
-                ? yieldWall.activeBreach.alert_message.slice(0, 140) + '...'
-                : `DGS10: ${yieldWall.currentDGS10?.toFixed(2) ?? '--'}% | Breach threshold: 4.50% | Polling every 60s`}
+              {`DGS10: ${yieldWall.currentDGS10?.toFixed(2) ?? '--'}% | Thresholds monitored: ${yieldWall.breachedThresholds.join(', ')}% | Polling every 60s`}
             </div>
           </div>
           {yieldWall.currentDGS10 !== null && (
             <div className="text-right">
               <div className="text-xs font-mono" style={{ color: muted }}>10Y YIELD</div>
               <div className="text-xl font-bold font-mono tabular-nums"
-                style={{ color: (yieldWall.currentDGS10 >= 4.5) ? '#ff3b5c' : (yieldWall.currentDGS10 >= 4.0) ? '#f59e0b' : '#22c55e' }}>
+                style={{ color: (yieldWall.currentDGS10 >= 4.5) ? '#f59e0b' : '#22c55e' }}>
                 {yieldWall.currentDGS10.toFixed(2)}%
-              </div>
-              <div className="text-[10px] font-mono" style={{ color: muted }}>
-                WALL: 4.50%
               </div>
             </div>
           )}
