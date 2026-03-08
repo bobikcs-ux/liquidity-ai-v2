@@ -55,7 +55,6 @@ import { useUserRole } from '../../context/UserRoleContext';
 
 import { DataSourceStatusCompact } from '../DataSourceStatus';
 import { GlobalStatusBar } from '../GlobalStatusBar';
-import { useYieldWall } from '../../hooks/useYieldWall';
 import { SystemStatusPanel } from '../SystemStatusPanel';
 
 // Merged navigation - same items for desktop and mobile
