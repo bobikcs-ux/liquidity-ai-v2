@@ -4,6 +4,7 @@ import React, { memo } from 'react';
 import { Globe, Activity, TrendingUp, TrendingDown, RefreshCw } from 'lucide-react';
 import { useGlobalRegions } from '../hooks/useGlobalRegions';
 import { useMacroData } from '../hooks/useMacroData';
+import { useSnapshotFirst } from '../hooks/useSnapshotFirst';
 import { getRegionStatusColor, formatRegionMetric } from '../services/globalRegionService';
 
 // Design tokens
@@ -80,13 +81,30 @@ const RegionCard = memo(function RegionCard({ name, flag, status, metrics, lastS
 export const GlobalHeatmap = memo(function GlobalHeatmap() {
   const { data, isLoading, refresh, regionStatuses } = useGlobalRegions();
   const { values: macroValues, metricStatus } = useMacroData();
+  const { data: snapshot, latencyMs } = useSnapshotFirst();
+
+  // Derive status from snapshot (uses 20-min STALE threshold from snapshotFirstService)
+  const deriveStatus = (snapshotStatus?: 'LIVE' | 'STALE' | 'SEED', fallbackStatus?: string): 'LIVE' | 'STALE' | 'OFFLINE' => {
+    if (snapshotStatus === 'LIVE') return 'LIVE';
+    if (snapshotStatus === 'STALE') return 'STALE';
+    if (fallbackStatus === 'LIVE') return 'LIVE';
+    if (fallbackStatus === 'CACHED') return 'STALE';
+    return 'OFFLINE';
+  };
+
+  const usStatus = deriveStatus(snapshot?.macro?.dgs10?.status, metricStatus?.dgs10);
+  const euStatus = deriveStatus(snapshot?.macro?.ecbRate?.status, regionStatuses.eu);
+  const asiaStatus = deriveStatus(snapshot?.macro?.bojRate?.status, regionStatuses.asia);
+  const indiaStatus = deriveStatus(snapshot?.macro?.rbiRate?.status, regionStatuses.india);
+  const bricsStatus = deriveStatus(snapshot?.macro?.deDollarizationIndex?.status, regionStatuses.brics);
+  const ukStatus = deriveStatus(snapshot?.macro?.boeRate?.status, regionStatuses.uk);
 
   // Build region cards from data
   const regions: RegionCardProps[] = [
     {
       name: 'UNITED STATES',
       flag: '🇺🇸',
-      status: metricStatus?.dgs10 === 'LIVE' ? 'LIVE' : metricStatus?.dgs10 === 'CACHED' ? 'STALE' : 'OFFLINE',
+      status: usStatus,
       metrics: [
         { label: '10Y Yield', value: formatRegionMetric(macroValues?.dgs10, '%') },
         { label: '2Y Yield', value: formatRegionMetric(macroValues?.dgs2, '%') },
@@ -97,7 +115,7 @@ export const GlobalHeatmap = memo(function GlobalHeatmap() {
     {
       name: 'EUROZONE',
       flag: '🇪🇺',
-      status: regionStatuses.eu,
+      status: euStatus,
       metrics: [
         { label: 'ECB Rate', value: formatRegionMetric(macroValues?.ecbRate ?? data?.eu?.metrics?.ecb_rate, '%') },
         { label: 'GDP Growth', value: formatRegionMetric(data?.eu?.metrics?.gdp_growth, '%') },
@@ -109,7 +127,7 @@ export const GlobalHeatmap = memo(function GlobalHeatmap() {
     {
       name: 'ASIA-PACIFIC',
       flag: '🌏',
-      status: regionStatuses.asia,
+      status: asiaStatus,
       metrics: [
         { label: 'BoJ Rate', value: formatRegionMetric(macroValues?.bojRate ?? data?.asia?.metrics?.boj_rate, '%') },
         { label: 'JPY 10Y', value: formatRegionMetric(data?.asia?.metrics?.jpy_10y_yield, '%') },
@@ -121,7 +139,7 @@ export const GlobalHeatmap = memo(function GlobalHeatmap() {
     {
       name: 'INDIA',
       flag: '🇮🇳',
-      status: regionStatuses.india,
+      status: indiaStatus,
       metrics: [
         { label: 'RBI Rate', value: formatRegionMetric(data?.india?.metrics?.rbi_rate, '%') },
         { label: 'GDP Growth', value: formatRegionMetric(data?.india?.metrics?.gdp_growth, '%') },
@@ -133,7 +151,7 @@ export const GlobalHeatmap = memo(function GlobalHeatmap() {
     {
       name: 'BRICS+',
       flag: '🌍',
-      status: regionStatuses.brics,
+      status: bricsStatus,
       metrics: [
         { label: 'Trade Index', value: formatRegionMetric(data?.brics?.metrics?.trade_flow_index) },
         { label: 'De-Dollar', value: formatRegionMetric(data?.brics?.metrics?.dedollarization_index) },
@@ -145,7 +163,7 @@ export const GlobalHeatmap = memo(function GlobalHeatmap() {
     {
       name: 'UNITED KINGDOM',
       flag: '🇬🇧',
-      status: regionStatuses.uk,
+      status: ukStatus,
       metrics: [
         { label: 'BoE Rate', value: formatRegionMetric(data?.uk?.metrics?.boe_rate, '%') },
         { label: 'Inflation', value: formatRegionMetric(data?.uk?.metrics?.inflation_rate, '%') },
@@ -199,10 +217,11 @@ export const GlobalHeatmap = memo(function GlobalHeatmap() {
         style={{ borderTop: `1px solid ${DESIGN.border}`, color: DESIGN.textMuted }}
       >
         <div className="flex items-center gap-4">
-          <span>Overall: <span style={{ color: data?.overallStatus === 'LIVE' ? DESIGN.success : data?.overallStatus === 'DEGRADED' ? DESIGN.warning : DESIGN.danger }}>{data?.overallStatus ?? 'LOADING'}</span></span>
-          <span>Fear/Greed: <span style={{ color: DESIGN.textPrimary }}>{macroValues?.fearGreed ?? '--'}</span></span>
+          <span>Overall: <span style={{ color: snapshot?.macro?.status === 'LIVE' ? DESIGN.success : snapshot?.macro?.status === 'STALE' ? DESIGN.warning : DESIGN.danger }}>{snapshot?.macro?.status ?? data?.overallStatus ?? 'LOADING'}</span></span>
+          <span>Fear/Greed: <span style={{ color: DESIGN.textPrimary }}>{snapshot?.macro?.fearGreed?.value ?? macroValues?.fearGreed ?? '--'}</span></span>
+          <span>Latency: <span style={{ color: latencyMs && latencyMs < 100 ? DESIGN.success : latencyMs && latencyMs < 500 ? DESIGN.warning : DESIGN.danger }}>{latencyMs ? `${latencyMs}ms` : '--'}</span></span>
         </div>
-        <span>Last Sync: {data?.lastSync?.toLocaleTimeString() ?? '--:--'}</span>
+        <span>Last Sync: {snapshot?.fetchedAt?.toLocaleTimeString() ?? data?.lastSync?.toLocaleTimeString() ?? '--:--'}</span>
       </div>
     </div>
   );
