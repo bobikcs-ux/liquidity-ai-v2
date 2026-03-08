@@ -13,68 +13,28 @@ import { EnergyFinance } from "./pages/EnergyFinance";
 import { Sovereign } from "./pages/Sovereign";
 import { Citadel } from "./pages/Citadel";
 import { Triad } from "./pages/Triad";
+import { ProphecyLog } from "./pages/ProphecyLog";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: <UnifiedLayout />,
     children: [
-      {
-        index: true,
-        element: <Dashboard />,
-      },
-      {
-        path: "dashboard",
-        element: <Dashboard />,
-      },
-      {
-        path: "intelligence",
-        element: <Intelligence />,
-      },
-      {
-        path: "stress-lab",
-        element: <StressLab />,
-      },
-      {
-        path: "black-swan",
-        element: <BlackSwanTerminal />,
-      },
-      {
-        path: "capital-survival",
-        element: <CapitalSurvival />,
-      },
-      {
-        path: "agi-terminal",
-        element: <AGITerminal />,
-      },
-      {
-        path: "reports",
-        element: <Reports />,
-      },
-      {
-        path: "data-sources",
-        element: <DataSources />,
-      },
-      {
-        path: "profile",
-        element: <Profile />,
-      },
-      {
-        path: "energy-finance",
-        element: <EnergyFinance />,
-      },
-      {
-        path: "sovereign",
-        element: <Sovereign />,
-      },
-      {
-        path: "citadel",
-        element: <Citadel />,
-      },
-      {
-        path: "triad",
-        element: <Triad />,
-      },
+      { index: true, element: <Dashboard /> },
+      { path: "dashboard", element: <Dashboard /> },
+      { path: "intelligence", element: <Intelligence /> },
+      { path: "stress-lab", element: <StressLab /> },
+      { path: "black-swan", element: <BlackSwanTerminal /> },
+      { path: "capital-survival", element: <CapitalSurvival /> },
+      { path: "agi-terminal", element: <AGITerminal /> },
+      { path: "reports", element: <Reports /> },
+      { path: "data-sources", element: <DataSources /> },
+      { path: "profile", element: <Profile /> },
+      { path: "energy-finance", element: <EnergyFinance /> },
+      { path: "sovereign", element: <Sovereign /> },
+      { path: "citadel", element: <Citadel /> },
+      { path: "triad", element: <Triad /> },
+      { path: "prophecy-log", element: <ProphecyLog /> },
     ],
   },
 ]);

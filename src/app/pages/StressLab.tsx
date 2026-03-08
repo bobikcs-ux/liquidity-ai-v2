@@ -174,9 +174,15 @@ export function StressLab() {
           }`}>
             Stress Lab
           </h1>
-          <p className={isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}>
-            Scenario simulation and stress testing
-          </p>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded tracking-widest"
+              style={{ background: 'rgba(255,59,92,0.12)', color: '#ff3b5c', border: '1px solid rgba(255,59,92,0.3)' }}>
+              GLOBAL_ALERT
+            </span>
+            <p className={`text-sm md:text-base ${isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}`}>
+              Scenario stress testing &amp; capital survival modeling
+            </p>
+          </div>
         </div>
 
         {/* Locked Overlay */}
@@ -283,9 +289,15 @@ export function StressLab() {
         }`}>
           Stress Lab
         </h1>
-        <p className={`text-sm md:text-base ${isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}`}>
-          Scenario simulation and stress testing
-        </p>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono font-bold px-2 py-0.5 rounded tracking-widest"
+            style={{ background: 'rgba(255,59,92,0.12)', color: '#ff3b5c', border: '1px solid rgba(255,59,92,0.3)' }}>
+            GLOBAL_ALERT
+          </span>
+          <p className={`text-sm md:text-base ${isDark || isHybrid ? 'text-gray-200' : 'text-gray-600'}`}>
+            Scenario stress testing &amp; capital survival modeling
+          </p>
+        </div>
       </div>
 
       {/* Correlation Warning Banner */}
