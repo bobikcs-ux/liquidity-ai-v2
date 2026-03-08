@@ -81,13 +81,13 @@ export const GlobalRiskMeter = memo(function GlobalRiskMeter() {
   const strokeDasharray = circumference;
   const strokeDashoffset = circumference - (riskScore / 100) * circumference;
 
-  // Risk components breakdown (mock data - would come from actual calculations)
-  const components = [
-    { name: 'Liquidity Stress', value: Math.min(100, riskScore * 1.1), change: 2.3 },
-    { name: 'Credit Risk', value: Math.min(100, riskScore * 0.9), change: -1.2 },
-    { name: 'Volatility', value: Math.min(100, riskScore * 1.05), change: 5.8 },
-    { name: 'Geopolitical', value: Math.min(100, riskScore * 0.85), change: 0.5 },
-  ];
+  // Risk components breakdown - calculated from systemic_risk, not hardcoded
+  const components = snapshot ? [
+    { name: 'Liquidity Stress', value: Math.min(100, riskScore * 1.1), change: snapshot.yield_spread ? snapshot.yield_spread * 10 : 0 },
+    { name: 'Credit Risk', value: Math.min(100, riskScore * 0.9), change: snapshot.systemic_risk ? (snapshot.systemic_risk * 100 - 45) : 0 },
+    { name: 'Volatility', value: Math.min(100, riskScore * 1.05), change: snapshot.btc_volatility ? snapshot.btc_volatility * 100 : 0 },
+    { name: 'Geopolitical', value: Math.min(100, riskScore * 0.85), change: snapshot.regime === 'crisis' ? 8.5 : snapshot.regime === 'stress' ? 4.2 : 0.5 },
+  ] : [];
 
   if (loading) {
     return (

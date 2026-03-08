@@ -24,12 +24,15 @@ export function Dashboard() {
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
   
-  // Format values from Supabase snapshot
+  // Format values from Supabase snapshot - NO HARDCODED FALLBACKS
   const survivalProb = snapshot?.survival_probability != null 
     ? (snapshot.survival_probability > 1 ? snapshot.survival_probability : Math.round(snapshot.survival_probability * 100))
-    : 78;
-  const yieldSpread = snapshot?.yield_spread?.toFixed(2) ?? '-0.23';
-  const btcDominance = snapshot?.btc_dominance?.toFixed(1) ?? '57.4';
+    : null;
+  const yieldSpread = snapshot?.yield_spread?.toFixed(2) ?? null;
+  const btcDominance = snapshot?.btc_dominance?.toFixed(1) ?? null;
+  
+  // Show loading skeleton if data is being fetched
+  const showLoadingState = snapshotLoading && !snapshot;
   
   const cardStyle = `rounded-xl shadow-sm border p-4 md:p-6 min-h-[260px] w-full max-w-full flex flex-col overflow-hidden transition-all duration-500 ${
     isDark ? 'bg-[#0b0f17] border-[#1f2937]' : 

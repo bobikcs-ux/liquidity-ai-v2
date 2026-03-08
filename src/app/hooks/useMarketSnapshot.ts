@@ -38,9 +38,21 @@ interface UseMarketSnapshotReturn {
 // If no data exists, show "Waiting for first market snapshot..."
 // =============================================================================
 
-// Global consistent Fear & Greed value for the entire application
-export const GLOBAL_FEAR_GREED_VALUE = 22;
-export const GLOBAL_FEAR_GREED_LABEL = 'Extreme Fear';
+// Fear & Greed Index - fetched from Supabase macro_metrics table
+// Default to null until data is available
+export let GLOBAL_FEAR_GREED_VALUE: number | null = null;
+export let GLOBAL_FEAR_GREED_LABEL = 'Loading...';
+
+function getFearGreedLabel(value: number | null): string {
+  if (value === null) return 'Loading...';
+  if (value < 10) return 'Extreme Fear';
+  if (value < 25) return 'Very Fear';
+  if (value < 45) return 'Fear';
+  if (value < 55) return 'Neutral';
+  if (value < 75) return 'Greed';
+  if (value < 90) return 'Very Greed';
+  return 'Extreme Greed';
+}
 
 export function useMarketSnapshot(): UseMarketSnapshotReturn {
   const [latest, setLatest] = useState<MarketSnapshot | null>(null);
@@ -116,6 +128,20 @@ export function useMarketSnapshot(): UseMarketSnapshotReturn {
           last_update: latestData.created_at,
           snapshots_24h: historyData?.length || 0,
         };
+      }
+
+      // Fetch Fear & Greed Index from macro_metrics
+      const { data: fearGreedData, error: fearGreedError } = await supabase
+        .from('macro_metrics')
+        .select('value')
+        .eq('symbol', 'FEAR_GREED')
+        .order('fetched_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!fearGreedError && fearGreedData?.value) {
+        GLOBAL_FEAR_GREED_VALUE = fearGreedData.value;
+        GLOBAL_FEAR_GREED_LABEL = getFearGreedLabel(fearGreedData.value);
       }
 
       setLatest(latestData || null);
