@@ -211,17 +211,29 @@ export const GlobalHeatmap = memo(function GlobalHeatmap() {
         ))}
       </div>
 
-      {/* Footer Status Bar */}
+      {/* Footer Status Bar — Split latency display */}
       <div 
         className="flex items-center justify-between px-4 py-2 text-xs font-mono"
         style={{ borderTop: `1px solid ${DESIGN.border}`, color: DESIGN.textMuted }}
       >
         <div className="flex items-center gap-4">
-          <span>Overall: <span style={{ color: snapshot?.macro?.status === 'LIVE' ? DESIGN.success : snapshot?.macro?.status === 'STALE' ? DESIGN.warning : DESIGN.danger }}>{snapshot?.macro?.status ?? data?.overallStatus ?? 'LOADING'}</span></span>
-          <span>Fear/Greed: <span style={{ color: DESIGN.textPrimary }}>{snapshot?.macro?.fearGreed?.value ?? macroValues?.fearGreed ?? '--'}</span></span>
-          <span>Latency: <span style={{ color: latencyMs && latencyMs < 100 ? DESIGN.success : latencyMs && latencyMs < 500 ? DESIGN.warning : DESIGN.danger }}>{latencyMs ? `${latencyMs}ms` : '--'}</span></span>
+          <span>Status: <span style={{ color: snapshot?.macro?.status === 'LIVE' ? DESIGN.success : snapshot?.macro?.status === 'STALE' ? DESIGN.warning : DESIGN.danger }}>{snapshot?.macro?.status ?? data?.overallStatus ?? 'LOADING'}</span></span>
+          <span>F&G: <span style={{ color: DESIGN.textPrimary }}>{snapshot?.macro?.fearGreed?.value ?? macroValues?.fearGreed ?? '--'}</span></span>
+          {/* Local Read = Supabase query latency (should be <100ms) */}
+          <span title="Local DB Read (Supabase)">
+            Local: <span style={{ color: latencyMs && latencyMs < 100 ? DESIGN.success : latencyMs && latencyMs < 300 ? DESIGN.warning : DESIGN.danger }}>{latencyMs ? `${latencyMs}ms` : '--'}</span>
+          </span>
+          {/* Cloud Sync = background worker status (separate from UI) */}
+          <span title="Background sync to external APIs (FRED, EIA, FMP)" style={{ opacity: 0.7 }}>
+            Cloud: <span style={{ color: DESIGN.success }}>async</span>
+          </span>
         </div>
-        <span>Last Sync: {snapshot?.fetchedAt?.toLocaleTimeString() ?? data?.lastSync?.toLocaleTimeString() ?? '--:--'}</span>
+        <div className="flex items-center gap-2">
+          {latencyMs && latencyMs < 100 && (
+            <span className="px-1.5 py-0.5 text-[10px] rounded" style={{ background: DESIGN.success + '20', color: DESIGN.success }}>FAST</span>
+          )}
+          <span>Sync: {snapshot?.fetchedAt?.toLocaleTimeString() ?? data?.lastSync?.toLocaleTimeString() ?? '--:--'}</span>
+        </div>
       </div>
     </div>
   );

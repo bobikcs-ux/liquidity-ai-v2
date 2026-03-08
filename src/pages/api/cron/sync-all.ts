@@ -222,12 +222,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // =========================================================================
-  // 4. EIA NATGAS → energy_data (JSONB row merged with latest oil if possible)
+  // 4. EIA NATGAS → energy_data (JSONB)
+  // Tight 5s timeout — fail over to previous snapshot value if slow
   // =========================================================================
   const eiaStart = Date.now();
   try {
     const url = `https://api.eia.gov/v2/natural-gas/pri/fut/data/?api_key=${EIA_API_KEY}&frequency=daily&data[0]=value&facets[series][]=RNGWHHD&sort[0][column]=period&sort[0][direction]=desc&length=1`;
-    const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    const response = await fetch(url, { signal: AbortSignal.timeout(5000) }); // 5s max
 
     if (response.ok) {
       const data = await response.json();
@@ -245,7 +246,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       results['EIA_NATGAS'] = { status: 'ERROR', latencyMs: Date.now() - eiaStart, error: `HTTP ${response.status}` };
     }
   } catch (err) {
-    results['EIA_NATGAS'] = { status: 'ERROR', latencyMs: Date.now() - eiaStart, error: err instanceof Error ? err.message : 'Unknown' };
+    // EIA timed out or failed — fail over to previous snapshot
+    const latency = Date.now() - eiaStart;
+    const isTimeout = err instanceof Error && err.name === 'TimeoutError';
+    results['EIA_NATGAS'] = { 
+      status: isTimeout ? 'TIMEOUT_FAILOVER' : 'ERROR', 
+      latencyMs: latency, 
+      error: isTimeout ? `Timeout after ${latency}ms — using previous snapshot` : (err instanceof Error ? err.message : 'Unknown')
+    };
+    // No insert — UI reads previous value from energy_data
   }
 
   // =========================================================================
