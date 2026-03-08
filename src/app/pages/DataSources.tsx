@@ -481,9 +481,15 @@ export function DataSources() {
                     <Loader2 className="w-3 h-3 animate-spin" />
                     <span>Live calc...</span>
                   </span>
+                ) : modelAccuracy.isCalibrating ? (
+                  <span className="inline-flex items-center gap-1 text-amber-500 font-semibold" 
+                    title={`Need ${3 - modelAccuracy.sampleSize} more evaluable signals`}>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Calibrating...
+                  </span>
                 ) : modelAccuracy.accuracy !== null ? (
                   <span className={`font-semibold ${modelAccuracy.accuracy >= 80 ? 'text-green-600' : modelAccuracy.accuracy >= 60 ? 'text-amber-600' : 'text-red-500'}`}
-                    title={`${modelAccuracy.hits} hits / ${modelAccuracy.sampleSize} evaluated signals`}>
+                    title={`${modelAccuracy.hits} hits / ${modelAccuracy.sampleSize} evaluated signals (4hr window)`}>
                     {modelAccuracy.accuracy}%
                   </span>
                 ) : (
@@ -527,8 +533,15 @@ export function DataSources() {
                     <Loader2 className="w-3 h-3 animate-spin" />
                     <span>Live calc...</span>
                   </span>
+                ) : modelAccuracy.isCalibrating ? (
+                  <span className="inline-flex items-center gap-1 text-amber-500 font-semibold" 
+                    title={`Need ${3 - modelAccuracy.sampleSize} more evaluable signals`}>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Calibrating...
+                  </span>
                 ) : modelAccuracy.accuracy !== null ? (
-                  <span className={`font-semibold ${modelAccuracy.accuracy >= 80 ? 'text-green-600' : modelAccuracy.accuracy >= 60 ? 'text-amber-600' : 'text-red-500'}`}>
+                  <span className={`font-semibold ${modelAccuracy.accuracy >= 80 ? 'text-green-600' : modelAccuracy.accuracy >= 60 ? 'text-amber-600' : 'text-red-500'}`}
+                    title={`${modelAccuracy.hits} hits / ${modelAccuracy.sampleSize} signals (4hr window)`}>
                     {modelAccuracy.accuracy}%
                   </span>
                 ) : (
@@ -572,9 +585,15 @@ export function DataSources() {
                     <Loader2 className="w-3 h-3 animate-spin" />
                     <span>Live calc...</span>
                   </span>
+                ) : modelAccuracy.isCalibrating ? (
+                  <span className="inline-flex items-center gap-1 text-amber-500 font-semibold" 
+                    title={`Need ${3 - modelAccuracy.sampleSize} more evaluable signals`}>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Calibrating...
+                  </span>
                 ) : modelAccuracy.accuracy !== null ? (
                   <span className={`font-semibold ${modelAccuracy.accuracy >= 80 ? 'text-green-600' : modelAccuracy.accuracy >= 60 ? 'text-amber-600' : 'text-red-500'}`}
-                    title={`Based on ${modelAccuracy.sampleSize} evaluated signals`}>
+                    title={`${modelAccuracy.hits} hits / ${modelAccuracy.sampleSize} signals (4hr window)`}>
                     {modelAccuracy.accuracy}%
                   </span>
                 ) : (
