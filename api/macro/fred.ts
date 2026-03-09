@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 /**
  * Server-side FRED API proxy to bypass CORS restrictions.
@@ -7,7 +7,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 const FRED_API_BASE = 'https://api.stlouisfed.org/fred/series/observations';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

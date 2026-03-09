@@ -10,7 +10,7 @@
  * Uses created_at for market_snapshots (existing schema), fetched_at for others.
  */
 
-import type { NextApiRequest, NextApiResponse } from 'next';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const CRON_SECRET = process.env.CRON_SECRET;
@@ -20,7 +20,7 @@ const FRED_API_KEY = process.env.VITE_FRED_API_KEY || process.env.FRED_API_KEY;
 const FMP_API_KEY = process.env.VITE_FMP_API_KEY || process.env.FMP_API_KEY;
 const EIA_API_KEY = process.env.VITE_EIA_API_KEY || process.env.EIA_API_KEY || 'DEMO_KEY';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Verify cron secret
   const authHeader = req.headers.authorization;
   if (authHeader !== `Bearer ${CRON_SECRET}`) {

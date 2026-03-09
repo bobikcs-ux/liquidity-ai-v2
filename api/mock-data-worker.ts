@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -33,7 +33,27 @@ async function logChange(
   });
 }
 
-export async function POST(req: NextRequest) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      status: 'ready',
+      message: 'Mock Data Worker — POST to trigger a data update cycle.',
+    });
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const workerRun = `run_${Date.now()}`;
   const logs: string[] = [];
 
@@ -68,7 +88,6 @@ export async function POST(req: NextRequest) {
       { region: 'EU', series: newMacroEU, fetched_at: new Date().toISOString() },
     ]);
 
-    // Log every changed key for US
     for (const key of Object.keys(newMacroUS) as (keyof typeof newMacroUS)[]) {
       const oldVal = prevMacroUS[key] ?? null;
       const newVal = newMacroUS[key];
@@ -161,7 +180,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    return res.status(200).json({
       success:     true,
       worker_run:  workerRun,
       changes:     logs.length,
@@ -178,16 +197,6 @@ export async function POST(req: NextRequest) {
       details:    { message: err.message },
     });
 
-    return NextResponse.json(
-      { success: false, error: err.message },
-      { status: 500 }
-    );
+    return res.status(500).json({ success: false, error: err.message });
   }
-}
-
-export async function GET() {
-  return NextResponse.json({
-    status:  'ready',
-    message: 'Mock Data Worker — POST to trigger a data update cycle.',
-  });
 }
