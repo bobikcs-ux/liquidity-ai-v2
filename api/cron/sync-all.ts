@@ -14,7 +14,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const CRON_SECRET = process.env.CRON_SECRET;
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const FRED_API_KEY = process.env.VITE_FRED_API_KEY || process.env.FRED_API_KEY;
 const FMP_API_KEY = process.env.VITE_FMP_API_KEY || process.env.FMP_API_KEY;

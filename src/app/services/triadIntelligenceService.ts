@@ -65,7 +65,7 @@ function markStale<T>(entry: CacheEntry<T> | null): CacheEntry<T> | null {
 // LIQUIDITY STRESS ENGINE
 // ============================================
 
-const FRED_API_KEY = process.env.NEXT_PUBLIC_FRED_API_KEY || 'demo';
+const FRED_API_KEY = import.meta.env.VITE_FRED_API_KEY || 'demo';
 
 async function fetchFREDSeries(seriesId: string): Promise<number | null> {
   try {

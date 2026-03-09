@@ -18,11 +18,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     // Call the Supabase Edge Function
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     
     if (!supabaseUrl) {
-      throw new Error('NEXT_PUBLIC_SUPABASE_URL not configured');
+      throw new Error('SUPABASE_URL not configured');
     }
 
     // Extract project ref from URL (e.g., https://ssrvswohtexhpihqcbak.supabase.co)

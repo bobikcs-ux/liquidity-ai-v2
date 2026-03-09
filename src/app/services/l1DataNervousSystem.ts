@@ -270,8 +270,7 @@ interface CoinGeckoData {
 }
 
 async function fetchBTCDataFromCoinGecko(): Promise<CoinGeckoData> {
-  const COINGECKO_KEY = import.meta.env.NEXT_PUBLIC_COINGECKO_API_KEY || 
-    (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_COINGECKO_API_KEY);
+  const COINGECKO_KEY = import.meta.env.VITE_COINGECKO_API_KEY;
   
   const headers: HeadersInit = { 'Accept': 'application/json' };
   if (COINGECKO_KEY) {

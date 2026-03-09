@@ -88,8 +88,7 @@ export const fetchAllMarketData = async (): Promise<MarketContext> => {
   // Fallback: fetch from external APIs directly
   const FRED_KEY = import.meta.env.VITE_FRED_API_KEY || 
     (typeof process !== 'undefined' && process.env.VITE_FRED_API_KEY);
-  const COINGECKO_KEY = import.meta.env.NEXT_PUBLIC_COINGECKO_API_KEY || 
-    (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_COINGECKO_API_KEY);
+  const COINGECKO_KEY = import.meta.env.VITE_COINGECKO_API_KEY;
   
   const cgHeaders: HeadersInit = { 'Accept': 'application/json' };
   if (COINGECKO_KEY) {
