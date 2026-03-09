@@ -24,6 +24,10 @@ function MetricRow({ label, value, unit = '', highlight = false }: { label: stri
 }
 
 function DataPanel({ title, icon: Icon, children, loading }: { title: string; icon: any; children: React.ReactNode; loading: boolean }) {
+  // Check if children are all null/undefined (no data to display)
+  const childArray = React.Children.toArray(children);
+  const hasData = childArray.length > 0 && childArray.some(c => c != null);
+  
   return (
     <div className="rounded-lg border p-4 flex flex-col gap-2" style={{ background: 'rgba(16,16,22,0.8)', borderColor: 'rgba(212,175,55,0.15)' }}>
       <div className="flex items-center gap-2 mb-1">
@@ -31,9 +35,12 @@ function DataPanel({ title, icon: Icon, children, loading }: { title: string; ic
         <span className="text-[10px] font-black uppercase tracking-[0.15em] text-[#d4af37]">{title}</span>
         {loading && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#d4af37] animate-pulse" />}
       </div>
-      {loading && !children
+      {loading
         ? <div className="space-y-1">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-5 rounded animate-pulse" style={{ background: 'rgba(212,175,55,0.06)' }} />)}</div>
-        : children}
+        : hasData
+          ? children
+          : <div className="text-[10px] font-mono text-[#a1a1aa] py-3 text-center">No data available</div>
+      }
     </div>
   );
 }

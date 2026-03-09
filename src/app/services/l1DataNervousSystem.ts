@@ -574,7 +574,8 @@ export async function fetchL1Data(): Promise<L1DataStateExtended> {
   }
 
   // CRITICAL: Only update lastSuccessfulFetch on actual successful API responses
-  const anyLiveFeed = Object.values(feedStatus).some(s => s === 'LIVE');
+  const feedStatusValues = Object.values(feedStatus ?? {});
+  const anyLiveFeed = feedStatusValues.length > 0 && feedStatusValues.some(s => s === 'LIVE');
   if (anyLiveFeed) {
     lastSuccessfulFetch = new Date();
     console.log(`[L1] Fetch cycle complete in ${Date.now() - fetchStartTime}ms - Status: ${overallStatus}`);

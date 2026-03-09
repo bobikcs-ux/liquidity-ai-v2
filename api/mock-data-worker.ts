@@ -166,7 +166,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
-    // ── 4. Write run-summary log entry ───────────────────────────────────────
+    // ── 4. UPDATE PRICES TABLE ────────────────────────────────────────────────
+    // Update T-series product prices with realistic values derived from market data
+    const priceUpdates = [
+      { product_code: 'T63', price: jitter(newCrypto.BTC_PRICE * 0.001,      0.008), source: 'mock_worker' },
+      { product_code: 'T76', price: jitter(newEnergy.GOLD_XAU * 0.1,         0.005), source: 'mock_worker' },
+      { product_code: 'T81', price: jitter(newEnergy.WTI_CRUDE,               0.006), source: 'mock_worker' },
+      { product_code: 'T94', price: jitter(newMacroUS.DGS10 * 100,            0.004), source: 'mock_worker' },
+      { product_code: 'T95', price: jitter(newCrypto.ETH_PRICE * 0.01,        0.007), source: 'mock_worker' },
+    ];
+
+    for (const update of priceUpdates) {
+      const { data: existing } = await supabase
+        .from('prices')
+        .select('price')
+        .eq('product_code', update.product_code)
+        .single();
+
+      const oldPrice = existing?.price ?? 0;
+      
+      await supabase
+        .from('prices')
+        .update({ price: update.price, source: update.source, updated_at: new Date().toISOString() })
+        .eq('product_code', update.product_code);
+
+      if (Math.abs(Number(oldPrice) - update.price) > 0.0001) {
+        await logChange(workerRun, 'prices', update.product_code, Number(oldPrice), update.price);
+        logs.push(`prices.${update.product_code}: ${oldPrice} → ${update.price.toFixed(4)}`);
+      }
+    }
+
+    // ── 5. Write run-summary log entry ───────────────────────────────────────
     await supabase.from('macro_worker_logs').insert({
       worker_run: workerRun,
       table_name: 'ALL',

@@ -89,7 +89,7 @@ export function SystemStatusPanel() {
     CRITICAL: '#ef4444',
   };
 
-  const hasFailedServices = health.services.some((s) => s.status === 'OFFLINE');
+  const hasFailedServices = health.services?.some((s) => s.status === 'OFFLINE') ?? false;
 
   return (
     <div
@@ -126,23 +126,29 @@ export function SystemStatusPanel() {
       {/* Expanded View - Service List */}
       {expanded && (
         <div className="mt-3 pt-3 border-t space-y-2" style={{ borderColor: 'rgba(163,147,123,0.15)' }}>
-          {health.services.map((svc) => (
-            <div key={svc.service} className="flex items-center justify-between text-xs font-mono">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-2 h-2 rounded-full"
-                  style={{ backgroundColor: STATUS_COLORS[svc.status] }}
-                />
-                <span style={{ color: '#A3937B' }}>{svc.service}</span>
-              </div>
-              <div className="text-right">
-                <span style={{ color: STATUS_COLORS[svc.status] }}>{svc.status}</span>
-                {svc.latency_ms > 0 && (
-                  <span style={{ color: '#8b8b8b' }}> ({svc.latency_ms}ms)</span>
-                )}
-              </div>
+          {(health.services ?? []).length === 0 ? (
+            <div className="text-xs font-mono py-2" style={{ color: '#8b8b8b' }}>
+              No service data available
             </div>
-          ))}
+          ) : (
+            health.services.map((svc) => (
+              <div key={svc.service} className="flex items-center justify-between text-xs font-mono">
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: STATUS_COLORS[svc.status] }}
+                  />
+                  <span style={{ color: '#A3937B' }}>{svc.service}</span>
+                </div>
+                <div className="text-right">
+                  <span style={{ color: STATUS_COLORS[svc.status] }}>{svc.status}</span>
+                  {svc.latency_ms > 0 && (
+                    <span style={{ color: '#8b8b8b' }}> ({svc.latency_ms}ms)</span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
 
           {/* Footer Controls */}
           <div className="mt-3 pt-2 border-t flex items-center justify-between" style={{ borderColor: 'rgba(163,147,123,0.15)' }}>

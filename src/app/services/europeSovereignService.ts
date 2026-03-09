@@ -330,9 +330,9 @@ export function calculateEuropeSovereignIndex(
                       (inflationPressure * 0.25) + (ecbPolicy * 0.15);
 
   // Check for PIIGS alert
-  const piigs_alert = debtSignals.some(s => 
+  const piigs_alert = debtSignals?.some(s => 
     s.stress_level === 'CRITICAL' || s.stress_level === 'HIGH'
-  );
+  ) ?? false;
 
   // Determine trend
   let trend: EuropeSovereignIndex['trend'] = 'STABLE';

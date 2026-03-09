@@ -47,20 +47,31 @@ export function useDataInitializer() {
 
         const isEmpty = (macroCount ?? 0) === 0 || (cryptoCount ?? 0) === 0 || (energyCount ?? 0) === 0;
 
-        if (isEmpty) {
-          console.log('[DataInitializer] Tables empty — triggering mock-data-worker...');
+        // Also check if prices table has zero values (seeded but not yet populated)
+        let hasZeroPrices = false;
+        const { data: priceData } = await supabase
+          .from('prices')
+          .select('price')
+          .limit(5);
+        
+        if (priceData && priceData.length > 0) {
+          hasZeroPrices = priceData.every((p: any) => Number(p.price) === 0);
+        }
+
+        if (isEmpty || hasZeroPrices) {
+          console.log('[DataInitializer] Tables empty or have zero values — triggering mock-data-worker...');
           
-          // Call the worker to seed initial data
+          // Call the worker to seed/update data
           const res = await fetch('/api/mock-data-worker', { method: 'POST' });
           const result = await res.json();
           
           if (result.success) {
-            console.log('[DataInitializer] Initial data seeded:', result.worker_run);
+            console.log('[DataInitializer] Data updated:', result.worker_run);
           } else {
             console.error('[DataInitializer] Worker failed:', result.error);
           }
         } else {
-          console.log('[DataInitializer] Tables have data — skipping initialization');
+          console.log('[DataInitializer] Tables have valid data — skipping initialization');
         }
       } catch (err) {
         console.error('[DataInitializer] Error checking tables:', err);
