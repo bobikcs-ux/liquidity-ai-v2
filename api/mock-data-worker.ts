@@ -18,15 +18,25 @@ if (supabaseUrl && supabaseServiceKey) {
 // ============================================================================
 
 async function fetchFRED(seriesId: string): Promise<number | null> {
-  if (!FRED_API_KEY) return null;
+  if (!FRED_API_KEY) {
+    console.log(`[DataWorker] FRED: No API key for ${seriesId}`);
+    return null;
+  }
   try {
     const url = `https://api.stlouisfed.org/fred/series/observations?series_id=${seriesId}&api_key=${FRED_API_KEY}&file_type=json&sort_order=desc&limit=1`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
+    console.log(`[DataWorker] FRED ${seriesId}: HTTP ${res.status}`);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[DataWorker] FRED ${seriesId} error: ${errText.slice(0, 200)}`);
+      return null;
+    }
     const data = await res.json();
     const value = parseFloat(data.observations?.[0]?.value);
+    console.log(`[DataWorker] FRED ${seriesId}: ${value}`);
     return isNaN(value) ? null : value;
-  } catch {
+  } catch (err) {
+    console.error(`[DataWorker] FRED ${seriesId} exception:`, err);
     return null;
   }
 }
@@ -40,8 +50,14 @@ async function fetchCoinGecko(): Promise<{ btc: number; eth: number; btcChange: 
       headers['x-cg-demo-api-key'] = COINGECKO_API_KEY;
     }
     const priceRes = await fetch(priceUrl, { headers, signal: AbortSignal.timeout(8000) });
-    if (!priceRes.ok) return null;
+    console.log(`[DataWorker] CoinGecko: HTTP ${priceRes.status}`);
+    if (!priceRes.ok) {
+      const errText = await priceRes.text().catch(() => '');
+      console.error(`[DataWorker] CoinGecko error: ${errText.slice(0, 200)}`);
+      return null;
+    }
     const priceData = await priceRes.json();
+    console.log(`[DataWorker] CoinGecko: BTC=$${priceData.bitcoin?.usd}, ETH=$${priceData.ethereum?.usd}`);
 
     // Fear & Greed from alternative.me
     let fearGreed = 50;
@@ -65,12 +81,21 @@ async function fetchCoinGecko(): Promise<{ btc: number; eth: number; btcChange: 
 }
 
 async function fetchFMPCommodities(): Promise<{ wti: number; brent: number; gold: number; silver: number; natgas: number } | null> {
-  if (!FMP_API_KEY) return null;
+  if (!FMP_API_KEY) {
+    console.log('[DataWorker] FMP: No API key');
+    return null;
+  }
   try {
     const url = `https://financialmodelingprep.com/api/v3/quote/CLUSD,BZUSD,GCUSD,SIUSD,NGUSD?apikey=${FMP_API_KEY}`;
     const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!res.ok) return null;
+    console.log(`[DataWorker] FMP Commodities: HTTP ${res.status}`);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.error(`[DataWorker] FMP error: ${errText.slice(0, 200)}`);
+      return null;
+    }
     const data = await res.json();
+    console.log(`[DataWorker] FMP: WTI=$${data.find?.((d: any) => d.symbol === 'CLUSD')?.price}`);
     const find = (sym: string) => data.find((d: any) => d.symbol === sym)?.price ?? null;
     return {
       wti: find('CLUSD'),

@@ -251,7 +251,35 @@ export function InfrastructureStatusBar({ refreshInterval = 5 * 60 * 1000 }: Inf
     SOURCES.map(s => ({ ...s, status: 'ONLINE', lastChecked: new Date() }))
   );
   const [checking, setChecking] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
   const isFirstCheck = useRef(true);
+
+  // Sync Now - trigger the mock-data-worker to fetch real data
+  const syncNow = useCallback(async () => {
+    setSyncing(true);
+    setSyncResult(null);
+    console.log('[v0] Sync Now triggered - calling /api/mock-data-worker');
+    try {
+      const res = await fetch('/api/mock-data-worker', { method: 'POST' });
+      const data = await res.json();
+      console.log('[v0] Sync result:', data);
+      if (data.success) {
+        setSyncResult(`Synced: ${data.worker_run || 'OK'} - ${data.summary?.changes || 0} changes`);
+        // Also refresh the status checks
+        setTimeout(() => checkAll(), 1000);
+      } else {
+        setSyncResult(`Error: ${data.error || 'Unknown'}`);
+      }
+    } catch (err) {
+      console.error('[v0] Sync error:', err);
+      setSyncResult(`Failed: ${err instanceof Error ? err.message : 'Network error'}`);
+    } finally {
+      setSyncing(false);
+      // Clear result after 5 seconds
+      setTimeout(() => setSyncResult(null), 5000);
+    }
+  }, []);
 
   const checkAll = useCallback(async () => {
     setChecking(true);
@@ -379,6 +407,40 @@ export function InfrastructureStatusBar({ refreshInterval = 5 * 60 * 1000 }: Inf
             </div>
           ))}
         </div>
+
+        {/* Sync Result Badge */}
+        {syncResult && (
+          <div
+            className="px-2 py-0.5 rounded text-xs font-mono"
+            style={{
+              background: syncResult.startsWith('Error') || syncResult.startsWith('Failed') 
+                ? 'rgba(255,59,92,0.1)' 
+                : 'rgba(46,204,113,0.1)',
+              border: `1px solid ${syncResult.startsWith('Error') || syncResult.startsWith('Failed') ? '#ff3b5c' : '#2ecc71'}35`,
+              color: syncResult.startsWith('Error') || syncResult.startsWith('Failed') ? '#ff3b5c' : '#2ecc71',
+            }}
+          >
+            {syncResult}
+          </div>
+        )}
+
+        {/* SYNC NOW Button - triggers worker to fetch real data */}
+        <button
+          onClick={syncNow}
+          disabled={syncing}
+          className="flex items-center gap-1 px-2 py-1 rounded text-xs font-mono transition-all shrink-0"
+          style={{
+            background: syncing ? 'rgba(46,204,113,0.05)' : 'rgba(46,204,113,0.15)',
+            border: '1px solid rgba(46,204,113,0.4)',
+            color: '#2ecc71',
+            opacity: syncing ? 0.5 : 1,
+            cursor: syncing ? 'not-allowed' : 'pointer',
+          }}
+          title="Fetch real-time data from FRED, CoinGecko, and FMP APIs"
+        >
+          <Database className={`w-3 h-3 ${syncing ? 'animate-pulse' : ''}`} />
+          <span className="hidden sm:inline">{syncing ? 'SYNCING...' : 'SYNC NOW'}</span>
+        </button>
 
         {/* RETRY Button */}
         <button
