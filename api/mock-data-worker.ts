@@ -1,11 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-// Server-side: use SUPABASE_URL and SERVICE_ROLE_KEY (not VITE_ prefixed)
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Server-side: use SUPABASE_URL and SERVICE_ROLE_KEY (fallback to NEXT_PUBLIC_ for compatibility)
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+let supabase: SupabaseClient | null = null;
+if (supabaseUrl && supabaseServiceKey) {
+  supabase = createClient(supabaseUrl, supabaseServiceKey);
+}
 
 // Small random jitter to simulate live market movement
 function jitter(base: number, pct = 0.005): number {
@@ -55,16 +58,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Check Supabase configuration
+  if (!supabase) {
+    console.error('[mock-data-worker] Supabase not configured - SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING', 'SERVICE_ROLE_KEY:', supabaseServiceKey ? 'SET' : 'MISSING');
+    return res.status(500).json({
+      success: false,
+      error: 'Supabase not configured. Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.',
+    });
+  }
+
+  console.log('[mock-data-worker] Starting worker run...');
   const workerRun = `run_${Date.now()}`;
   const logs: string[] = [];
 
   try {
     // ── 1. MACRO DATA ────────────────────────────────────────────────────────
-    const { data: latestMacro } = await supabase
+    const { data: latestMacro, error: macroError } = await supabase
       .from('macro_data')
       .select('id, region, series')
       .order('fetched_at', { ascending: false })
       .limit(2);
+
+    if (macroError) {
+      console.error('[mock-data-worker] Error fetching macro_data:', macroError);
+    }
+    console.log('[mock-data-worker] Fetched macro_data rows:', latestMacro?.length ?? 0);
 
     const prevMacroUS = latestMacro?.find((r) => r.region === 'US')?.series ?? {};
     const prevMacroEU = latestMacro?.find((r) => r.region === 'EU')?.series ?? {};

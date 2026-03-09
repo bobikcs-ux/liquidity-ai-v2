@@ -6,9 +6,14 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
+console.log('[v0] useDataInitializer - VITE_SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING');
+console.log('[v0] useDataInitializer - VITE_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING');
+
 const supabase: SupabaseClient | null = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
+
+console.log('[v0] useDataInitializer - Supabase client:', supabase ? 'INITIALIZED' : 'NULL');
 
 /**
  * useDataInitializer
