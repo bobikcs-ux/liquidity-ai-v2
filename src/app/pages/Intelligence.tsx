@@ -1,5 +1,6 @@
-import React from 'react';
-import { GitBranch, Target, BarChart3, Network, Droplets, Gauge } from 'lucide-react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { GitBranch, Target, BarChart3, Network, Droplets, Gauge, Activity, ArrowUpRight, ArrowDownRight, RefreshCcw, AlertTriangle } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { IntelligenceCopilot } from '../components/IntelligenceCopilot';
@@ -8,11 +9,143 @@ import { LiveAlphaTicker } from '../components/LiveAlphaTicker';
 import { CentralIntelligenceTerminal } from '../components/CentralIntelligenceTerminal';
 import ErrorBoundary from '../components/ErrorBoundary';
 
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const STATUS_COLORS: Record<string, string> = {
+  CRITICAL: 'text-red-400 bg-red-900/30',
+  ACTIVE:   'text-[#d4af37] bg-[#d4af37]/10',
+  PENDING:  'text-yellow-400 bg-yellow-900/20',
+  RESOLVED: 'text-green-400 bg-green-900/20',
+};
+
+const REGIME_COLORS: Record<string, string> = {
+  crisis: 'text-red-400',
+  stress: 'text-yellow-400',
+  normal: 'text-green-400',
+};
+
+function PriceCard({ product }: { product: any }) {
+  const change = product.change ?? 0;
+  const isUp = change >= 0;
+  return (
+    <div
+      className="rounded-lg p-4 border transition-all duration-300 hover:border-[#d4af37]/40 group"
+      style={{ background: 'rgba(22,22,29,0.7)', borderColor: 'rgba(212,175,55,0.12)' }}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <span className="text-[10px] font-black tracking-widest text-[#a1a1aa] group-hover:text-[#d4af37] transition-colors">
+          {product.product_code}
+        </span>
+        {isUp
+          ? <ArrowUpRight className="w-3.5 h-3.5 text-green-500" />
+          : <ArrowDownRight className="w-3.5 h-3.5 text-red-400" />}
+      </div>
+      <div className="text-xl font-bold text-white font-mono">
+        {product.price > 0
+          ? `$${Number(product.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`
+          : <span className="text-[#a1a1aa] text-sm">No data</span>}
+      </div>
+      <div className={`text-[10px] mt-1 font-mono ${isUp ? 'text-green-500' : 'text-red-400'}`}>
+        {product.source === 'seed' ? 'awaiting feed' : product.source}
+      </div>
+    </div>
+  );
+}
+
+function T81Feed({ logs, loading }: { logs: any[]; loading: boolean }) {
+  return (
+    <div
+      className="rounded-lg border p-5 h-full"
+      style={{ background: 'rgba(22,22,29,0.7)', borderColor: 'rgba(212,175,55,0.15)' }}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <Activity className="w-4 h-4 text-[#d4af37]" />
+        <span className="text-xs font-bold uppercase tracking-widest text-[#d4af37]">Liquidity Transmission</span>
+        <div className="ml-auto w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+      </div>
+      <div className="space-y-2 overflow-y-auto max-h-[300px] pr-1">
+        {loading && logs.length === 0 && (
+          <div className="text-xs text-[#a1a1aa] font-mono py-4 text-center">Connecting to T81 feed...</div>
+        )}
+        {!loading && logs.length === 0 && (
+          <div className="text-xs text-[#a1a1aa] font-mono py-4 text-center">No transmission events</div>
+        )}
+        {logs.map((log) => (
+          <div
+            key={log.id}
+            className="flex items-start gap-3 py-2 border-b font-mono"
+            style={{ borderColor: 'rgba(255,255,255,0.05)' }}
+          >
+            <span className="text-[9px] text-[#a1a1aa] min-w-[52px] pt-0.5">
+              {new Date(log.created_at).toLocaleTimeString([], { hour12: false })}
+            </span>
+            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${STATUS_COLORS[log.status] ?? 'text-[#d4af37]'}`}>
+              {log.status}
+            </span>
+            <div className="flex-1 min-w-0">
+              <div className={`text-[11px] font-bold truncate ${REGIME_COLORS[log.regime] ?? 'text-white'}`}>
+                {log.signal}
+              </div>
+              <div className="text-[10px] text-[#a1a1aa] truncate">{log.notes}</div>
+            </div>
+            {log.confidence != null && (
+              <span className="text-[9px] text-[#d4af37] shrink-0">{log.confidence}%</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Intelligence() {
   const { uiTheme } = useAdaptiveTheme();
   const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
+
+  // T81 & prices live state
+  const [prices, setPrices] = useState<any[]>([]);
+  const [t81Logs, setT81Logs] = useState<any[]>([]);
+  const [t81Loading, setT81Loading] = useState(true);
+  const [systemStatus, setSystemStatus] = useState<'CONNECTING' | 'ONLINE' | 'DEGRADED'>('CONNECTING');
+
+  const loadLiveData = useCallback(async () => {
+    setT81Loading(true);
+    const [{ data: priceData }, { data: logData }] = await Promise.all([
+      supabase.from('prices').select('*').order('product_code'),
+      supabase.from('t81').select('*').order('created_at', { ascending: false }).limit(20),
+    ]);
+    if (priceData) setPrices(priceData);
+    if (logData) setT81Logs(logData);
+    setT81Loading(false);
+    setSystemStatus('ONLINE');
+  }, []);
+
+  useEffect(() => {
+    loadLiveData();
+
+    // Realtime subscriptions
+    const priceChannel = supabase
+      .channel('intel-prices')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'prices' },
+        (payload) => setPrices((prev) => prev.map((p) => p.id === payload.new.id ? payload.new : p))
+      ).subscribe();
+
+    const t81Channel = supabase
+      .channel('intel-t81')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 't81' },
+        (payload) => setT81Logs((prev) => [payload.new, ...prev].slice(0, 20))
+      ).subscribe();
+
+    return () => {
+      supabase.removeChannel(priceChannel);
+      supabase.removeChannel(t81Channel);
+    };
+  }, [loadLiveData]);
   
   // Calculate real values from Supabase snapshot
   const survivalProb = snapshot?.survival_probability != null 
@@ -47,9 +180,57 @@ export function Intelligence() {
         </p>
       </div>
 
+      {/* ── LIVE INTELLIGENCE LAYER ────────────────────────────────────── */}
+      <div
+        className="rounded-xl p-6 space-y-6 border"
+        style={{ background: 'rgba(11,11,15,0.6)', borderColor: 'rgba(212,175,55,0.18)' }}
+      >
+        {/* Header bar */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-xs font-black uppercase tracking-[0.2em] text-[#d4af37]">
+              Intelligence Terminal — Live Feed
+            </span>
+            <span
+              className="text-[9px] font-mono px-2 py-0.5 rounded tracking-widest"
+              style={{ background: 'rgba(212,175,55,0.1)', color: '#a1a1aa' }}
+            >
+              {systemStatus}
+            </span>
+          </div>
+          <button
+            onClick={loadLiveData}
+            disabled={t81Loading}
+            className="p-1.5 rounded hover:opacity-70 transition-opacity disabled:opacity-40"
+            style={{ color: '#d4af37' }}
+            aria-label="Refresh live data"
+          >
+            <RefreshCcw className={`w-4 h-4 ${t81Loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+
+        {/* Product Prices Grid */}
+        <div>
+          <p className="text-[10px] font-mono uppercase tracking-widest text-[#a1a1aa] mb-3">
+            Product Prices — T-Series
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            {t81Loading && prices.length === 0
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-20 rounded-lg animate-pulse" style={{ background: 'rgba(212,175,55,0.06)' }} />
+                ))
+              : prices.map((p) => <PriceCard key={p.id} product={p} />)}
+          </div>
+        </div>
+
+        {/* T81 Liquidity Transmission */}
+        <T81Feed logs={t81Logs} loading={t81Loading} />
+      </div>
+      {/* ── END LIVE INTELLIGENCE LAYER ────────────────────────────────── */}
+
       {/* Live Alpha Ticker */}
-      <ErrorBoundary componentName="LiveAlphaTicker">
-        <LiveAlphaTicker />
+      <ErrorBoundary componentName="LiveAlphaTicker">        <LiveAlphaTicker />
       </ErrorBoundary>
 
       {/* Central Intelligence Terminal */}
