@@ -85,9 +85,9 @@ export function ResourceShockEngine() {
   };
   
   return (
-    <div className={`rounded-lg border p-6 ${
+    <div className={`rounded-xl border p-4 md:p-6 min-h-[260px] w-full flex flex-col overflow-hidden ${
       isDark || isHybrid 
-        ? 'bg-[#0a1628] border-blue-900/50' 
+        ? 'bg-[#0b0f17] border-[#1f2937]' 
         : 'bg-white border-gray-200'
     }`}>
       {/* Header */}
@@ -107,7 +107,7 @@ export function ResourceShockEngine() {
               Global Resource Transmission
             </h3>
             <p className={`text-xs ${
-              isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+              isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
             }`}>
               Systemic liquidity stress layer
             </p>
@@ -116,6 +116,7 @@ export function ResourceShockEngine() {
         
         <button
           onClick={() => setShowDetails(!showDetails)}
+          aria-label={showDetails ? 'Collapse details' : 'Expand details'}
           className={`p-2 rounded-lg transition-colors ${
             isDark || isHybrid 
               ? 'hover:bg-gray-800 text-gray-400' 
@@ -126,73 +127,91 @@ export function ResourceShockEngine() {
         </button>
       </div>
       
-      {/* Core Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Core Metrics Grid - Responsive with proper spacing */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
         {/* GRSI - Primary Metric */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            GLOBAL RESOURCE STRESS INDEX
+            GRSI
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(grsi))}`}>
+          <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(grsi))}`}>
             {grsi}
           </div>
-          <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(grsi))}`}>
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
+            getRiskLevel(grsi) === 'CRITICAL' || getRiskLevel(grsi) === 'HIGH' 
+              ? 'bg-red-500/20 text-red-400' 
+              : getRiskLevel(grsi) === 'ELEVATED' 
+                ? 'bg-amber-500/20 text-amber-400' 
+                : 'bg-green-500/20 text-green-400'
+          }`}>
             {getRiskLevel(grsi)}
-          </div>
+          </span>
         </div>
         
         {/* Energy Shock Velocity */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            ENERGY SHOCK VELOCITY
+            ENERGY SHOCK
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(energyShockVelocity))}`}>
+          <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(energyShockVelocity))}`}>
             {energyShockVelocity}
           </div>
-          <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(energyShockVelocity))}`}>
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
+            getRiskLevel(energyShockVelocity) === 'CRITICAL' || getRiskLevel(energyShockVelocity) === 'HIGH' 
+              ? 'bg-red-500/20 text-red-400' 
+              : getRiskLevel(energyShockVelocity) === 'ELEVATED' 
+                ? 'bg-amber-500/20 text-amber-400' 
+                : 'bg-green-500/20 text-green-400'
+          }`}>
             {getRiskLevel(energyShockVelocity)}
-          </div>
+          </span>
         </div>
         
         {/* Policy Reaction Probability */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            POLICY REACTION PROBABILITY
+            POLICY REACTION
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(policyReactionProbability))}`}>
+          <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(policyReactionProbability))}`}>
             {policyReactionProbability}%
           </div>
-          <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(policyReactionProbability))}`}>
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
+            getRiskLevel(policyReactionProbability) === 'CRITICAL' || getRiskLevel(policyReactionProbability) === 'HIGH' 
+              ? 'bg-red-500/20 text-red-400' 
+              : getRiskLevel(policyReactionProbability) === 'ELEVATED' 
+                ? 'bg-amber-500/20 text-amber-400' 
+                : 'bg-green-500/20 text-green-400'
+          }`}>
             {getRiskLevel(policyReactionProbability)}
-          </div>
+          </span>
         </div>
         
         {/* Liquidity Transmission Risk */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            LIQUIDITY TRANSMISSION RISK
+            LIQUIDITY RISK
           </div>
-          <div className={`text-2xl font-bold mb-1 ${getRiskColor(liquidityTransmissionRisk)}`}>
+          <div className={`text-xl md:text-2xl font-bold mb-1 ${getRiskColor(liquidityTransmissionRisk)}`}>
             {liquidityTransmissionRisk}
           </div>
-          <div className={`text-xs ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'}`}>
-            Contraction bias elevated
+          <div className={`text-xs truncate ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}`}>
+            Contraction bias
           </div>
         </div>
       </div>
@@ -230,7 +249,7 @@ export function ResourceShockEngine() {
       }`}>
         <div>
           <div className={`text-xs font-semibold mb-1 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
             SURVIVAL IMPACT ADJUSTMENT
           </div>
@@ -239,7 +258,7 @@ export function ResourceShockEngine() {
           </p>
         </div>
         <div className="text-right">
-          <div className="text-3xl font-bold text-red-500">{survivalImpact}%</div>
+          <div className="text-3xl font-bold text-red-500 tabular-nums min-w-[4ch]">{survivalImpact}%</div>
         </div>
       </div>
       
@@ -255,26 +274,26 @@ export function ResourceShockEngine() {
             </div>
             <div className="space-y-2">
               {energyLayer.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -292,26 +311,26 @@ export function ResourceShockEngine() {
             </div>
             <div className="space-y-2">
               {supplyChainLayer.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -329,26 +348,26 @@ export function ResourceShockEngine() {
             </div>
             <div className="space-y-2">
               {strategicResourcesLayer.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -366,26 +385,26 @@ export function ResourceShockEngine() {
             </div>
             <div className="space-y-2">
               {policyTransmissionLayer.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>

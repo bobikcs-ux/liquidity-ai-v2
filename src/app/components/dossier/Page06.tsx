@@ -49,7 +49,7 @@ export function Page06({ timestamp }: Page06Props) {
             content={
               <div className="space-y-3">
                 <div>
-                  <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-2">
+                  <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-2">
                     NO_AI_GREETINGS
                   </div>
                   <div className="text-[11px] opacity-70 line-through">
@@ -57,7 +57,7 @@ export function Page06({ timestamp }: Page06Props) {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-2">
+                  <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-2">
                     NO_PASSIVE_VALIDATION
                   </div>
                   <div className="text-[11px] opacity-70 line-through">
@@ -65,7 +65,7 @@ export function Page06({ timestamp }: Page06Props) {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-2">
+                  <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-2">
                     NO_EMOJI_DECORATION
                   </div>
                   <div className="text-[11px] opacity-70 line-through">
@@ -73,7 +73,7 @@ export function Page06({ timestamp }: Page06Props) {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-2">
+                  <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-2">
                     NO_GENERIC_HOOKS
                   </div>
                   <div className="text-[11px] opacity-70 line-through">
@@ -81,7 +81,7 @@ export function Page06({ timestamp }: Page06Props) {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] tracking-[0.08em] uppercase text-[#E63946] mb-2">
+                  <div className="text-xs tracking-[0.08em] uppercase text-[#E63946] mb-2">
                     NO_TREND_CHASING
                   </div>
                   <div className="text-[11px] opacity-70 line-through">
@@ -101,18 +101,18 @@ export function Page06({ timestamp }: Page06Props) {
             </h3>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
+                <span className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
                   ARCHITECT_APPROVAL
                 </span>
-                <span className="text-[10px] tracking-[0.08em] uppercase text-[#00FF41]">
+                <span className="text-xs tracking-[0.08em] uppercase text-[#00FF41]">
                   [SIGNED]
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-[10px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
+                <span className="text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-70">
                   SYNCED_AT
                 </span>
-                <span className="text-[10px] tracking-[0.08em] text-[#E0E0E0]">
+                <span className="text-xs tracking-[0.08em] text-[#E0E0E0]">
                   {timestamp}
                 </span>
               </div>

@@ -23,7 +23,7 @@ export function StatusIndicator({ label, color, pulse = false }: StatusIndicator
           />
         )}
       </div>
-      <span className="text-[10px] tracking-[0.08em] uppercase opacity-70" style={{ color: color === 'green' ? '#00FF41' : color === 'red' ? '#E63946' : '#D4C6A9' }}>
+      <span className="text-xs tracking-[0.08em] uppercase opacity-70" style={{ color: color === 'green' ? '#00FF41' : color === 'red' ? '#E63946' : '#D4C6A9' }}>
         {label}
       </span>
     </div>

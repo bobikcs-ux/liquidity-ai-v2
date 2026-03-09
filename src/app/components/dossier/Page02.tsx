@@ -52,16 +52,16 @@ export function Page02() {
             </div>
 
             {/* Axis Labels */}
-            <div className="absolute -left-32 top-0 text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 -rotate-90 origin-left">
+            <div className="absolute -left-32 top-0 text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 -rotate-90 origin-left">
               HIGH AUTHORITY
             </div>
-            <div className="absolute -left-32 bottom-0 text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 -rotate-90 origin-left">
+            <div className="absolute -left-32 bottom-0 text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50 -rotate-90 origin-left">
               LOW AUTHORITY
             </div>
-            <div className="absolute -bottom-8 left-0 text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50">
+            <div className="absolute -bottom-8 left-0 text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50">
               LOW REPLACEABILITY
             </div>
-            <div className="absolute -bottom-8 right-0 text-[9px] tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50">
+            <div className="absolute -bottom-8 right-0 text-xs tracking-[0.08em] uppercase text-[#E0E0E0] opacity-50">
               HIGH REPLACEABILITY
             </div>
           </div>

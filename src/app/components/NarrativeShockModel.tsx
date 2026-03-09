@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { TrendingUp, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { PaywallOverlay } from './PaywallOverlay';
+import { useSubscription } from '../context/SubscriptionContext';
 
 interface NarrativeMetric {
   name: string;
@@ -15,7 +17,8 @@ interface TransmissionStage {
   status: 'active' | 'monitoring' | 'stable';
 }
 
-export function NarrativeShockModel() {
+// Core component (internal)
+function NarrativeShockModelCore() {
   const { uiTheme } = useAdaptiveTheme();
   const [showDetails, setShowDetails] = useState(false);
   
@@ -107,9 +110,9 @@ export function NarrativeShockModel() {
   };
   
   return (
-    <div className={`rounded-lg border p-6 ${
+    <div className={`rounded-xl border p-4 md:p-6 min-h-[260px] w-full flex flex-col overflow-hidden ${
       isDark || isHybrid 
-        ? 'bg-[#0a1628] border-blue-900/50' 
+        ? 'bg-[#0b0f17] border-[#1f2937]' 
         : 'bg-white border-gray-200'
     }`}>
       {/* Header */}
@@ -129,7 +132,7 @@ export function NarrativeShockModel() {
               Narrative Shock Transmission
             </h3>
             <p className={`text-xs ${
-              isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+              isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
             }`}>
               Reflexivity and positioning intelligence
             </p>
@@ -138,6 +141,7 @@ export function NarrativeShockModel() {
         
         <button
           onClick={() => setShowDetails(!showDetails)}
+          aria-label={showDetails ? 'Collapse details' : 'Expand details'}
           className={`p-2 rounded-lg transition-colors ${
             isDark || isHybrid 
               ? 'hover:bg-gray-800 text-gray-400' 
@@ -148,73 +152,91 @@ export function NarrativeShockModel() {
         </button>
       </div>
       
-      {/* Core Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      {/* Core Metrics Grid - Responsive 2x2 on mobile */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
         {/* Narrative Shock Index - Primary Metric */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            NARRATIVE SHOCK INDEX
+            NARRATIVE SHOCK
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(narrativeShockIndex))}`}>
+          <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(narrativeShockIndex))}`}>
             {narrativeShockIndex}
           </div>
-          <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(narrativeShockIndex))}`}>
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
+            getRiskLevel(narrativeShockIndex) === 'CRITICAL' || getRiskLevel(narrativeShockIndex) === 'HIGH' 
+              ? 'bg-red-500/20 text-red-400' 
+              : getRiskLevel(narrativeShockIndex) === 'ELEVATED' 
+                ? 'bg-amber-500/20 text-amber-400' 
+                : 'bg-green-500/20 text-green-400'
+          }`}>
             {getRiskLevel(narrativeShockIndex)}
-          </div>
+          </span>
         </div>
         
         {/* Velocity Score */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            NARRATIVE VELOCITY
+            VELOCITY
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(velocityScore))}`}>
+          <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(velocityScore))}`}>
             {velocityScore}
           </div>
-          <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(velocityScore))}`}>
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
+            getRiskLevel(velocityScore) === 'CRITICAL' || getRiskLevel(velocityScore) === 'HIGH' 
+              ? 'bg-red-500/20 text-red-400' 
+              : getRiskLevel(velocityScore) === 'ELEVATED' 
+                ? 'bg-amber-500/20 text-amber-400' 
+                : 'bg-green-500/20 text-green-400'
+          }`}>
             {getRiskLevel(velocityScore)}
-          </div>
+          </span>
         </div>
         
         {/* Positioning Imbalance */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            POSITIONING IMBALANCE
+            POSITIONING
           </div>
-          <div className={`text-4xl font-bold mb-1 ${getRiskColor(getRiskLevel(positioningImbalance))}`}>
+          <div className={`text-2xl md:text-4xl font-bold mb-1 tabular-nums ${getRiskColor(getRiskLevel(positioningImbalance))}`}>
             {positioningImbalance}
           </div>
-          <div className={`text-xs font-semibold ${getRiskColor(getRiskLevel(positioningImbalance))}`}>
+          <span className={`inline-block px-2 py-0.5 text-xs font-semibold rounded whitespace-nowrap ${
+            getRiskLevel(positioningImbalance) === 'CRITICAL' || getRiskLevel(positioningImbalance) === 'HIGH' 
+              ? 'bg-red-500/20 text-red-400' 
+              : getRiskLevel(positioningImbalance) === 'ELEVATED' 
+                ? 'bg-amber-500/20 text-amber-400' 
+                : 'bg-green-500/20 text-green-400'
+          }`}>
             {getRiskLevel(positioningImbalance)}
-          </div>
+          </span>
         </div>
         
         {/* Liquidity Withdrawal Risk */}
-        <div className={`rounded-lg p-4 ${
+        <div className={`rounded-lg p-3 md:p-4 overflow-hidden ${
           isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
         }`}>
-          <div className={`text-xs font-semibold mb-2 ${
-            isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+          <div className={`text-xs font-semibold mb-2 truncate ${
+            isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
           }`}>
-            LIQUIDITY WITHDRAWAL RISK
+            LIQUIDITY RISK
           </div>
-          <div className={`text-2xl font-bold mb-1 ${getRiskColor(liquidityWithdrawalRisk)}`}>
+          <div className={`text-xl md:text-2xl font-bold mb-1 ${getRiskColor(liquidityWithdrawalRisk)}`}>
             {liquidityWithdrawalRisk}
           </div>
-          <div className={`text-xs ${isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'}`}>
-            Market depth deteriorating
+          <div className={`text-xs truncate ${isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'}`}>
+            Depth deteriorating
           </div>
         </div>
       </div>
@@ -247,26 +269,26 @@ export function NarrativeShockModel() {
       </div>
       
       {/* Transmission Model Flow - Mobile Visible */}
-      <div className={`rounded-lg p-4 mb-6 ${
+      <div className={`rounded-lg p-3 md:p-4 mb-4 md:mb-6 ${
         isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'
       }`}>
-        <div className={`text-xs font-semibold mb-4 ${
+        <div className={`text-xs font-semibold mb-3 md:mb-4 ${
           isDark || isHybrid ? 'text-gray-400' : 'text-gray-700'
         }`}>
           TRANSMISSION MODEL STAGES
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {transmissionStages.map((stage, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <div className={`w-2 h-2 rounded-full ${getStageStatusColor(stage.status)}`}></div>
-              <div className="flex-1">
-                <div className={`text-xs font-medium ${
+            <div key={index} className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getStageStatusColor(stage.status)}`}></div>
+                <div className={`text-xs font-medium truncate ${
                   isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                 }`}>
                   {stage.stage}
                 </div>
               </div>
-              <div className={`text-sm font-bold ${getRiskColor(getRiskLevel(stage.probability))}`}>
+              <div className={`text-sm font-bold tabular-nums min-w-[48px] text-right ${getRiskColor(getRiskLevel(stage.probability))}`}>
                 {stage.probability}%
               </div>
             </div>
@@ -286,26 +308,26 @@ export function NarrativeShockModel() {
             </div>
             <div className="space-y-2">
               {narrativeVelocityMetrics.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -323,26 +345,26 @@ export function NarrativeShockModel() {
             </div>
             <div className="space-y-2">
               {positioningMetrics.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -360,26 +382,26 @@ export function NarrativeShockModel() {
             </div>
             <div className="space-y-2">
               {volatilityMetrics.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -397,26 +419,26 @@ export function NarrativeShockModel() {
             </div>
             <div className="space-y-2">
               {liquidityMetrics.map((item, index) => (
-                <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                <div key={index} className={`flex items-center justify-between gap-2 p-2 md:p-3 rounded-lg overflow-hidden ${
                   isDark || isHybrid ? 'bg-gray-900/30' : 'bg-gray-50'
                 }`}>
-                  <div className="flex-1">
-                    <div className={`text-xs font-medium mb-0.5 ${
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs font-medium mb-0.5 truncate ${
                       isDark || isHybrid ? 'text-gray-300' : 'text-gray-900'
                     }`}>
                       {item.name}
                     </div>
-                    <div className={`text-xs ${
-                      isDark || isHybrid ? 'text-gray-500' : 'text-gray-600'
+                    <div className={`text-xs truncate ${
+                      isDark || isHybrid ? 'text-gray-300' : 'text-gray-600'
                     }`}>
                       {item.impact}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`text-xs font-semibold ${getTrendColor(item.trend)}`}>
                       {getTrendIcon(item.trend)}
                     </span>
-                    <span className={`text-lg font-bold ${getRiskColor(getRiskLevel(item.value))}`}>
+                    <span className={`text-base md:text-lg font-bold tabular-nums min-w-[2.5rem] text-right ${getRiskColor(getRiskLevel(item.value))}`}>
                       {item.value}
                     </span>
                   </div>
@@ -459,5 +481,16 @@ export function NarrativeShockModel() {
         <span>Last Update: 15m ago</span>
       </div>
     </div>
+  );
+}
+
+// Guarded version with paywall
+export function NarrativeShockModel() {
+  const { subscription } = useSubscription();
+  
+  return (
+    <PaywallOverlay show={!subscription.isPaid && !subscription.isAdmin}>
+      <NarrativeShockModelCore />
+    </PaywallOverlay>
   );
 }

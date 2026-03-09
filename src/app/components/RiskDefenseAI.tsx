@@ -1,6 +1,8 @@
 import React from 'react';
 import { Shield, AlertTriangle, TrendingDown, Zap, Activity, Target } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
+import { PaywallOverlay } from './PaywallOverlay';
+import { useSubscription } from '../context/SubscriptionContext';
 
 interface DefenseAction {
   priority: 'critical' | 'high' | 'medium';
@@ -9,7 +11,8 @@ interface DefenseAction {
   impact: string;
 }
 
-export function RiskDefenseAI() {
+// Core component (internal)
+function RiskDefenseAICore() {
   const { currentRegime, uiTheme } = useAdaptiveTheme();
   
   // Only show in high-risk regimes
@@ -72,7 +75,7 @@ export function RiskDefenseAI() {
               isDark || isHybrid ? 'bg-red-900/50' : 'bg-red-100'
             }`}>
               <Shield className={`w-6 h-6 ${
-                isDark || isHybrid ? 'text-red-400' : 'text-red-600'
+                isDark || isHybrid ? 'text-red-400' : 'text-red-500'
               }`} />
             </div>
             <div>
@@ -113,7 +116,7 @@ export function RiskDefenseAI() {
           }`}>
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className={`w-4 h-4 ${
-                isDark || isHybrid ? 'text-red-400' : 'text-red-600'
+                isDark || isHybrid ? 'text-red-400' : 'text-red-500'
               }`} />
               <span className={`text-xs font-semibold tracking-wide ${
                 isDark || isHybrid ? 'text-gray-300' : 'text-gray-700'
@@ -124,7 +127,7 @@ export function RiskDefenseAI() {
             
             <div className="space-y-2 text-center">
               <div className={`text-3xl font-bold ${
-                isDark || isHybrid ? 'text-red-400' : 'text-red-600'
+                isDark || isHybrid ? 'text-red-400' : 'text-red-500'
               }`}>
                 {currentRegime.riskLevel}%
               </div>
@@ -184,7 +187,7 @@ export function RiskDefenseAI() {
                     Leverage Risk
                   </span>
                   <span className={`font-semibold ${
-                    isDark || isHybrid ? 'text-red-400' : 'text-red-600'
+                    isDark || isHybrid ? 'text-red-400' : 'text-red-500'
                   }`}>
                     Critical
                   </span>
@@ -352,5 +355,16 @@ export function RiskDefenseAI() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Guarded version with paywall
+export function RiskDefenseAI() {
+  const { subscription } = useSubscription();
+  
+  return (
+    <PaywallOverlay show={!subscription.isPaid}>
+      <RiskDefenseAICore />
+    </PaywallOverlay>
   );
 }
