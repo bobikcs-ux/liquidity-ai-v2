@@ -37,9 +37,11 @@ type JapanView = 'overview' | 'yen-carry' | 'production';
  * Yen Carry Trade Monitor Component
  */
 const YenCarryMonitor = memo(function YenCarryMonitor({ 
-  data 
+  data,
+  bojRateLive 
 }: { 
-  data: YenCarryTradeData | null 
+  data: YenCarryTradeData | null;
+  bojRateLive: number | null;
 }) {
   if (!data) {
     return (
@@ -247,7 +249,7 @@ export const JapanMacroWidget = memo(function JapanMacroWidget() {
         {view === 'overview' && (
           <div className="space-y-4">
             {/* Yen Carry Summary */}
-            <YenCarryMonitor data={japan.yenCarry} />
+            <YenCarryMonitor data={japan.yenCarry} bojRateLive={bojRateLive} />
 
             {/* Key Indicators Grid */}
             <div className="grid grid-cols-2 gap-3">
@@ -289,7 +291,7 @@ export const JapanMacroWidget = memo(function JapanMacroWidget() {
 
         {view === 'yen-carry' && (
           <div className="space-y-4">
-            <YenCarryMonitor data={japan.yenCarry} />
+            <YenCarryMonitor data={japan.yenCarry} bojRateLive={bojRateLive} />
             
             {/* Detailed Analysis */}
             <div className="bg-gray-950 border border-red-900/30 rounded-none p-4">

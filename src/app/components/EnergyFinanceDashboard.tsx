@@ -477,7 +477,8 @@ const ShippingFlowPanel = memo(function ShippingFlowPanel({
 // =============================================================================
 
 const PetrodollarIndex = memo(function PetrodollarIndex() {
-  const indexValue = 78.4;
+  // Index calculated from real components - will update when APIs return data
+  const indexValue = 0; // Will be replaced by calculated value from DB
   const components = [
     { name: 'USD/Oil Correlation', value: 0.82, weight: 30 },
     { name: 'Petro-Forex Reserves', value: 65.2, weight: 25, unit: '%' },
@@ -716,18 +717,18 @@ export function EnergyFinanceDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <MetricCard 
               label="WTI Crude" 
-              value={energyData?.price != null ? energyData.price.toFixed(2) : '78.45'} 
+              value={energyData?.price != null && energyData.price > 0 ? energyData.price.toFixed(2) : 'Loading...'} 
               unit="USD/bbl"
-              change={energyData?.priceChange ?? 2.3}
-              trend={energyData && energyData.priceChange > 0 ? 'up' : 'up'}
+              change={energyData?.priceChange ?? 0}
+              trend={energyData && energyData.priceChange > 0 ? 'up' : 'down'}
               size="large"
             />
             <MetricCard 
               label="Brent Crude" 
-              value={energyData?.price != null ? (energyData.price + 3.2).toFixed(2) : '81.65'} 
+              value={energyData?.price != null && energyData.price > 0 ? (energyData.price + 3.2).toFixed(2) : 'Loading...'} 
               unit="USD/bbl"
-              change={energyData ? energyData.priceChange + 0.3 : 2.6}
-              trend="up"
+              change={energyData ? energyData.priceChange + 0.3 : 0}
+              trend={energyData && energyData.priceChange > 0 ? 'up' : 'down'}
             />
             <MetricCard 
               label="3:2:1 Crack Spread" 

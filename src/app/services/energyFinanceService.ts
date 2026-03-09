@@ -144,13 +144,14 @@ export async function fetchOilSpotPrices(): Promise<OilSpotPrices> {
 }
 
 function getOilFallback(source: 'FMP' | 'FALLBACK'): OilSpotPrices {
+  // Return zeros to indicate "no data" - real data comes from mock-data-worker
   return {
-    wtiPrice: 78.42,
-    wtiChange: 0.85,
-    wtiChangePct: 1.09,
-    brentPrice: 82.15,
-    brentChange: 0.92,
-    brentChangePct: 1.13,
+    wtiPrice: 0,
+    wtiChange: 0,
+    wtiChangePct: 0,
+    brentPrice: 0,
+    brentChange: 0,
+    brentChangePct: 0,
     lastUpdated: new Date(),
     source,
   };
@@ -443,14 +444,25 @@ function getDefaultUnits(category: EnergyCategory): string {
 }
 
 function getMockEnergyData(category: EnergyCategory): EnergyData {
-  const mockData: Record<EnergyCategory, Omit<EnergyData, 'historicalData' | 'lastUpdated'>> = {
-    'crude-oil':  { category: 'crude-oil', title: 'Crude Oil (WTI Spot Price)', latestValue: 78.42, units: '$/bbl', change: 2.15, changePercent: 2.82 },
-    'natural-gas':{ category: 'natural-gas', title: 'Natural Gas Storage', latestValue: 2847, units: 'Bcf', change: -38, changePercent: -1.32 },
-    'coal':       { category: 'coal', title: 'Coal Production', latestValue: 12450, units: 'thousand short tons', change: -230, changePercent: -1.81 },
-    'electricity':{ category: 'electricity', title: 'Electricity Generation', latestValue: 4125000, units: 'MWh', change: 45000, changePercent: 1.10 },
+  // Return placeholder with null values - UI should show "Loading..." or "No data"
+  // Real data comes from the worker fetching FRED/FMP APIs
+  const titles: Record<EnergyCategory, { title: string; units: string }> = {
+    'crude-oil':  { title: 'Crude Oil (WTI Spot Price)', units: '$/bbl' },
+    'natural-gas':{ title: 'Natural Gas Storage', units: 'Bcf' },
+    'coal':       { title: 'Coal Production', units: 'thousand short tons' },
+    'electricity':{ title: 'Electricity Generation', units: 'MWh' },
   };
-  const base = mockData[category];
-  return { ...base, historicalData: generateMockHistoricalData(52, base.latestValue), lastUpdated: new Date() };
+  const meta = titles[category];
+  return { 
+    category, 
+    title: meta.title, 
+    latestValue: 0, // Will be replaced by real API data
+    units: meta.units, 
+    change: 0, 
+    changePercent: 0, 
+    historicalData: [], 
+    lastUpdated: new Date() 
+  };
 }
 
 function generateMockHistoricalData(points: number, latestValue: number): { date: Date; value: number }[] {

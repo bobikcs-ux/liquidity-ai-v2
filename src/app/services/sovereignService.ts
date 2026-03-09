@@ -84,11 +84,12 @@ export async function fetchEnergyData(apiKey?: string): Promise<{
   // EIA API requires an API key - use mock data if not available
   // In production, this would fetch from EIA Open Data API
   
-  // Mock data representing realistic energy prices
+  // Return zeros to indicate "awaiting real data from worker"
+  // Real data comes from the mock-data-worker fetching FRED/FMP APIs
   return {
-    crudeOil: { price: 78.45, change: 2.3 },
-    naturalGas: { price: 2.89, change: -1.5 },
-    coal: { price: 145.20, change: 0.8 },
+    crudeOil: { price: 0, change: 0 },
+    naturalGas: { price: 0, change: 0 },
+    coal: { price: 0, change: 0 },
   };
 }
 

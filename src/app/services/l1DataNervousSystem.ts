@@ -654,11 +654,11 @@ export function validateForAGI(data: L1DataState): {
     warnings.push(`BTC dominance using fallback: ${btcDominance}%`);
   }
   
-  // BTC Price - guaranteed positive
+  // BTC Price - use cache if available, otherwise null indicates "loading"
   let btcPrice = data.btcPrice;
   if (btcPrice === null || btcPrice === 0 || btcPrice < 100) {
-    btcPrice = valueCache.btcPrice?.value ?? 67500; // Reasonable fallback
-    warnings.push(`BTC price using fallback: $${btcPrice}`);
+    btcPrice = valueCache.btcPrice?.value ?? null; // Use cache or null for "no data"
+    if (btcPrice) warnings.push(`BTC price using cached: $${btcPrice}`);
   }
   
   // Fear & Greed Index - guaranteed in range
