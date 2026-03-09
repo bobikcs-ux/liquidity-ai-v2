@@ -113,15 +113,12 @@ async function probeSource(id: string): Promise<{
         const sbUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
         const sbKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
         
-        console.log('[v0] Supabase probe - URL:', sbUrl ? 'SET' : 'MISSING', 'Key:', sbKey ? 'SET' : 'MISSING');
-        
         if (!sbUrl || !sbKey) {
-          console.warn('[v0] Supabase credentials missing - VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY not set');
-          return { status: 'OFFLINE', latencyMs: 0, probeUrl: 'NO_CREDENTIALS', errorMessage: 'Supabase credentials not set in VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY' };
+          return { status: 'OFFLINE', latencyMs: 0, probeUrl: 'NO_CREDENTIALS', errorMessage: 'Supabase credentials not configured' };
         }
         url = `${sbUrl}/rest/v1/macro_data?select=region&limit=1`;
         maskedUrl = `${sbUrl}/rest/v1/macro_data?select=region&limit=1`;
-        // Supabase REST requires apikey header — use fetch with headers below
+        // Supabase REST requires apikey header
         const sbStart = Date.now();
         try {
           const sbRes = await fetch(url, {
@@ -129,17 +126,14 @@ async function probeSource(id: string): Promise<{
             signal: AbortSignal.timeout(8000),
           });
           const sbLatency = Date.now() - sbStart;
-          console.log('[v0] Supabase probe response:', sbRes.status, 'latency:', sbLatency, 'ms');
           if (sbRes.ok) {
             lastKnownGoodCache.set('Supabase', { timestamp: new Date(), latencyMs: sbLatency });
             return { status: sbLatency > 4000 ? 'DELAYED' : 'ONLINE', latencyMs: sbLatency, probeUrl: maskedUrl };
           }
           const errorBody = await sbRes.text().catch(() => '');
-          console.error('[v0] Supabase probe failed:', sbRes.status, errorBody);
           return { status: 'OFFLINE', latencyMs: sbLatency, errorCode: sbRes.status, probeUrl: maskedUrl, errorMessage: `HTTP ${sbRes.status}: ${errorBody.slice(0, 100)}` };
         } catch (err) {
           const sbLatency = Date.now() - sbStart;
-          console.error('[v0] Supabase probe error:', err);
           const sbCached = lastKnownGoodCache.get('Supabase');
           return sbCached
             ? { status: 'CACHED', latencyMs: sbLatency, probeUrl: maskedUrl, errorMessage: 'Network error - using cached' }

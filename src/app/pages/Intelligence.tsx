@@ -104,7 +104,7 @@ function WorkerLogsPanel({ logs, loading, running, onRun }: { logs: WorkerLog[];
 
 export function Intelligence() {
   const { uiTheme } = useAdaptiveTheme();
-  const { latest: snapshot } = useMarketSnapshot();
+  const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const { macroUS, macroEU, crypto, energy, logs, loading, running, lastRun, triggerRun, refresh } = useWorkerData();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
