@@ -11,13 +11,20 @@ import ErrorBoundary from '../components/ErrorBoundary';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function MetricRow({ label, value, unit = '', highlight = false }: { label: string; value: number | undefined; unit?: string; highlight?: boolean }) {
+function MetricRow({ label, value, unit = '', highlight = false }: { label: string; value: number | null | undefined; unit?: string; highlight?: boolean }) {
+  // Skip rendering if value is explicitly undefined (not yet loaded)
   if (value === undefined) return null;
+  
+  // Show "Fetching..." if value is null (API returned no data)
+  const displayValue = value === null 
+    ? 'Fetching...' 
+    : `${value.toLocaleString(undefined, { maximumFractionDigits: 4 })}${unit}`;
+  
   return (
     <div className="flex justify-between items-center py-1 border-b" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
       <span className="text-[11px] font-mono text-[#a1a1aa]">{label}</span>
-      <span className={`text-[11px] font-mono font-bold ${highlight ? 'text-[#d4af37]' : 'text-white'}`}>
-        {typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: 4 }) : value}{unit}
+      <span className={`text-[11px] font-mono font-bold ${value === null ? 'text-[#a1a1aa] animate-pulse' : highlight ? 'text-[#d4af37]' : 'text-white'}`}>
+        {displayValue}
       </span>
     </div>
   );

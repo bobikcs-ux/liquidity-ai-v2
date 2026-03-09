@@ -15,7 +15,8 @@ const supabase: SupabaseClient | null = supabaseUrl && supabaseAnonKey
  * 
  * Runs once on app mount to check if the core data tables
  * (macro_data, crypto_data, energy_data) have any rows.
- * If empty, triggers the mock-data-worker to seed initial data.
+ * If empty, triggers the data worker to fetch real market data from
+ * external APIs (FRED, CoinGecko, FMP) and populate the tables.
  * 
  * This ensures users see live data on first visit instead of empty panels.
  */

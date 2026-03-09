@@ -21,9 +21,9 @@ export interface WorkerLog {
   details:    Record<string, any> | null;
 }
 
-export interface MacroSeries   { DGS10?: number; DGS2?: number; WALCL?: number; SPREAD?: number; RATE_SHOCK?: number; ECB_RATE?: number; HICP?: number; M3_GROWTH?: number; [k: string]: number | undefined; }
-export interface CryptoSeries  { BTC_PRICE?: number; BTC_CHANGE_24H?: number; BTC_DOMINANCE?: number; BTC_VOL?: number; ETH_PRICE?: number; FEAR_GREED?: number; VAR_95?: number; }
-export interface EnergySeries  { WTI_CRUDE?: number; BRENT_CRUDE?: number; NATURAL_GAS?: number; URANIUM?: number; GOLD_XAU?: number; SILVER_XAG?: number; COPPER?: number; }
+export interface MacroSeries   { DGS10?: number | null; DGS2?: number | null; WALCL?: number | null; SPREAD?: number | null; RATE_SHOCK?: number | null; ECB_RATE?: number | null; HICP?: number | null; M3_GROWTH?: number | null; [k: string]: number | null | undefined; }
+export interface CryptoSeries  { BTC_PRICE?: number | null; BTC_CHANGE_24H?: number | null; BTC_DOMINANCE?: number | null; BTC_VOL?: number | null; ETH_PRICE?: number | null; FEAR_GREED?: number | null; VAR_95?: number | null; }
+export interface EnergySeries  { WTI_CRUDE?: number | null; BRENT_CRUDE?: number | null; NATURAL_GAS?: number | null; URANIUM?: number | null; GOLD_XAU?: number | null; SILVER_XAG?: number | null; COPPER?: number | null; }
 
 export interface WorkerData {
   macroUS:    MacroSeries;
