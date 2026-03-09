@@ -1,12 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+const supabase: SupabaseClient | null = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 /**
  * useDataInitializer
@@ -25,6 +27,10 @@ export function useDataInitializer() {
     hasRun.current = true;
 
     async function checkAndInitialize() {
+      if (!supabase) {
+        console.warn('[DataInitializer] Supabase not configured — skipping initialization');
+        return;
+      }
       try {
         // Check if macro_data has any rows
         const { count: macroCount } = await supabase

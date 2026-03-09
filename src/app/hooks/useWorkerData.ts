@@ -1,11 +1,13 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+const supabase: SupabaseClient | null = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null;
 
 export interface WorkerLog {
   id: number;
@@ -47,6 +49,10 @@ export function useWorkerData(): WorkerData {
   const [lastRun,  setLastRun]  = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const [
       { data: macroData },
@@ -92,6 +98,8 @@ export function useWorkerData(): WorkerData {
 
   // Realtime: stream new log entries as they insert
   useEffect(() => {
+    if (!supabase) return;
+
     const channel = supabase
       .channel('worker-logs-stream')
       .on(
