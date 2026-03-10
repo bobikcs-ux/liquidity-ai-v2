@@ -253,7 +253,12 @@ const OverviewView = memo(function OverviewView({
           />
         </div>
       </div>
+const { latest: snapshot } = useMarketSnapshot();
 
+// Дефинираме стойностите от API-то или слагаме fallback (null), за да покаже '--'
+const dgs10Live = snapshot?.dgs10 ?? null;
+const dgs2Live = snapshot?.dgs2 ?? null;
+const spread = (dgs10Live !== null && dgs2Live !== null) ? (dgs10Live - dgs2Live) : null;
       {/* US Treasury Yields (Live from FRED) */}
       <div className="bg-blue-950/20 border border-blue-800/30 rounded-none p-3 mb-4">
         <div className="text-gray-400 text-xs font-mono mb-2">US TREASURY (FRED LIVE)</div>
