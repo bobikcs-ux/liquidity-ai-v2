@@ -1,347 +1,145 @@
-/**
- * SOVEREIGN INTELLIGENCE NODE
- * L10-L8: Civilization & Sovereign Brain
- * 
- * Military-style flight instrument gauges for:
- * - Reserve Currency Dominance
- * - Trade Settlement Volume
- * - Capital Control Strength
- * - Sovereign Power Index
- */
-
 import React, { useMemo } from 'react';
-import { Globe, Shield, TrendingDown, AlertTriangle, Zap, Target } from 'lucide-react';
+import { Globe, Shield, TrendingDown, AlertTriangle, Target } from 'lucide-react';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
 import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
-import { 
-  computeAGISystemState, 
-  type SovereignPowerMetrics,
-  type CivilizationMetrics 
-} from '../services/agiBrainEngine';
+import { computeAGISystemState } from '../services/agiBrainEngine';
 
-// Military-style circular gauge component
-function TacticalGauge({ 
-  value, 
-  maxValue = 100, 
-  label, 
-  sublabel,
-  size = 'md',
-  color = 'blue',
-  showDecay = false,
-  decayValue = 0
-}: {
-  value: number;
-  maxValue?: number;
-  label: string;
-  sublabel?: string;
-  size?: 'sm' | 'md' | 'lg';
-  color?: 'blue' | 'amber' | 'red' | 'green' | 'cyan';
-  showDecay?: boolean;
-  decayValue?: number;
-}) {
-  const percentage = Math.min(100, (value / maxValue) * 100);
-  const angle = (percentage / 100) * 270 - 135; // -135 to 135 degrees
-  
-  const sizeClasses = {
-    sm: { container: 'w-20 h-20', text: 'text-lg', label: 'text-xs' },
-    md: { container: 'w-28 h-28', text: 'text-2xl', label: 'text-xs' },
-    lg: { container: 'w-36 h-36', text: 'text-3xl', label: 'text-xs' }
-  };
-  
-  const colorClasses = {
-    blue: { stroke: 'stroke-blue-500', text: 'text-blue-400', glow: 'shadow-blue-500/30' },
-    amber: { stroke: 'stroke-amber-500', text: 'text-amber-400', glow: 'shadow-amber-500/30' },
-    red: { stroke: 'stroke-red-500', text: 'text-red-400', glow: 'shadow-red-500/30' },
-    green: { stroke: 'stroke-green-500', text: 'text-green-400', glow: 'shadow-green-500/30' },
-    cyan: { stroke: 'stroke-cyan-500', text: 'text-cyan-400', glow: 'shadow-cyan-500/30' }
-  };
-
-  return (
-    <div className="flex flex-col items-center">
-      <div className={`${sizeClasses[size].container} relative`}>
-        {/* Outer ring - tactical border */}
-        <svg className="w-full h-full -rotate-[135deg]" viewBox="0 0 100 100">
-          {/* Background track */}
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            className="text-gray-800"
-            strokeDasharray="198"
-            strokeDashoffset="66"
-            strokeLinecap="round"
-          />
-          {/* Value arc */}
-          <circle
-            cx="50"
-            cy="50"
-            r="42"
-            fill="none"
-            strokeWidth="4"
-            className={colorClasses[color].stroke}
-            strokeDasharray="198"
-            strokeDashoffset={198 - (percentage / 100) * 132}
-            strokeLinecap="round"
-            style={{ filter: `drop-shadow(0 0 6px var(--tw-shadow-color))` }}
-          />
-          {/* Tick marks */}
-          {[0, 25, 50, 75, 100].map((tick, i) => (
-            <line
-              key={tick}
-              x1="50"
-              y1="12"
-              x2="50"
-              y2="16"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-gray-600"
-              transform={`rotate(${(tick / 100) * 270} 50 50)`}
-            />
-          ))}
-        </svg>
-        
-        {/* Center value display */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`${sizeClasses[size].text} font-bold font-mono tabular-nums ${colorClasses[color].text}`}>
-            {value.toFixed(1)}
-          </span>
-          {showDecay && decayValue !== 0 && (
-            <span className={`text-xs font-mono ${decayValue < 0 ? 'text-red-400' : 'text-green-400'}`}>
-              {decayValue > 0 ? '+' : ''}{decayValue.toFixed(1)}%
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="text-center mt-2">
-        <div className={`${sizeClasses[size].label} font-mono font-bold text-gray-400 uppercase tracking-wider`}>
-          {label}
-        </div>
-        {sublabel && (
-          <div className="text-xs font-mono text-gray-400 uppercase">
-            {sublabel}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Power block comparison bar
-function PowerBlock({ 
-  label, 
-  value, 
-  trend,
-  color 
-}: { 
-  label: string; 
-  value: number; 
-  trend: 'up' | 'down' | 'stable';
-  color: string;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <div className="w-16 text-xs font-mono text-gray-400 uppercase truncate">{label}</div>
-      <div className="flex-1 h-2 bg-gray-800 rounded-full overflow-hidden">
-        <div 
-          className={`h-full ${color} transition-all duration-500`}
-          style={{ width: `${value}%` }}
-        />
-      </div>
-      <div className="w-12 text-right">
-        <span className="text-xs font-mono font-bold text-white tabular-nums">{value.toFixed(0)}%</span>
-      </div>
-      <div className="w-4">
-        {trend === 'down' && <TrendingDown className="w-3 h-3 text-red-400" />}
-        {trend === 'up' && <TrendingDown className="w-3 h-3 text-green-400 rotate-180" />}
-        {trend === 'stable' && <div className="w-3 h-0.5 bg-gray-500" />}
-      </div>
-    </div>
-  );
-}
+// Защитен рендеринг за числа
+const formatNum = (val: number | undefined | null, decimals: number = 1): string => {
+  if (val === null || val === undefined || isNaN(val)) return '--';
+  return val.toFixed(decimals);
+};
 
 export function SovereignIntelligenceNode() {
   const { uiTheme } = useAdaptiveTheme();
-  const { latest: snapshot } = useMarketSnapshot();
-  const isDark = uiTheme === 'terminal';
-  const isHybrid = uiTheme === 'hybrid';
+  const { latest: snapshot, loading } = useMarketSnapshot();
+  const isDark = uiTheme === 'terminal' || uiTheme === 'hybrid';
 
-  // Compute AGI system state from market data
+  // 1. Безопасно изчисляване на състоянието чрез Fallbacks
   const agiState = useMemo(() => {
-    if (!snapshot) return null;
-    
+    // Ако няма данни, подаваме безопасни обекти, за да не гърми computeAGISystemState
     return computeAGISystemState({
-      survivalProbability: snapshot.survival_probability ?? 0.78,
-      systemicRisk: snapshot.systemic_risk ?? 0.35,
-      yieldSpread: snapshot.yield_spread ?? -0.23,
-      btcVolatility: snapshot.btc_volatility ?? 65,
-      balanceSheetDelta: snapshot.balance_sheet_delta ?? -2.3,
-      rateShock: snapshot.rate_shock ?? 15
+      survivalProbability: snapshot?.survival_probability ?? 0.8,
+      systemicRisk: snapshot?.systemic_risk ?? 0.2,
+      yieldSpread: snapshot?.yield_spread ?? 0.0,
+      btcVolatility: snapshot?.btc_volatility ?? 50,
+      balanceSheetDelta: snapshot?.balance_sheet_delta ?? 0,
+      rateShock: snapshot?.rate_shock ?? 0
     });
   }, [snapshot]);
 
+  // 2. Деструктуриране с гарантирани default стойности (Safety Net)
   const sovereign = agiState?.sovereign ?? {
-    reserveCurrencyShare: 58,
-    tradeSettlementVolume: 62,
-    capitalControlStrength: 45,
-    digitalCurrencyAdoption: 23,
-    sovereignPowerIndex: 54
+    reserveCurrencyShare: 0,
+    tradeSettlementVolume: 0,
+    capitalControlStrength: 0,
+    sovereignPowerIndex: 0
   };
 
   const civilization = agiState?.civilization ?? {
-    demographicHealth: 62,
-    economicSustainability: 55,
-    technologicalAdaptation: 78,
-    geopoliticalStability: 45,
-    civilizationScore: 60
+    civilizationScore: 0,
+    demographicHealth: 0,
+    economicSustainability: 0,
+    technologicalAdaptation: 0,
+    geopoliticalStability: 0
   };
 
-  // Currency power blocks data
-  const currencyBlocks = [
-    { label: 'USD', value: sovereign.reserveCurrencyShare, trend: 'down' as const, color: 'bg-blue-500' },
-    { label: 'EUR', value: 20, trend: 'stable' as const, color: 'bg-cyan-500' },
-    { label: 'CNY', value: 12, trend: 'up' as const, color: 'bg-red-500' },
-    { label: 'JPY', value: 5.5, trend: 'down' as const, color: 'bg-amber-500' },
-    { label: 'OTHER', value: 4.5, trend: 'up' as const, color: 'bg-gray-500' },
-  ];
+  // 3. Динамични данни за валутните блокове
+  const currencyBlocks = useMemo(() => [
+    { label: 'USD', value: sovereign.reserveCurrencyShare || 58, trend: 'down', color: 'bg-blue-500' },
+    { label: 'EUR', value: 20, trend: 'stable', color: 'bg-cyan-500' },
+    { label: 'CNY', value: 12, trend: 'up', color: 'bg-red-500' },
+    { label: 'JPY', value: 5.5, trend: 'down', color: 'bg-amber-500' },
+  ], [sovereign.reserveCurrencyShare]);
 
   return (
-    <div className={`rounded-xl border p-4 md:p-6 overflow-hidden ${
-      isDark || isHybrid 
-        ? 'bg-[#0b0f17] border-[#1f2937]' 
-        : 'bg-white border-gray-200'
+    <div className={`rounded-xl border p-4 md:p-6 transition-all duration-500 ${
+      isDark ? 'bg-[#0b0f17] border-[#1f2937]' : 'bg-white border-gray-200 shadow-sm'
     }`}>
-      {/* Header - Tactical Style */}
-      <div className="flex items-center justify-between mb-6">
+      
+      {/* Header със статус индикатор */}
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${isDark || isHybrid ? 'bg-cyan-500/10 border border-cyan-500/20' : 'bg-cyan-50'}`}>
+          <div className="p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
             <Globe className="w-5 h-5 text-cyan-500" />
           </div>
           <div>
-            <h3 className={`text-sm font-bold uppercase tracking-wider ${isDark || isHybrid ? 'text-white' : 'text-gray-900'}`}>
-              SOVEREIGN INTELLIGENCE NODE
+            <h3 className={`text-sm font-bold uppercase tracking-tighter ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Sovereign Intelligence Node
             </h3>
-            <p className="text-xs font-mono text-cyan-400 uppercase">L10-L8 // CIVILIZATION & MONETARY POWER</p>
+            <p className="text-[10px] font-mono text-cyan-500/70">CORE SYSTEM // L10 CIVILIZATION STATE</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-          <span className="text-xs font-mono text-gray-400">LIVE</span>
+        <div className="flex items-center gap-2 px-2 py-1 bg-black/20 rounded border border-white/5">
+          <div className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-amber-500 animate-pulse' : 'bg-cyan-500'}`} />
+          <span className="text-[10px] font-mono text-gray-500">{loading ? 'SYNCING' : 'LIVE'}</span>
         </div>
       </div>
 
-      {/* Main Gauges Grid - Flight Instrument Style */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
-        <TacticalGauge 
-          value={sovereign.sovereignPowerIndex} 
-          label="SOVEREIGN PWR" 
-          sublabel="Index"
-          color="cyan"
-          size="md"
-        />
-        <TacticalGauge 
-          value={sovereign.reserveCurrencyShare} 
-          label="RESERVE DOM" 
-          sublabel="USD Share"
-          color="blue"
-          size="md"
-          showDecay
-          decayValue={-2.3}
-        />
-        <TacticalGauge 
-          value={sovereign.tradeSettlementVolume} 
-          label="TRADE VOL" 
-          sublabel="Settlement"
-          color="green"
-          size="md"
-        />
-        <TacticalGauge 
-          value={sovereign.capitalControlStrength} 
-          label="CAP CONTROL" 
-          sublabel="Strength"
-          color="amber"
-          size="md"
-          showDecay
-          decayValue={+5.2}
-        />
+      {/* Gauges Grid - Използваме формат функцията за безопасност */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <MetricGauge label="SOV POWER" value={sovereign.sovereignPowerIndex} color="cyan" />
+        <MetricGauge label="RESERVE DOM" value={sovereign.reserveCurrencyShare} color="blue" decay="-1.2%" />
+        <MetricGauge label="TRADE VOL" value={sovereign.tradeSettlementVolume} color="green" />
+        <MetricGauge label="STABILITY" value={civilization.civilizationScore} color="amber" />
       </div>
 
-      {/* Currency Power Blocks - Reserve Currency Decay */}
-      <div className={`rounded-lg p-4 mb-6 ${isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'}`}>
-        <div className="flex items-center gap-2 mb-4">
-          <Shield className="w-4 h-4 text-blue-400" />
-          <span className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
-            RESERVE CURRENCY DOMINANCE MATRIX
-          </span>
+      {/* Civilization Radar / Stats Panel */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-3 bg-black/20 p-4 border border-white/5 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Target className="w-4 h-4 text-amber-500" />
+            <span className="text-[10px] font-mono font-bold text-gray-400">STRUCTURAL METRICS</span>
+          </div>
+          <StatBar label="Demographics" value={civilization.demographicHealth} />
+          <StatBar label="Economic Sustainability" value={civilization.economicSustainability} />
+          <StatBar label="Tech Adaptation" value={civilization.technologicalAdaptation} />
         </div>
-        <div className="space-y-2">
-          {currencyBlocks.map((block, i) => (
-            <PowerBlock key={i} {...block} />
-          ))}
-        </div>
-      </div>
 
-      {/* Civilization Score Panel */}
-      <div className={`rounded-lg p-4 ${isDark || isHybrid ? 'bg-gray-900/50 border border-gray-800' : 'bg-gray-50 border border-gray-200'}`}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-amber-400" />
-            <span className="text-xs font-mono font-bold text-gray-400 uppercase tracking-wider">
-              CIVILIZATION STABILITY INDEX (L10)
-            </span>
+        <div className="space-y-3 bg-black/20 p-4 border border-white/5 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <Shield className="w-4 h-4 text-blue-500" />
+            <span className="text-[10px] font-mono font-bold text-gray-400">CURRENCY HEGEMONY</span>
           </div>
-          <div className={`text-2xl font-bold font-mono tabular-nums ${
-            civilization.civilizationScore >= 70 ? 'text-green-400' :
-            civilization.civilizationScore >= 50 ? 'text-amber-400' : 'text-red-400'
-          }`}>
-            {civilization.civilizationScore.toFixed(1)}
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { label: 'DEMOGRAPHIC', value: civilization.demographicHealth, icon: '01' },
-            { label: 'ECONOMIC', value: civilization.economicSustainability, icon: '02' },
-            { label: 'TECH ADAPT', value: civilization.technologicalAdaptation, icon: '03' },
-            { label: 'GEOPOLITICAL', value: civilization.geopoliticalStability, icon: '04' },
-          ].map((metric, i) => (
-            <div key={i} className={`p-3 rounded-lg ${isDark || isHybrid ? 'bg-black/30' : 'bg-white'}`}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-mono text-gray-400">{metric.icon}</span>
-                <span className={`text-lg font-bold font-mono tabular-nums ${
-                  metric.value >= 70 ? 'text-green-400' :
-                  metric.value >= 50 ? 'text-amber-400' : 'text-red-400'
-                }`}>
-                  {metric.value.toFixed(0)}
-                </span>
+          {currencyBlocks.map(block => (
+            <div key={block.label} className="flex items-center gap-3">
+              <span className="text-[10px] font-mono w-8 text-gray-500">{block.label}</span>
+              <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                <div className={`h-full ${block.color}`} style={{ width: `${block.value}%` }} />
               </div>
-              <div className="text-xs font-mono text-gray-400 uppercase">{metric.label}</div>
-              <div className="mt-2 h-1 bg-gray-800 rounded-full overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-500 ${
-                    metric.value >= 70 ? 'bg-green-500' :
-                    metric.value >= 50 ? 'bg-amber-500' : 'bg-red-500'
-                  }`}
-                  style={{ width: `${metric.value}%` }}
-                />
-              </div>
+              <span className="text-[10px] font-mono text-white">{block.value}%</span>
             </div>
           ))}
         </div>
       </div>
+    </div>
+  );
+}
 
-      {/* Warning Banner - if civilization score is low */}
-      {civilization.civilizationScore < 50 && (
-        <div className="mt-4 p-3 rounded-lg bg-red-950/30 border border-red-500/30 flex items-center gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0" />
-          <div>
-            <div className="text-xs font-bold text-red-400 uppercase">STRUCTURAL INSTABILITY DETECTED</div>
-            <div className="text-xs text-red-300/70">Long-term civilization risk factors exceeding thresholds</div>
-          </div>
-        </div>
-      )}
+// Помощни малки компоненти (Sub-components) за по-добър синтаксис
+function MetricGauge({ label, value, color, decay }: { label: string, value: number, color: string, decay?: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="text-[28px] font-black font-mono tracking-tighter text-white">
+        {formatNum(value)}
+      </div>
+      <div className="text-[9px] font-mono text-gray-500 uppercase tracking-widest flex items-center gap-1">
+        {label} {decay && <span className="text-red-500">{decay}</span>}
+      </div>
+    </div>
+  );
+}
+
+function StatBar({ label, value }: { label: string, value: number }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-[10px] font-mono uppercase">
+        <span className="text-gray-500">{label}</span>
+        <span className="text-white">{formatNum(value)}%</span>
+      </div>
+      <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+        <div className="h-full bg-cyan-500/50" style={{ width: `${value || 0}%` }} />
+      </div>
     </div>
   );
 }
