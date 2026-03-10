@@ -1,15 +1,5 @@
-/**
- * useMarketSnapshot — Backward-compatible hook that delegates to AppContext.
- * 
- * Legacy interface preserved so existing components continue working without
- * changes. Internally all data now comes from the centralized AppContext
- * rather than direct Supabase queries.
- * 
- * MIGRATION NOTE: New components should use useAppContext() directly.
- */
-
-import { useMemo, useCallback } from 'react';
-import { useAppContext } from './useAppContext';
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../lib/supabase';
 
 export interface MarketSnapshot {
   id: string;
@@ -38,71 +28,184 @@ interface UseMarketSnapshotReturn {
   history: MarketSnapshot[];
   dataStatus: DataStatus | null;
   loading: boolean;
-  isLoading: boolean;
+  isLoading: boolean; // alias for loading
   error: string | null;
   refresh: () => Promise<void>;
 }
 
-// ---------------------------------------------------------------------------
-// Global Fear & Greed exports — kept for backward compatibility with
-// masterIntelligence.ts which imports these module-level vars.
-// ---------------------------------------------------------------------------
+// =============================================================================
+// NO MOCK DATA - Production system uses REAL Supabase data only
+// If no data exists, show "Waiting for first market snapshot..."
+// =============================================================================
+
+// Fear & Greed Index - fetched from Supabase macro_metrics table
+// Default to null until data is available
 export let GLOBAL_FEAR_GREED_VALUE: number | null = null;
 export let GLOBAL_FEAR_GREED_LABEL = 'Loading...';
 
+function getFearGreedLabel(value: number | null): string {
+  if (value === null) return 'Loading...';
+  if (value < 10) return 'Extreme Fear';
+  if (value < 25) return 'Very Fear';
+  if (value < 45) return 'Fear';
+  if (value < 55) return 'Neutral';
+  if (value < 75) return 'Greed';
+  if (value < 90) return 'Very Greed';
+  return 'Extreme Greed';
+}
+
 export function useMarketSnapshot(): UseMarketSnapshotReturn {
-  const { state, isInitialized, isSyncing, syncNow } = useAppContext();
+  const [latest, setLatest] = useState<MarketSnapshot | null>(null);
+  const [history, setHistory] = useState<MarketSnapshot[]>([]);
+  const [dataStatus, setDataStatus] = useState<DataStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Map AppContext TerminalState → legacy MarketSnapshot shape
-  const latest = useMemo<MarketSnapshot | null>(() => {
-    if (!isInitialized) return null;
-    const { prices, sentiment } = state;
-    // Keep global vars in sync for legacy consumers
-    GLOBAL_FEAR_GREED_VALUE = sentiment.fearGreedIndex;
-    GLOBAL_FEAR_GREED_LABEL = sentiment.fearGreedLabel;
-    return {
-      id: `ctx-${state.lastSyncMs}`,
-      created_at: new Date(state.lastSyncMs).toISOString(),
-      yield_spread: sentiment.yieldSpread,
-      rate_shock: sentiment.rateShock,
-      balance_sheet_delta: sentiment.balanceSheetDelta,
-      btc_price: prices.btc.value,
-      btc_volatility: sentiment.btcVolatility,
-      btc_dominance: prices.btcDominance,
-      systemic_risk: sentiment.systemicRisk / 100, // stored as decimal
-      survival_probability: sentiment.survivalProbability / 100, // stored as decimal
-      var_95: sentiment.var95,
-      regime: sentiment.regime,
-      data_sources_ok: state.overallStatus === 'LIVE',
-    };
-  }, [state, isInitialized]);
-
-  const dataStatus = useMemo<DataStatus>(() => {
-    if (!isInitialized || state.lastSyncMs === 0) {
-      return { status: 'RED', last_update: null, snapshots_24h: 0 };
+  const fetchData = useCallback(async () => {
+    if (!supabase) {
+      console.log('[v0] Supabase not configured - waiting for connection');
+      setError('Supabase not configured. Waiting for first market snapshot...');
+      setLatest(null);
+      setHistory([]);
+      setDataStatus({ status: 'RED', last_update: null, snapshots_24h: 0 });
+      setLoading(false);
+      return;
     }
-    const ageMs = Date.now() - state.lastSyncMs;
-    const statusStr: 'GREEN' | 'YELLOW' | 'RED' =
-      ageMs < 15 * 60_000 ? 'GREEN' : ageMs < 60 * 60_000 ? 'YELLOW' : 'RED';
-    return {
-      status: statusStr,
-      last_update: new Date(state.lastSyncMs).toISOString(),
-      snapshots_24h: 1, // AppContext doesn't track historical count
-    };
-  }, [state.lastSyncMs, isInitialized]);
 
-  const refresh = useCallback(async () => {
-    await syncNow();
-  }, [syncNow]);
+    try {
+      setError(null);
+
+      // Fetch latest snapshot from market_snapshots table
+      // Query: SELECT created_at, btc_price, systemic_risk, yield_spread FROM market_snapshots ORDER BY created_at ASC LIMIT 200
+      const { data: latestData, error: latestError } = await supabase
+        .from('market_snapshots')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (latestError) {
+        if (latestError.code === 'PGRST116') {
+          // No rows returned - waiting for first snapshot
+          setError('Waiting for first market snapshot...');
+          setLatest(null);
+          setHistory([]);
+          setDataStatus({ status: 'RED', last_update: null, snapshots_24h: 0 });
+          setLoading(false);
+          return;
+        }
+        throw latestError;
+      }
+
+      // Fetch history (last 200 records for charts)
+      const { data: historyData, error: historyError } = await supabase
+        .from('market_snapshots')
+        .select('created_at, btc_price, systemic_risk, yield_spread')
+        .order('created_at', { ascending: true })
+        .limit(200);
+
+      if (historyError) {
+        throw historyError;
+      }
+
+      // Calculate data status based on freshness
+      // GREEN = < 15 minutes, AMBER = 15-60 minutes, RED = > 60 minutes
+      let calculatedStatus: DataStatus = { status: 'RED', last_update: null, snapshots_24h: 0 };
+      if (latestData?.created_at) {
+        const lastUpdate = new Date(latestData.created_at);
+        const now = new Date();
+        const minutesAgo = (now.getTime() - lastUpdate.getTime()) / (1000 * 60);
+        
+        let status: 'GREEN' | 'YELLOW' | 'RED' = 'RED';
+        if (minutesAgo < 15) {
+          status = 'GREEN';
+        } else if (minutesAgo < 60) {
+          status = 'YELLOW';
+        }
+        
+        calculatedStatus = {
+          status,
+          last_update: latestData.created_at,
+          snapshots_24h: historyData?.length || 0,
+        };
+      }
+
+      // Fetch Fear & Greed Index from macro_metrics
+      const { data: fearGreedData, error: fearGreedError } = await supabase
+        .from('macro_metrics')
+        .select('value')
+        .eq('symbol', 'FEAR_GREED')
+        .order('fetched_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!fearGreedError && fearGreedData?.value) {
+        GLOBAL_FEAR_GREED_VALUE = fearGreedData.value;
+        GLOBAL_FEAR_GREED_LABEL = getFearGreedLabel(fearGreedData.value);
+      }
+
+      setLatest(latestData || null);
+      setHistory(historyData || []);
+      setDataStatus(calculatedStatus);
+    } catch (err) {
+      console.error('[v0] Error fetching market snapshot:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch market data');
+      // Do NOT fall back to mock data - show error state
+      setLatest(null);
+      setHistory([]);
+      setDataStatus({ status: 'RED', last_update: null, snapshots_24h: 0 });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    if (!supabase) return;
+
+    const channel = supabase
+      .channel('market_snapshots_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'market_snapshots',
+        },
+        (payload) => {
+          const newSnapshot = payload.new as MarketSnapshot;
+          setLatest(newSnapshot);
+          setHistory((prev) => [newSnapshot, ...prev.slice(0, 99)]);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      if (supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, []);
+
+  // Auto-refresh every 60 seconds (production requirement)
+  useEffect(() => {
+    const interval = setInterval(fetchData, 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
 
   return {
     latest,
-    history: latest ? [latest] : [],
+    history,
     dataStatus,
-    loading: !isInitialized || isSyncing,
-    isLoading: !isInitialized || isSyncing,
-    error: null,
-    refresh,
+    loading,
+    isLoading: loading,
+    error,
+    refresh: fetchData,
   };
 }
 

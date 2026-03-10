@@ -1,14 +1,5 @@
-/**
- * useBlackSwanRisk — Backward-compatible hook that delegates to AppContext.
- * 
- * Legacy interface preserved so BlackSwanTerminal and other consumers
- * continue working. Internally delegates to AppContext sentiment state.
- * 
- * MIGRATION NOTE: New components should use useSentimentState() directly.
- */
-
-import { useMemo, useCallback } from 'react';
-import { useAppContext } from './useAppContext';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '../lib/supabase';
 
 export interface BlackSwanRiskData {
   average7d: number | null;
@@ -19,31 +10,166 @@ export interface BlackSwanRiskData {
   error: string | null;
 }
 
+// Cache configuration: 30 seconds
+const CACHE_DURATION_MS = 30 * 1000;
+
+interface CachedData {
+  data: BlackSwanRiskData;
+  timestamp: number;
+}
+
+// Global cache to share between component instances
+let globalCache: CachedData | null = null;
+
+/**
+ * Hook to fetch Black Swan Risk Index data from Supabase
+ * Implements 7D/30D/90D averages with 30-second caching
+ */
 export function useBlackSwanRisk(): BlackSwanRiskData & { refresh: () => Promise<void> } {
-  const { state, isInitialized, isSyncing, syncNow } = useAppContext();
+  const [data, setData] = useState<BlackSwanRiskData>({
+    average7d: null,
+    average30d: null,
+    average90d: null,
+    latestRisk: null,
+    loading: true,
+    error: null,
+  });
 
-  const data = useMemo<BlackSwanRiskData>(() => {
-    if (!isInitialized) {
-      return { average7d: null, average30d: null, average90d: null, latestRisk: null, loading: true, error: null };
+  const isMounted = useRef(true);
+
+  const fetchRiskData = useCallback(async (forceRefresh = false) => {
+    // Check cache first (unless force refresh)
+    if (!forceRefresh && globalCache && Date.now() - globalCache.timestamp < CACHE_DURATION_MS) {
+      if (isMounted.current) {
+        setData(globalCache.data);
+      }
+      return;
     }
-    const risk = state.sentiment.systemicRisk;
-    // Without historical snapshots in AppContext, we approximate the timeframe averages
-    // from the single current value with minor variance to maintain UI intent
-    return {
-      average7d: risk,
-      average30d: risk,
-      average90d: risk,
-      latestRisk: risk,
-      loading: isSyncing,
-      error: null,
+
+    if (!supabase) {
+      const errorData: BlackSwanRiskData = {
+        average7d: null,
+        average30d: null,
+        average90d: null,
+        latestRisk: null,
+        loading: false,
+        error: 'Supabase not configured',
+      };
+      if (isMounted.current) setData(errorData);
+      return;
+    }
+
+    try {
+      // Direct queries to market_snapshots table
+      // This approach works without requiring RPC functions
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
+
+      // Fetch all data in parallel
+      const [result7d, result30d, result90d, resultLatest] = await Promise.all([
+        // 7 Day data
+        supabase
+          .from('market_snapshots')
+          .select('systemic_risk')
+          .gte('created_at', sevenDaysAgo)
+          .order('created_at', { ascending: false }),
+        // 30 Day data
+        supabase
+          .from('market_snapshots')
+          .select('systemic_risk')
+          .gte('created_at', thirtyDaysAgo)
+          .order('created_at', { ascending: false }),
+        // 90 Day data
+        supabase
+          .from('market_snapshots')
+          .select('systemic_risk')
+          .gte('created_at', ninetyDaysAgo)
+          .order('created_at', { ascending: false }),
+        // Latest snapshot for fallback
+        supabase
+          .from('market_snapshots')
+          .select('systemic_risk')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single(),
+      ]);
+
+      // Calculate averages from data
+      const calculateAvg = (data: { systemic_risk: number }[] | null): number | null => {
+        if (!data || data.length === 0) return null;
+        const validData = data.filter(row => row.systemic_risk != null);
+        if (validData.length === 0) return null;
+        const sum = validData.reduce((acc, row) => acc + row.systemic_risk, 0);
+        return sum / validData.length;
+      };
+
+      // Normalize values: if stored as decimal (0-1), convert to percentage (0-100)
+      const normalize = (val: number | null): number | null => {
+        if (val === null) return null;
+        return val > 1 ? Math.round(val) : Math.round(val * 100);
+      };
+
+      // Extract latest risk as fallback
+      const latestRisk = resultLatest.data?.systemic_risk ?? null;
+      const latestNormalized = normalize(latestRisk);
+      
+      // Calculate averages or fallback to latest
+      const avg7d = calculateAvg(result7d.data);
+      const avg30d = calculateAvg(result30d.data);
+      const avg90d = calculateAvg(result90d.data);
+
+      const newData: BlackSwanRiskData = {
+        average7d: normalize(avg7d) ?? latestNormalized,
+        average30d: normalize(avg30d) ?? latestNormalized,
+        average90d: normalize(avg90d) ?? latestNormalized,
+        latestRisk: latestNormalized,
+        loading: false,
+        error: null,
+      };
+
+      // Update cache
+      globalCache = {
+        data: newData,
+        timestamp: Date.now(),
+      };
+
+      if (isMounted.current) {
+        setData(newData);
+      }
+    } catch (err) {
+      console.error('[useBlackSwanRisk] Error fetching risk data:', err);
+      
+      const errorData: BlackSwanRiskData = {
+        average7d: null,
+        average30d: null,
+        average90d: null,
+        latestRisk: null,
+        loading: false,
+        error: err instanceof Error ? err.message : 'Failed to fetch risk data',
+      };
+      if (isMounted.current) setData(errorData);
+    }
+  }, []);
+
+  useEffect(() => {
+    isMounted.current = true;
+    fetchRiskData();
+
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(() => fetchRiskData(true), CACHE_DURATION_MS);
+
+    return () => {
+      isMounted.current = false;
+      clearInterval(interval);
     };
-  }, [state.sentiment.systemicRisk, isInitialized, isSyncing]);
+  }, [fetchRiskData]);
 
-  const refresh = useCallback(async () => {
-    await syncNow();
-  }, [syncNow]);
-
-  return { ...data, refresh };
+  return {
+    ...data,
+    refresh: () => fetchRiskData(true),
+  };
 }
 
 /**
