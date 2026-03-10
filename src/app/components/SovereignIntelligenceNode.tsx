@@ -12,21 +12,46 @@ const formatNum = (val: number | undefined | null, decimals: number = 1): string
 
 export function SovereignIntelligenceNode() {
   const { uiTheme } = useAdaptiveTheme();
-  const { latest: snapshot, loading } = useMarketSnapshot();
+  const { latest: snapshot, loading, error } = useMarketSnapshot();
   const isDark = uiTheme === 'terminal' || uiTheme === 'hybrid';
 
-  // 1. Безопасно изчисляване на състоянието чрез Fallbacks
+  // 1. Safe computation with fallbacks - handles null/undefined gracefully
   const agiState = useMemo(() => {
-    // Ако няма данни, подаваме безопасни обекти, за да не гърми computeAGISystemState
     return computeAGISystemState({
-      survivalProbability: snapshot?.survival_probability ?? 0.8,
-      systemicRisk: snapshot?.systemic_risk ?? 0.2,
-      yieldSpread: snapshot?.yield_spread ?? 0.0,
-      btcVolatility: snapshot?.btc_volatility ?? 50,
-      balanceSheetDelta: snapshot?.balance_sheet_delta ?? 0,
-      rateShock: snapshot?.rate_shock ?? 0
+      survivalProbability: snapshot?.survival_probability ?? null,
+      systemicRisk: snapshot?.systemic_risk ?? null,
+      yieldSpread: snapshot?.yield_spread ?? null,
+      btcVolatility: snapshot?.btc_volatility ?? null,
+      balanceSheetDelta: snapshot?.balance_sheet_delta ?? null,
+      rateShock: snapshot?.rate_shock ?? null
     });
   }, [snapshot]);
+
+  // Show loading skeleton while fetching data
+  if (loading) {
+    return (
+      <div className={`rounded-xl border p-4 md:p-6 ${isDark ? 'bg-[#0b0f17] border-[#1f2937]' : 'bg-white border-gray-200'}`}>
+        <div className="animate-pulse space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-cyan-500/10 rounded-lg" />
+            <div className="space-y-2">
+              <div className="h-4 w-48 bg-gray-700/50 rounded" />
+              <div className="h-3 w-32 bg-gray-700/30 rounded" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-16 bg-gray-700/30 rounded" />
+            ))}
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="h-32 bg-gray-700/20 rounded" />
+            <div className="h-32 bg-gray-700/20 rounded" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 2. Деструктуриране с гарантирани default стойности (Safety Net)
   const sovereign = agiState?.sovereign ?? {

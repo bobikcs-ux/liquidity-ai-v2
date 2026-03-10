@@ -257,24 +257,37 @@ export function calculateBubbleRisk(
 
 export function computeAGISystemState(
   marketData: {
-    survivalProbability: number;
-    systemicRisk: number;
-    yieldSpread: number;
-    btcVolatility: number;
-    balanceSheetDelta: number;
-    rateShock: number;
+    survivalProbability: number | null | undefined;
+    systemicRisk: number | null | undefined;
+    yieldSpread: number | null | undefined;
+    btcVolatility: number | null | undefined;
+    balanceSheetDelta: number | null | undefined;
+    rateShock: number | null | undefined;
   }
 ): AGISystemState {
   const now = new Date();
   
-  // Derive metrics from market data
-  const survivalProb = marketData.survivalProbability > 1 
-    ? marketData.survivalProbability / 100 
-    : marketData.survivalProbability;
+  // Safe number extraction with defaults
+  const safeNum = (val: number | null | undefined, fallback: number): number => {
+    if (val === null || val === undefined || isNaN(val)) return fallback;
+    return val;
+  };
   
-  const systemicRisk = marketData.systemicRisk > 1 
-    ? marketData.systemicRisk / 100 
-    : marketData.systemicRisk;
+  // Extract with safe defaults
+  const rawSurvival = safeNum(marketData.survivalProbability, 0.8);
+  const rawSystemic = safeNum(marketData.systemicRisk, 0.2);
+  const rawYieldSpread = safeNum(marketData.yieldSpread, 0);
+  const rawBtcVol = safeNum(marketData.btcVolatility, 50);
+  const rawBalanceSheet = safeNum(marketData.balanceSheetDelta, 0);
+  
+  // Derive metrics from market data
+  const survivalProb = rawSurvival > 1 
+    ? rawSurvival / 100 
+    : rawSurvival;
+  
+  const systemicRisk = rawSystemic > 1 
+    ? rawSystemic / 100 
+    : rawSystemic;
 
   // L8 - Sovereign Power (simulated based on market conditions)
   const reserveCurrencyShare = 58 - (systemicRisk * 10); // USD dominance declining under stress
@@ -290,14 +303,14 @@ export function computeAGISystemState(
   const civilizationScore = calculateCivilizationScore(demographicHealth, economicSustainability, technologicalAdaptation, geopoliticalStability);
 
   // L5 - Liquidity Brain
-  const m2GrowthVelocity = -2 + (marketData.balanceSheetDelta * 0.5);
-  const realYieldGrowth = marketData.yieldSpread * 2;
+  const m2GrowthVelocity = -2 + (rawBalanceSheet * 0.5);
+  const realYieldGrowth = rawYieldSpread * 2;
   const creditSpreadExpansion = systemicRisk * 3;
   const liquidityBrain = calculateLiquidityBrain(m2GrowthVelocity, realYieldGrowth, creditSpreadExpansion);
 
   // L2 - Regime Speed
   const liquidityVelocityDelta = m2GrowthVelocity * 0.5;
-  const volatilityStructureDelta = (marketData.btcVolatility / 100) * 2;
+  const volatilityStructureDelta = (rawBtcVol / 100) * 2;
   const correlationConvergenceDelta = systemicRisk * 1.5;
   const regimeSpeed = calculateRegimeSpeed(liquidityVelocityDelta, volatilityStructureDelta, correlationConvergenceDelta);
 
@@ -313,14 +326,14 @@ export function computeAGISystemState(
 
   // L6 - Defense Score
   const geopoliticalRiskIndex = (100 - geopoliticalStability) / 100;
-  const volatilityExpansionProb = marketData.btcVolatility / 100;
+  const volatilityExpansionProb = rawBtcVol / 100;
   const defenseScore = calculateDefenseScore(survivalProb, systemicRisk, geopoliticalRiskIndex, volatilityExpansionProb);
   const autonomousActions = getAutonomousDefenseActions(defenseScore);
 
   // Black Swan Risk
-  const volatilityShockRate = Math.min(1, (marketData.btcVolatility / 100) * 1.2);
+  const volatilityShockRate = Math.min(1, (rawBtcVol / 100) * 1.2);
   const correlationCollapseSpeed = Math.min(1, systemicRisk * 1.1);
-  const liquidityDrainVelocity = Math.min(1, Math.abs(marketData.balanceSheetDelta) / 10);
+  const liquidityDrainVelocity = Math.min(1, Math.abs(rawBalanceSheet) / 10);
   const blackSwan = calculateBlackSwanRisk(volatilityShockRate, correlationCollapseSpeed, liquidityDrainVelocity);
 
   return {

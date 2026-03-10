@@ -133,14 +133,14 @@ export function GlobalCapitalFlightDetector({ onFlightDetected }: GlobalCapitalF
               )}
             </div>
             <div className="text-lg font-bold tabular-nums" style={{ color: '#f5f5f5' }}>
-              {pair.rate.toFixed(4)}
+              {pair.rate != null ? pair.rate.toFixed(4) : '--'}
             </div>
             <div
               className="flex items-center gap-1 text-xs font-mono mt-1"
               style={{ color: trendColor(pair.trend, pair.symbol) }}
             >
               <TrendIcon trend={pair.trend} />
-              {pair.changePct > 0 ? '+' : ''}{pair.changePct.toFixed(3)}%
+              {pair.changePct != null ? `${pair.changePct > 0 ? '+' : ''}${pair.changePct.toFixed(3)}%` : '--'}
             </div>
           </div>
         ))}
