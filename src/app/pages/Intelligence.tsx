@@ -1,13 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GitBranch, Target, BarChart3, Network, Droplets, Gauge, Activity, ArrowUpRight, ArrowDownRight, RefreshCcw, AlertTriangle } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 import { useAdaptiveTheme } from '../context/AdaptiveThemeContext';
-import { useAppContext } from '../hooks/useAppContext';
+import { useMarketSnapshot } from '../hooks/useMarketSnapshot';
 import { IntelligenceCopilot } from '../components/IntelligenceCopilot';
 import { MarketCharts } from '../components/MarketCharts';
 import { LiveAlphaTicker } from '../components/LiveAlphaTicker';
 import { CentralIntelligenceTerminal } from '../components/CentralIntelligenceTerminal';
 import ErrorBoundary from '../components/ErrorBoundary';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 const STATUS_COLORS: Record<string, string> = {
   CRITICAL: 'text-red-400 bg-red-900/30',
@@ -98,11 +103,11 @@ function T81Feed({ logs, loading }: { logs: any[]; loading: boolean }) {
 
 export function Intelligence() {
   const { uiTheme } = useAdaptiveTheme();
-  const { state, isSyncing, syncNow } = useAppContext();
+  const { latest: snapshot, loading: snapshotLoading } = useMarketSnapshot();
   const isDark = uiTheme === 'terminal';
   const isHybrid = uiTheme === 'hybrid';
 
-  // T81 & prices live state (still sourced from Supabase realtime)
+  // T81 & prices live state
   const [prices, setPrices] = useState<any[]>([]);
   const [t81Logs, setT81Logs] = useState<any[]>([]);
   const [t81Loading, setT81Loading] = useState(true);
@@ -110,10 +115,6 @@ export function Intelligence() {
 
   const loadLiveData = useCallback(async () => {
     setT81Loading(true);
-    if (!supabase) {
-      setT81Loading(false);
-      return;
-    }
     const [{ data: priceData }, { data: logData }] = await Promise.all([
       supabase.from('prices').select('*').order('product_code'),
       supabase.from('t81').select('*').order('created_at', { ascending: false }).limit(20),
@@ -126,8 +127,6 @@ export function Intelligence() {
 
   useEffect(() => {
     loadLiveData();
-
-    if (!supabase) return;
 
     // Realtime subscriptions
     const priceChannel = supabase
@@ -147,14 +146,18 @@ export function Intelligence() {
       supabase.removeChannel(t81Channel);
     };
   }, [loadLiveData]);
-
-  // Derive display values from AppContext TerminalState
-  const { sentiment } = state;
-  const survivalProb = sentiment.survivalProbability;
-  const systemicRisk = sentiment.systemicRisk;
-  const btcVolatility = sentiment.btcVolatility;
-  const regime = sentiment.regime;
-  const snapshotLoading = isSyncing;
+  
+  // Calculate real values from Supabase snapshot
+  const survivalProb = snapshot?.survival_probability != null 
+    ? (snapshot.survival_probability > 1 ? snapshot.survival_probability : Math.round(snapshot.survival_probability * 100))
+    : 78;
+  const systemicRisk = snapshot?.systemic_risk != null 
+    ? (snapshot.systemic_risk > 1 ? snapshot.systemic_risk : Math.round(snapshot.systemic_risk * 100))
+    : 35;
+  const btcVolatility = snapshot?.btc_volatility != null 
+    ? (snapshot.btc_volatility > 1 ? snapshot.btc_volatility : Math.round(snapshot.btc_volatility * 100))
+    : 65;
+  const regime = snapshot?.regime || 'normal';
   
   // Regime transition probabilities based on current regime
   const regimeTransitions = regime === 'crisis' 
@@ -198,12 +201,12 @@ export function Intelligence() {
           </div>
           <button
             onClick={loadLiveData}
-            disabled={t81Loading || isSyncing}
+            disabled={t81Loading}
             className="p-1.5 rounded hover:opacity-70 transition-opacity disabled:opacity-40"
             style={{ color: '#d4af37' }}
             aria-label="Refresh live data"
           >
-            <RefreshCcw className={`w-4 h-4 ${(t81Loading || isSyncing) ? 'animate-spin' : ''}`} />
+            <RefreshCcw className={`w-4 h-4 ${t81Loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
 
