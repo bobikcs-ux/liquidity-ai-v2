@@ -1,10 +1,18 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase configuration. Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set.');
-}
+const supabaseAnonKey =
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 'public-anon-key'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Debug build-time env injection
+console.log(
+  "BUILD_TIME_CHECK: URL is ",
+  import.meta.env.VITE_SUPABASE_URL
+)
+
+export const supabase = createClient(
+  supabaseUrl,
+  supabaseAnonKey
+)
