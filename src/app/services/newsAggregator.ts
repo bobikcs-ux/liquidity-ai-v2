@@ -105,90 +105,44 @@ const SEEDS = TERMINAL_STATE_DEFAULTS.geopolitics;
 // ============================================================================
 
 /**
- * Fetch geopolitical news from NewsAPI.
+ * Fetch geopolitical news via server proxy.
  */
 async function fetchNewsAPIAlerts(): Promise<GeopoliticsAlert[]> {
-  const key = getNewsApiKey();
-  if (!key) return [];
+  try {
+    const resp = await gatewayFetch<{ status: string; alerts: any[] }>(
+      '/api/intelligence/news',
+      { apiName: 'news', cacheKey: 'news-proxy-geo', cacheTtlMs: 60_000 },
+    );
 
-  const query = encodeURIComponent('geopolitical OR conflict OR sanctions OR war OR crisis');
-  const resp = await gatewayFetch<NewsAPIResponse>(
-    `https://newsapi.org/v2/everything?q=${query}&sortBy=publishedAt&pageSize=10&language=en&apiKey=${key}`,
-    { apiName: 'news', cacheKey: 'newsapi-geo', cacheTtlMs: 60_000 },
-  );
+    if (!resp.data?.alerts?.length) return [];
 
-  if (!resp.data?.articles?.length) return [];
-
-  return resp.data.articles.slice(0, 8).map((article, i) => ({
-    id: `newsapi-${i}-${Date.now()}`,
-    headline: article.title,
-    region: article.source.name,
-    severity: scoreHeadline(article.title),
-    source: 'NewsAPI',
-    publishedAt: article.publishedAt,
-  }));
+    return resp.data.alerts.slice(0, 8).map((article: any, i: number) => ({
+      id: `newsapi-${i}-${Date.now()}`,
+      headline: article.title,
+      region: article.source,
+      severity: scoreHeadline(article.title),
+      source: 'NewsAPI',
+      publishedAt: article.date,
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /**
- * Fetch global news from WorldNewsAPI with geopolitical focus.
+ * Fetch global news via server proxy (WorldNewsAPI + ACLED aggregated).
  */
 async function fetchWorldNewsAlerts(): Promise<GeopoliticsAlert[]> {
-  const key = getWorldNewsApiKey();
-  if (!key) return [];
-
-  const resp = await gatewayFetch<WorldNewsAPIResponse>(
-    `https://api.worldnewsapi.com/search-news?text=geopolitical+conflict+sanctions&language=en&number=10&api-key=${key}`,
-    { apiName: 'worldNews', cacheKey: 'worldnews-geo', cacheTtlMs: 60_000 },
-  );
-
-  if (!resp.data?.news?.length) return [];
-
-  return resp.data.news.slice(0, 8).map((article, i) => ({
-    id: `worldnews-${i}-${Date.now()}`,
-    headline: article.title,
-    region: article.source_country || 'Global',
-    severity: scoreHeadline(article.title),
-    source: 'WorldNewsAPI',
-    publishedAt: article.publish_date,
-  }));
+  // Already handled by /api/intelligence/news proxy
+  return [];
 }
 
 /**
- * Fetch recent ACLED conflict events (last 7 days).
+ * Fetch ACLED conflict events via server proxy.
  */
 async function fetchACLEDEvents(): Promise<GeopoliticsAlert[]> {
-  const creds = getAcledCredentials();
-  if (!creds) return [];
-
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split('T')[0]; // YYYY-MM-DD
-
-  const params = new URLSearchParams({
-    key: creds.key,
-    email: creds.email,
-    event_date: sevenDaysAgo,
-    event_date_where: 'BETWEEN',
-    event_date_end: new Date().toISOString().split('T')[0],
-    limit: '20',
-    fields: 'event_id_cnty|event_date|event_type|country|admin1|location|fatalities|notes',
-  });
-
-  const resp = await gatewayFetch<ACLEDResponse>(
-    `https://api.acleddata.com/acled/read?${params.toString()}`,
-    { apiName: 'acled', cacheKey: 'acled-events', cacheTtlMs: 60_000 },
-  );
-
-  if (!resp.data?.data?.length) return [];
-
-  return resp.data.data.slice(0, 10).map((event) => ({
-    id: event.event_id_cnty,
-    headline: `${event.event_type}: ${event.location}, ${event.country}${event.fatalities > 0 ? ` (${event.fatalities} fatalities)` : ''}`,
-    region: `${event.country} — ${event.admin1}`,
-    severity: event.fatalities > 10 ? 'critical' : event.fatalities > 0 ? 'high' : 'medium',
-    source: 'ACLED',
-    publishedAt: event.event_date,
-  }));
+  // Already handled by /api/intelligence/news proxy
+  return [];
 }
 
 // ============================================================================

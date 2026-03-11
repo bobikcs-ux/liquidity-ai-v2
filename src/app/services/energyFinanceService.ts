@@ -84,61 +84,31 @@ export interface OilSpotPrices {
 }
 
 export async function fetchOilSpotPrices(): Promise<OilSpotPrices> {
-  const cacheKey = 'oil-spot-fmp';
+  const cacheKey = 'oil-spot-proxy';
   const cached = getCached<OilSpotPrices>(cacheKey);
   if (cached) return cached;
 
-  const rawKey = import.meta.env.VITE_FMP_API_KEY as string | undefined;
-  if (!FMP_API_KEY) {
-    console.log('[v0] fetchOilSpotPrices: VITE_FMP_API_KEY not set or invalid. Raw:', rawKey ? `length=${rawKey.length}, starts=${rawKey.slice(0,20)}` : 'undefined');
-    return getOilFallback('FALLBACK');
-  }
-
   try {
-    // Use standard /api/v3 quote endpoint with futures ticker symbols
-    // CL=F = WTI Crude Futures, BZ=F = Brent Crude Futures
-    const [wtiRes, brentRes] = await Promise.all([
-      fetch(`https://financialmodelingprep.com/api/v3/quote/CL=F?apikey=${FMP_API_KEY}`),
-      fetch(`https://financialmodelingprep.com/api/v3/quote/BZ=F?apikey=${FMP_API_KEY}`),
-    ]);
+    const resp = await fetch('/api/commodities/oil', { signal: AbortSignal.timeout(8000) });
+    if (!resp.ok) throw new Error(`Oil API returned ${resp.status}`);
 
-    // Check responses for "Legacy Endpoint" warning and auto-switch if needed
-    if (wtiRes.status === 200) {
-      const wtiText = await wtiRes.text();
-      checkFMPLegacyResponse(wtiText);
-      try {
-        // Re-parse if we checked for legacy
-        const wtiData = JSON.parse(wtiText) as FMPQuote[];
-        const brentText = await brentRes.text();
-        checkFMPLegacyResponse(brentText);
-        const brentData = JSON.parse(brentText) as FMPQuote[];
+    const data = await resp.json();
 
-        const wti = wtiData[0];
-        const brent = brentData[0];
+    const result: OilSpotPrices = {
+      wtiPrice: data.wti?.price || 78.42,
+      wtiChange: data.wti?.change || 0,
+      wtiChangePct: data.wti?.changesPercentage || 0,
+      brentPrice: data.brent?.price || 82.15,
+      brentChange: data.brent?.change || 0,
+      brentChangePct: data.brent?.changesPercentage || 0,
+      lastUpdated: new Date(),
+      source: data.status === 'LIVE' ? 'FMP' : 'FALLBACK',
+    };
 
-        if (!wti || !brent) throw new Error('FMP returned empty quotes');
-
-        const result: OilSpotPrices = {
-          wtiPrice: wti.price,
-          wtiChange: wti.change,
-          wtiChangePct: wti.changesPercentage,
-          brentPrice: brent.price,
-          brentChange: brent.change,
-          brentChangePct: brent.changesPercentage,
-          lastUpdated: new Date(),
-          source: 'FMP',
-        };
-
-        setCache(cacheKey, result);
-        return result;
-      } catch (parseErr) {
-        console.log('[v0] FMP parse error, falling back:', parseErr);
-        throw new Error('FMP parse error');
-      }
-    }
-
-    if (!wtiRes.ok || !brentRes.ok) throw new Error(`FMP oil quote failed: WTI=${wtiRes.status}, Brent=${brentRes.status}`);
-  } catch {
+    setCache(cacheKey, result, 180_000); // 3 min cache
+    return result;
+  } catch (err) {
+    console.log('[v0] fetchOilSpotPrices failed:', err instanceof Error ? err.message : String(err));
     return getOilFallback('FALLBACK');
   }
 }
@@ -184,13 +154,37 @@ const FX_SYMBOLS = [
 ];
 
 export async function fetchLiveFXData(): Promise<LiveFXData> {
-  const cacheKey = 'fx-pairs-fmp';
+  const cacheKey = 'fxdata-proxy';
   const cached = getCached<LiveFXData>(cacheKey);
   if (cached) return cached;
 
-  if (!FMP_API_KEY) {
+  try {
+    const resp = await fetch('/api/markets/fx-rates', { signal: AbortSignal.timeout(8000) });
+    if (!resp.ok) throw new Error(`FX API returned ${resp.status}`);
+
+    const data = await resp.json();
+
+    const result: LiveFXData = {
+      pairs: (data.pairs || []).map((p: any) => ({
+        symbol: p.symbol,
+        label: p.label,
+        rate: p.rate,
+        change: p.change,
+        changePct: p.changePct,
+        trend: p.changePct > 0.05 ? 'up' : p.changePct < -0.05 ? 'down' : 'flat',
+      })),
+      dollarStrengthIndex: data.dollarStrengthIndex || 50,
+      lastUpdated: new Date(),
+      source: data.status === 'LIVE' ? 'FMP' : 'FALLBACK',
+    };
+
+    setCache(cacheKey, result, 300_000); // 5 min cache
+    return result;
+  } catch (err) {
+    console.log('[v0] fetchLiveFXData failed:', err instanceof Error ? err.message : String(err));
     return getFXFallback('FALLBACK');
   }
+}
 
   try {
     const symbols = FX_SYMBOLS.map(f => f.symbol).join(',');

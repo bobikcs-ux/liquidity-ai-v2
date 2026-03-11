@@ -47,35 +47,23 @@ const SEEDS = TERMINAL_STATE_DEFAULTS.onChain;
 // ============================================================================
 
 /**
- * Fetch current ETH gas price in Gwei from Alchemy.
+ * Fetch current ETH gas price in Gwei via server proxy.
  */
 export async function fetchEthGasPrice(): Promise<number | null> {
-  const key = getApiKey();
-  if (!key) return null;
-
-  const resp = await gatewayFetch<AlchemyGasResponse>(
-    `https://eth-mainnet.g.alchemy.com/v2/${key}`,
-    {
-      apiName: 'alchemy',
-      cacheKey: 'alchemy-gas',
-      cacheTtlMs: 60_000, // 1 minute (gas changes frequently)
-    },
-  );
-
-  // Alchemy requires POST for eth_gasPrice — use fetch directly
   try {
-    const key2 = getApiKey();
-    if (!key2) return null;
+    const resp = await gatewayFetch<{ status: string; value: number; reason?: string }>(
+      '/api/blockchain/gas',
+      {
+        apiName: 'alchemy',
+        cacheKey: 'alchemy-gas-proxy',
+        cacheTtlMs: 60_000, // 1 minute (gas changes frequently)
+      },
+    );
 
-    const res = await fetch(`https://eth-mainnet.g.alchemy.com/v2/${key2}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_gasPrice', params: [] }),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) return null;
-    const data: AlchemyGasResponse = await res.json();
-    return hexToGwei(data.result);
+    if (resp.data?.value && typeof resp.data.value === 'number') {
+      return resp.data.value;
+    }
+    return null;
   } catch {
     return null;
   }
