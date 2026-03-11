@@ -186,60 +186,6 @@ export async function fetchLiveFXData(): Promise<LiveFXData> {
   }
 }
 
-  try {
-    const symbols = FX_SYMBOLS.map(f => f.symbol).join(',');
-    // Use /stable/ endpoint for FX quotes
-    const res = await fetch(`${getFMPBaseUrl()}/quote/${symbols}?apikey=${FMP_API_KEY}`);
-    
-    // Check for "Legacy Endpoint" response
-    if (res.status === 200) {
-      const resText = await res.text();
-      checkForLegacyEndpoint(resText);
-      
-      try {
-        const quotes: FMPQuote[] = JSON.parse(resText);
-        if (!quotes || quotes.length === 0) throw new Error('FMP FX empty response');
-
-        const pairs: FXPair[] = FX_SYMBOLS.map(def => {
-          const q = quotes.find(q => q.symbol === def.symbol);
-          const rate = q ? (def.invert ? +(1 / q.price).toFixed(5) : q.price) : 0;
-          const change = q ? q.change : 0;
-          const changePct = q ? q.changesPercentage : 0;
-
-          return {
-            symbol: def.symbol,
-            label: def.label,
-            rate,
-            change,
-            changePct,
-            trend: changePct > 0.05 ? 'up' : changePct < -0.05 ? 'down' : 'flat',
-          };
-        });
-        
-        checkFMPLegacyResponse(resText);
-
-        // Dollar strength: average of (USD vs others) — higher = stronger USD
-        const avgChangePct = pairs
-          .filter(p => !p.label.startsWith('USD/EUR'))
-          .reduce((sum, p) => sum + p.changePct, 0) / (pairs.length - 1);
-        const dollarStrengthIndex = Math.min(100, Math.max(0, 50 + avgChangePct * 5));
-
-        const result: LiveFXData = { pairs, dollarStrengthIndex, lastUpdated: new Date(), source: 'FMP' };
-        setCache(cacheKey, result);
-        return result;
-      } catch {
-        // JSON parse failed
-        throw new Error('FMP FX parse error');
-      }
-    }
-    
-    // Non-200 response
-    throw new Error(`FMP FX failed: ${res.status}`);
-  } catch {
-    return getFXFallback('FALLBACK');
-  }
-}
-
 function getFXFallback(source: 'FMP' | 'FALLBACK'): LiveFXData {
   return {
     pairs: [
