@@ -7,8 +7,8 @@
 // DATA SOURCE STATUS
 // ============================================================================
 
-export type DataSourceStatus = 'LIVE' | 'CACHED' | 'FALLBACK' | 'ERROR' | 'OFFLINE';
-export type OverallStatus = 'LIVE' | 'DEGRADED' | 'OFFLINE';
+export type DataSourceStatus = 'LIVE' | 'STALE' | 'CACHED' | 'FALLBACK' | 'ERROR' | 'OFFLINE';
+export type OverallStatus = 'LIVE' | 'STALE' | 'DEGRADED' | 'OFFLINE';
 
 export interface DataSource {
   status: DataSourceStatus;
