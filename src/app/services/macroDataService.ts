@@ -1,17 +1,21 @@
 /**
- * MACRO DATA SERVICE — Build v103
+ * MACRO DATA SERVICE — Build v104 (DATABASE-FIRST)
  *
- * Fetches DGS10 (10Y Treasury yield) and WM2NS (M2 Money Supply) via
- * Vercel serverless proxy (/api/macro/fred) to avoid CORS issues.
- * NO direct FRED API calls from frontend.
+ * CRITICAL: NO external API calls from the browser.
+ * All macro data (DGS10, ECB, BoJ, M2) comes ONLY from Supabase.
+ * 
+ * The Edge Function (market-refresh) is the SOLE collector that:
+ *   1. Fetches from FRED, ECB, BoJ (server-side, no CORS)
+ *   2. Writes to market_data_live table
+ * 
+ * This service ONLY reads from Supabase - never calls external APIs directly.
+ * This eliminates CORS errors and 429 rate limits in the browser.
  *
- * Fetch chain per metric:
- *   1. Vercel proxy -> FRED API (server-side)
- *   2. Supabase market_data_live cache (uses existing table)
- *   3. In-memory module-level cache
+ * Fetch chain:
+ *   1. Supabase market_data_live (primary)
+ *   2. Supabase market_snapshots (fallback)
+ *   3. In-memory cache
  *   4. Hardcoded seed fallback
- *
- * NOTE: We use market_data_live table (exists) instead of macro_metrics (doesn't exist).
  */
 
 import { supabase } from '../lib/supabase';
