@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
-const NEWS_API_KEY = process.env.VITE_NEWS_API_KEY || '';
-const WORLD_NEWS_API_KEY = process.env.VITE_WORLD_NEWS_API_KEY || '';
+const NEWS_API_KEY = process.env.VITE_NEWS_API_KEY || process.env.NEWS_API_KEY || '';
+const WORLD_NEWS_API_KEY = process.env.VITE_WORLD_NEWS_API_KEY || process.env.WORLD_NEWS_API_KEY || '';
 
 interface NewsAlert {
   title: string;
@@ -10,11 +10,21 @@ interface NewsAlert {
   severity: number; // 1-100
 }
 
+// Static geopolitical headlines when all APIs fail (401/403/429)
+const STATIC_GEOPOLITICAL_ALERTS: NewsAlert[] = [
+  { title: 'Global energy markets remain volatile amid supply concerns', source: 'Static', date: new Date().toISOString(), severity: 60 },
+  { title: 'Central banks worldwide monitor inflation pressures', source: 'Static', date: new Date().toISOString(), severity: 55 },
+  { title: 'Commodity prices fluctuate on geopolitical uncertainty', source: 'Static', date: new Date().toISOString(), severity: 50 },
+  { title: 'Trade tensions impact global supply chains', source: 'Static', date: new Date().toISOString(), severity: 45 },
+  { title: 'Currency markets react to monetary policy divergence', source: 'Static', date: new Date().toISOString(), severity: 40 },
+];
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
 
   const alerts: NewsAlert[] = [];
   const sources: string[] = [];
+  let apiErrors: string[] = [];
 
   // Try NewsAPI
   if (NEWS_API_KEY) {
@@ -44,9 +54,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           });
           sources.push('NewsAPI');
         }
+      } else if (newsRes.status === 401 || newsRes.status === 403) {
+        apiErrors.push(`NewsAPI: ${newsRes.status} unauthorized`);
+      } else if (newsRes.status === 429) {
+        apiErrors.push('NewsAPI: 429 rate limited');
       }
     } catch (err) {
-      console.log('[News] NewsAPI error:', err instanceof Error ? err.message : String(err));
+      apiErrors.push(`NewsAPI: ${err instanceof Error ? err.message : 'timeout'}`);
     }
   }
 
@@ -77,16 +91,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           });
           sources.push('WorldNews');
         }
+      } else if (worldRes.status === 401 || worldRes.status === 403) {
+        apiErrors.push(`WorldNewsAPI: ${worldRes.status} unauthorized`);
+      } else if (worldRes.status === 429) {
+        apiErrors.push('WorldNewsAPI: 429 rate limited');
       }
     } catch (err) {
-      console.log('[News] WorldNewsAPI error:', err instanceof Error ? err.message : String(err));
+      apiErrors.push(`WorldNewsAPI: ${err instanceof Error ? err.message : 'timeout'}`);
     }
   }
 
+  // If no live alerts, use static fallback (never return empty)
+  if (alerts.length === 0) {
+    return res.status(200).json({
+      status: 'FALLBACK',
+      alerts: STATIC_GEOPOLITICAL_ALERTS,
+      sources: ['Static'],
+      reason: apiErrors.length > 0 ? apiErrors.join('; ') : 'No API keys configured',
+    });
+  }
+
   return res.status(200).json({
-    status: sources.length > 0 ? 'LIVE' : 'FALLBACK',
+    status: 'LIVE',
     alerts: alerts.slice(0, 10),
     sources,
-    reason: sources.length === 0 ? 'No API keys available' : undefined,
   });
 }

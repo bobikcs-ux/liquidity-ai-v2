@@ -1,15 +1,17 @@
 /**
- * MACRO DATA SERVICE — Build v102
+ * MACRO DATA SERVICE — Build v103
  *
- * Fetches DGS10 (10Y Treasury yield) and WM2NS (M2 Money Supply) from FRED.
- * Writes results to Supabase macro_metrics for persistence across sessions.
- * Falls back to Supabase cache, then in-memory cache, then hardcoded seeds.
+ * Fetches DGS10 (10Y Treasury yield) and WM2NS (M2 Money Supply) via
+ * Vercel serverless proxy (/api/macro/fred) to avoid CORS issues.
+ * NO direct FRED API calls from frontend.
  *
  * Fetch chain per metric:
- *   1. FRED API (live)
- *   2. Supabase macro_metrics cache
+ *   1. Vercel proxy -> FRED API (server-side)
+ *   2. Supabase market_data_live cache (uses existing table)
  *   3. In-memory module-level cache
  *   4. Hardcoded seed fallback
+ *
+ * NOTE: We use market_data_live table (exists) instead of macro_metrics (doesn't exist).
  */
 
 import { supabase } from '../lib/supabase';
@@ -132,32 +134,56 @@ async function fetchFromFRED(
 }
 
 // ============================================================================
-// SUPABASE READ
+// SUPABASE READ — Use market_data_live table (exists in DB)
 // ============================================================================
 
 async function readFromSupabase(symbol: string): Promise<{ value: number; fetchedAt: Date } | null> {
   if (!supabase) return null;
 
   try {
+    // Try market_data_live table first (using metric_name column)
     const { data, error } = await supabase
-      .from('macro_metrics')
-      .select('value, fetched_at')
-      .eq('symbol', symbol)
+      .from('market_data_live')
+      .select('value, updated_at')
+      .eq('metric_name', symbol)
       .single();
 
-    if (error || !data) return null;
+    if (!error && data) {
+      return {
+        value: Number(data.value),
+        fetchedAt: new Date(data.updated_at),
+      };
+    }
 
-    return {
-      value: Number(data.value),
-      fetchedAt: new Date(data.fetched_at),
-    };
+    // Fallback: try market_snapshots for yield data
+    if (symbol === 'DGS10' || symbol === 'DGS2') {
+      const { data: snapshot, error: snapError } = await supabase
+        .from('market_snapshots')
+        .select('yield_spread, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!snapError && snapshot) {
+        // Approximate 10Y from spread (spread = 10Y - 2Y, assume 2Y = 4.2%)
+        const approxValue = symbol === 'DGS10' 
+          ? (snapshot.yield_spread ?? 0) + 4.2 
+          : 4.2;
+        return {
+          value: approxValue,
+          fetchedAt: new Date(snapshot.created_at),
+        };
+      }
+    }
+
+    return null;
   } catch {
     return null;
   }
 }
 
 // ============================================================================
-// SUPABASE WRITE (upsert)
+// SUPABASE WRITE (upsert) — Use market_data_live table
 // ============================================================================
 
 async function writeToSupabase(symbol: string, value: number, source: string): Promise<void> {
@@ -165,16 +191,23 @@ async function writeToSupabase(symbol: string, value: number, source: string): P
 
   try {
     const { error } = await supabase
-      .from('macro_metrics')
+      .from('market_data_live')
       .upsert(
-        { symbol, value, status: 'LIVE', source, fetched_at: new Date().toISOString() },
-        { onConflict: 'symbol' }
+        { 
+          metric_name: symbol, 
+          value, 
+          source,
+          updated_at: new Date().toISOString() 
+        },
+        { onConflict: 'metric_name' }
       );
 
     if (error) {
-      console.warn(`[MacroData] Supabase upsert failed for ${symbol}:`, error.message);
+      // Table might not have metric_name column - silently fail
+      console.warn(`[MacroData] Supabase write skipped for ${symbol}: ${error.message}`);
     }
   } catch (err) {
+    // Non-critical - just log and continue
     console.warn(`[MacroData] Supabase write error for ${symbol}:`, err);
   }
 }

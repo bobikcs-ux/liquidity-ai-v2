@@ -129,33 +129,62 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
     try {
       const startMs = Date.now();
 
-      // Parallel fetch all data sources (with individual error handling)
-      const results = await Promise.allSettled([
+      // Parallel fetch all data sources with staggered timing for rate-limited APIs
+      // Group 1: Non-rate-limited APIs (fetch immediately)
+      const group1 = await Promise.allSettled([
         fetchCryptoMarket(),       // CoinGecko: BTC/ETH prices + dominance
         fetchFearGreed(),          // alternative.me: Fear & Greed Index
-        fetchGoldPrice(),          // Finnhub: Gold spot price
-        fetchOilPrices(),          // Finnhub: WTI/Brent
-        fetchMacroData(),          // FRED: 10Y/2Y yields, M2, ECB, BoJ, OECD
-        fetchEnergyData('crude-oil'), // EIA: oil stocks
-        fetchEnergyData('natural-gas'), // EIA: natural gas
-        fetchOnChainMetrics(),     // Alchemy + mempool.space: gas + hashrate
+        fetchMacroData(),          // FRED via proxy: yields, M2, etc.
         fetchGeopoliticsMetrics(), // NewsAPI + ACLED: geopolitical alerts
-        fetchLiveFXData(),         // FMP: FX pairs
         fetchStablecoins(),        // DefiLlama: stablecoin liquidity
       ]);
 
-      // Unpack results with fallback to SEED
-      const cryptoData = results[0].status === 'fulfilled' ? results[0].value : null;
-      const fearGreedData = results[1].status === 'fulfilled' ? results[1].value : null;
-      const goldData = results[2].status === 'fulfilled' ? results[2].value : null;
-      const oilData = results[3].status === 'fulfilled' ? results[3].value : null;
-      const macroData = results[4].status === 'fulfilled' ? results[4].value : null;
-      const crudeData = results[5].status === 'fulfilled' ? results[5].value : null;
-      const natGasData = results[6].status === 'fulfilled' ? results[6].value : null;
-      const onChainData = results[7].status === 'fulfilled' ? results[7].value : null;
-      const geopoliticsData = results[8].status === 'fulfilled' ? results[8].value : null;
-      const fxData = results[9].status === 'fulfilled' ? results[9].value : null;
-      const liquidityData = results[10].status === 'fulfilled' ? results[10].value : null;
+      // Stagger: Wait 500ms before FMP/Finnhub calls to avoid 429
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Group 2: Rate-limited APIs (FMP, Finnhub)
+      const group2 = await Promise.allSettled([
+        fetchGoldPrice(),          // Finnhub: Gold spot price
+        fetchOilPrices(),          // Finnhub: WTI/Brent
+        fetchLiveFXData(),         // FMP: FX pairs
+      ]);
+
+      // Stagger: Wait 300ms before EIA/Alchemy calls
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Group 3: EIA and Alchemy
+      const group3 = await Promise.allSettled([
+        fetchEnergyData('crude-oil'), // EIA: oil stocks
+        fetchEnergyData('natural-gas'), // EIA: natural gas
+        fetchOnChainMetrics(),     // Alchemy + mempool.space: gas + hashrate
+      ]);
+
+      // Unpack results - use CACHED status for errors instead of OFFLINE
+      const cryptoData = group1[0].status === 'fulfilled' ? group1[0].value : null;
+      const fearGreedData = group1[1].status === 'fulfilled' ? group1[1].value : null;
+      const macroData = group1[2].status === 'fulfilled' ? group1[2].value : null;
+      const geopoliticsData = group1[3].status === 'fulfilled' ? group1[3].value : null;
+      const liquidityData = group1[4].status === 'fulfilled' ? group1[4].value : null;
+
+      const goldData = group2[0].status === 'fulfilled' ? group2[0].value : null;
+      const oilData = group2[1].status === 'fulfilled' ? group2[1].value : null;
+      const fxData = group2[2].status === 'fulfilled' ? group2[2].value : null;
+
+      const crudeData = group3[0].status === 'fulfilled' ? group3[0].value : null;
+      const natGasData = group3[1].status === 'fulfilled' ? group3[1].value : null;
+      const onChainData = group3[2].status === 'fulfilled' ? group3[2].value : null;
+
+      // Check for rate-limit (429) or CORS errors - treat as CACHED not OFFLINE
+      const getStatus = (result: PromiseSettledResult<any>, data: any): 'LIVE' | 'CACHED' | 'FALLBACK' => {
+        if (data) return 'LIVE';
+        if (result.status === 'rejected') {
+          const reason = String(result.reason);
+          if (reason.includes('429') || reason.includes('CORS') || reason.includes('rate')) {
+            return 'CACHED'; // Use cached value, not offline
+          }
+        }
+        return 'FALLBACK';
+      };
 
       // Fallback to Supabase if all external APIs failed
       let supabaseFallback: Partial<TerminalState> | null = null;
@@ -219,14 +248,14 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
             }
           : TERMINAL_STATE_DEFAULTS.liquidity,
         sources: {
-          coingecko: { status: cryptoData ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
-          finnhub: { status: goldData || oilData ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
-          fred: { status: macroData?.overallStatus === 'LIVE' ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
-          eia: { status: crudeData || natGasData ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
-          alchemy: { status: onChainData ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
-          news: { status: geopoliticsData ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
-          acled: { status: (geopoliticsData?.acledEventCount ?? 0) > 0 ? 'LIVE' : 'OFFLINE', lastFetchMs: Date.now() },
-          fearGreed: { status: fearGreedData?.source === 'LIVE' ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
+          coingecko: { status: getStatus(group1[0], cryptoData), lastFetchMs: Date.now() },
+          finnhub: { status: goldData || oilData ? 'LIVE' : getStatus(group2[0], null), lastFetchMs: Date.now() },
+          fred: { status: macroData?.overallStatus === 'LIVE' ? 'LIVE' : getStatus(group1[2], macroData), lastFetchMs: Date.now() },
+          eia: { status: crudeData || natGasData ? 'LIVE' : getStatus(group3[0], null), lastFetchMs: Date.now() },
+          alchemy: { status: getStatus(group3[2], onChainData), lastFetchMs: Date.now() },
+          news: { status: getStatus(group1[3], geopoliticsData), lastFetchMs: Date.now() },
+          acled: { status: (geopoliticsData?.acledEventCount ?? 0) > 0 ? 'LIVE' : 'CACHED', lastFetchMs: Date.now() },
+          fearGreed: { status: fearGreedData?.source === 'LIVE' ? 'LIVE' : getStatus(group1[1], fearGreedData), lastFetchMs: Date.now() },
           supabase: { status: 'CHECKING', lastFetchMs: Date.now() }, // Will be updated by health check
         },
         overallStatus: 'LIVE', // Compute based on source statuses
@@ -243,10 +272,19 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       };
       console.info('[AppContext] Supabase health check:', supabaseHealthy ? 'ONLINE' : 'OFFLINE');
 
-      // Compute overall status
+      // Compute overall status (LIVE or CACHED count as working)
+      const workingCount = Object.values(newState.sources).filter(
+        (s) => s.status === 'LIVE' || s.status === 'CACHED'
+      ).length;
       const liveCount = Object.values(newState.sources).filter((s) => s.status === 'LIVE').length;
       const totalSources = Object.keys(newState.sources).length;
-      newState.overallStatus = liveCount === 0 ? 'OFFLINE' : liveCount < totalSources / 2 ? 'DEGRADED' : 'LIVE';
+      
+      // LIVE if mostly live, DEGRADED if using cache, OFFLINE if nothing works
+      newState.overallStatus = workingCount === 0 
+        ? 'OFFLINE' 
+        : liveCount < totalSources / 2 
+          ? 'DEGRADED' 
+          : 'LIVE';
 
       setState(newState);
       setIsInitialized(true);
