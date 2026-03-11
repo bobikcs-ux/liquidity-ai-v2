@@ -8,6 +8,24 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  
+  // CRITICAL: Force Vite to bake Vercel env vars into the build
+  define: {
+    'process.env': {},
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(process.env.VITE_SUPABASE_URL || ''),
+    'import.meta.env.VITE_SUPABASE_ANON_KEY': JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY || ''),
+    'import.meta.env.VITE_FRED_API_KEY': JSON.stringify(process.env.VITE_FRED_API_KEY || ''),
+    'import.meta.env.VITE_FMP_API_KEY': JSON.stringify(process.env.VITE_FMP_API_KEY || ''),
+    'import.meta.env.VITE_EIA_API_KEY': JSON.stringify(process.env.VITE_EIA_API_KEY || ''),
+    'import.meta.env.VITE_COINGECKO_API_KEY': JSON.stringify(process.env.VITE_COINGECKO_API_KEY || ''),
+    'import.meta.env.VITE_FINNHUB_API_KEY': JSON.stringify(process.env.VITE_FINNHUB_API_KEY || ''),
+    'import.meta.env.VITE_ALCHEMY_API_KEY': JSON.stringify(process.env.VITE_ALCHEMY_API_KEY || ''),
+    'import.meta.env.VITE_NEWS_API_KEY': JSON.stringify(process.env.VITE_NEWS_API_KEY || ''),
+    'import.meta.env.VITE_WORLD_NEWS_API_KEY': JSON.stringify(process.env.VITE_WORLD_NEWS_API_KEY || ''),
+    'import.meta.env.VITE_ACLED_EMAIL': JSON.stringify(process.env.VITE_ACLED_EMAIL || ''),
+    'import.meta.env.VITE_ACLED_API_KEY': JSON.stringify(process.env.VITE_ACLED_API_KEY || ''),
+  },
+  
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

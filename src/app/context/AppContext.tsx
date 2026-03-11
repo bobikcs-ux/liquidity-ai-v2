@@ -24,7 +24,7 @@ import { fetchMacroData } from '../services/macroDataService';
 import { fetchEnergyData } from '../services/energyFinanceService';
 import { fetchGeopoliticsMetrics } from '../services/newsAggregator';
 import { fetchLiveFXData, fetchStablecoins } from '../services/energyFinanceService';
-import { supabase } from '../lib/supabase';
+import { supabase, checkSupabaseHealth } from '../lib/supabase';
 
 // ============================================================================
 // CONTEXT SHAPE
@@ -227,13 +227,21 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
           news: { status: geopoliticsData ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
           acled: { status: (geopoliticsData?.acledEventCount ?? 0) > 0 ? 'LIVE' : 'OFFLINE', lastFetchMs: Date.now() },
           fearGreed: { status: fearGreedData?.source === 'LIVE' ? 'LIVE' : 'FALLBACK', lastFetchMs: Date.now() },
-          supabase: { status: supabaseFallback ? 'LIVE' : 'OFFLINE', lastFetchMs: Date.now() },
+          supabase: { status: 'CHECKING', lastFetchMs: Date.now() }, // Will be updated by health check
         },
         overallStatus: 'LIVE', // Compute based on source statuses
         lastSyncMs: Date.now(),
         isInitialized: true,
         isSyncing: false,
       };
+
+      // Perform real Supabase health check
+      const supabaseHealthy = await checkSupabaseHealth();
+      newState.sources.supabase = {
+        status: supabaseHealthy ? 'LIVE' : 'OFFLINE',
+        lastFetchMs: Date.now(),
+      };
+      console.info('[AppContext] Supabase health check:', supabaseHealthy ? 'ONLINE' : 'OFFLINE');
 
       // Compute overall status
       const liveCount = Object.values(newState.sources).filter((s) => s.status === 'LIVE').length;
