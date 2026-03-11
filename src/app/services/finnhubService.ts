@@ -42,71 +42,66 @@ function makePriceMetric(quote: FinnhubQuote, source: string): PriceMetric {
 }
 
 // ============================================================================
-// FETCH FUNCTIONS
+// FETCH FUNCTIONS (via server-side proxy to avoid CORS)
 // ============================================================================
 
-const BASE = 'https://finnhub.io/api/v1';
-
 /**
- * Fetch Gold spot price from Finnhub (symbol: OANDA:XAU_USD).
+ * Fetch Gold spot price via server proxy.
  */
 export async function fetchGoldPrice(): Promise<PriceMetric | null> {
-  const key = getApiKey();
-  if (!key) return null;
+  try {
+    const resp = await gatewayFetch<FinnhubQuote & { status: string }>(
+      '/api/commodities/quote?symbol=OANDA:XAU_USD',
+      { apiName: 'finnhub', cacheKey: 'finnhub-gold-proxy', cacheTtlMs: 3 * 60_000 },
+    );
 
-  const resp = await gatewayFetch<FinnhubQuote>(
-    `${BASE}/quote?symbol=OANDA:XAU_USD&token=${key}`,
-    { apiName: 'finnhub', cacheKey: 'finnhub-gold', cacheTtlMs: 3 * 60_000 },
-  );
-
-  if (resp.data?.c && resp.data.c > 0) {
-    return makePriceMetric(resp.data, 'finnhub');
+    if (resp.data?.c && resp.data.c > 0) {
+      return makePriceMetric(resp.data, 'finnhub');
+    }
+    return null;
+  } catch {
+    return null;
   }
-  return null;
 }
 
 /**
- * Fetch WTI crude oil spot price from Finnhub (symbol: OANDA:BCOUSD for Brent).
- * Uses EIA futures proxy when available.
+ * Fetch WTI + Brent crude oil spot prices via server proxy.
  */
 export async function fetchOilPrices(): Promise<{
   wti: PriceMetric;
   brent: PriceMetric;
   source: 'LIVE' | 'SEED';
 }> {
-  const key = getApiKey();
   const seeds = TERMINAL_STATE_DEFAULTS.prices.oil;
 
-  if (!key) {
+  try {
+    const [wtiResp, brentResp] = await Promise.allSettled([
+      gatewayFetch<FinnhubQuote & { status: string }>(
+        '/api/commodities/quote?symbol=OANDA:WTICO_USD',
+        { apiName: 'finnhub', cacheKey: 'finnhub-wti-proxy', cacheTtlMs: 3 * 60_000 },
+      ),
+      gatewayFetch<FinnhubQuote & { status: string }>(
+        '/api/commodities/quote?symbol=OANDA:BCO_USD',
+        { apiName: 'finnhub', cacheKey: 'finnhub-brent-proxy', cacheTtlMs: 3 * 60_000, skipRateLimit: true },
+      ),
+    ]);
+
+    const wtiData = wtiResp.status === 'fulfilled' ? wtiResp.value.data : null;
+    const brentData = brentResp.status === 'fulfilled' ? brentResp.value.data : null;
+
+    const wti = wtiData?.c && wtiData.c > 0
+      ? makePriceMetric(wtiData, 'finnhub')
+      : seeds.wti;
+
+    const brent = brentData?.c && brentData.c > 0
+      ? makePriceMetric(brentData, 'finnhub')
+      : seeds.brent;
+
+    const isLive = (wtiData?.c ?? 0) > 0 || (brentData?.c ?? 0) > 0;
+    return { wti, brent, source: isLive ? 'LIVE' : 'SEED' };
+  } catch {
     return { wti: seeds.wti, brent: seeds.brent, source: 'SEED' };
   }
-
-  // Finnhub commodity symbols: NYMEX:CL1! (WTI futures), NYMEX:BZ1! (Brent futures)
-  const [wtiResp, brentResp] = await Promise.allSettled([
-    gatewayFetch<FinnhubQuote>(
-      `${BASE}/quote?symbol=NYMEX:CL1!&token=${key}`,
-      { apiName: 'finnhub', cacheKey: 'finnhub-wti', cacheTtlMs: 3 * 60_000 },
-    ),
-    gatewayFetch<FinnhubQuote>(
-      `${BASE}/quote?symbol=NYMEX:BZ1!&token=${key}`,
-      { apiName: 'finnhub', cacheKey: 'finnhub-brent', cacheTtlMs: 3 * 60_000, skipRateLimit: true },
-    ),
-  ]);
-
-  const wtiData = wtiResp.status === 'fulfilled' ? wtiResp.value.data : null;
-  const brentData = brentResp.status === 'fulfilled' ? brentResp.value.data : null;
-
-  const wti = wtiData?.c && wtiData.c > 0
-    ? makePriceMetric(wtiData, 'finnhub')
-    : seeds.wti;
-
-  const brent = brentData?.c && brentData.c > 0
-    ? makePriceMetric(brentData, 'finnhub')
-    : seeds.brent;
-
-  const isLive = (wtiData?.c ?? 0) > 0 || (brentData?.c ?? 0) > 0;
-
-  return { wti, brent, source: isLive ? 'LIVE' : 'SEED' };
 }
 
 /**

@@ -63,40 +63,40 @@ function makePriceMetric(value: number, change24h: number, source: string): Pric
 // ============================================================================
 
 /**
- * Fetch BTC + ETH spot prices and BTC dominance from CoinGecko.
+ * Fetch BTC + ETH spot prices and BTC dominance from CoinGecko via server proxy.
  * Returns null on failure (caller falls back to seed).
  */
 export async function fetchCryptoMarket(): Promise<{
   prices: Pick<MarketPrices, 'btc' | 'eth' | 'btcDominance'>;
   source: 'LIVE' | 'SEED';
 } | null> {
-  const headers = buildHeaders();
-  const baseUrl = 'https://api.coingecko.com/api/v3';
+  try {
+    // Use server-side proxy to avoid CORS
+    const resp = await gatewayFetch<{
+      status: string;
+      bitcoin: { usd: number; usd_24h_change: number };
+      ethereum: { usd: number; usd_24h_change: number };
+      btcDominance: number;
+    }>(
+      '/api/crypto/prices',
+      { apiName: 'coingecko', cacheKey: 'cg-proxy-prices', cacheTtlMs: 5 * 60_000 },
+    );
 
-  const [priceResp, globalResp] = await Promise.allSettled([
-    gatewayFetch<CGSimplePrice>(
-      `${baseUrl}/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true`,
-      { apiName: 'coingecko', cacheKey: 'cg-simple-price', cacheTtlMs: 5 * 60_000, headers },
-    ),
-    gatewayFetch<CGGlobalData>(
-      `${baseUrl}/global`,
-      { apiName: 'coingecko', cacheKey: 'cg-global', cacheTtlMs: 5 * 60_000, headers, skipRateLimit: true },
-    ),
-  ]);
+    const data = resp.data;
+    if (!data?.bitcoin || !data?.ethereum) return null;
 
-  const priceData = priceResp.status === 'fulfilled' ? priceResp.value.data : null;
-  const globalData = globalResp.status === 'fulfilled' ? globalResp.value.data : null;
-
-  if (!priceData?.bitcoin || !priceData?.ethereum) return null;
-
-  return {
-    prices: {
-      btc: makePriceMetric(priceData.bitcoin.usd, priceData.bitcoin.usd_24h_change, 'coingecko'),
-      eth: makePriceMetric(priceData.ethereum.usd, priceData.ethereum.usd_24h_change, 'coingecko'),
-      btcDominance: globalData?.data?.market_cap_percentage?.btc ?? SEEDS.btcDominance,
-    },
-    source: 'LIVE',
-  };
+    return {
+      prices: {
+        btc: makePriceMetric(data.bitcoin.usd, data.bitcoin.usd_24h_change, 'coingecko'),
+        eth: makePriceMetric(data.ethereum.usd, data.ethereum.usd_24h_change, 'coingecko'),
+        btcDominance: data.btcDominance ?? SEEDS.btcDominance,
+      },
+      source: data.status === 'LIVE' ? 'LIVE' : 'SEED',
+    };
+  } catch (err) {
+    console.warn('[CoingeckoService] Proxy fetch failed:', err);
+    return null;
+  }
 }
 
 /**

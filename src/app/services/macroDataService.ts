@@ -106,20 +106,24 @@ async function fetchFromFRED(
 
     const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
 
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      console.warn(`[MacroData] FRED ${seriesId} API returned ${res.status}:`, errorData);
-      return null;
-    }
-
-    const json = await res.json();
+    // Even 4xx/5xx should return JSON with fallback value
+    const json = await res.json().catch(() => null);
     
-    if (json.status !== 'LIVE' || typeof json.value !== 'number') {
-      console.warn(`[MacroData] FRED ${seriesId} returned non-LIVE status:`, json);
+    if (!json) {
+      console.warn(`[MacroData] FRED ${seriesId} returned invalid JSON`);
       return null;
     }
 
-    return json.value;
+    // Accept both LIVE and FALLBACK status - both have valid values
+    if ((json.status === 'LIVE' || json.status === 'FALLBACK') && typeof json.value === 'number') {
+      if (json.status === 'FALLBACK') {
+        console.log(`[MacroData] FRED ${seriesId} using fallback: ${json.value} (${json.reason || 'unknown'})`);
+      }
+      return json.value;
+    }
+
+    console.warn(`[MacroData] FRED ${seriesId} returned unexpected response:`, json);
+    return null;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.warn(`[MacroData] FRED ${seriesId} fetch error: ${msg}`);
