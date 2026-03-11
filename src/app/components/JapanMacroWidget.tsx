@@ -89,8 +89,8 @@ const YenCarryMonitor = memo(function YenCarryMonitor({
       {/* Rate Comparison Bar */}
       <div className="mt-4 pt-4 border-t border-red-900/30">
         <div className="flex justify-between text-xs text-gray-500 mb-2">
-          <span>BoJ Rate: {bojRateLive !== null ? `${bojRateLive.toFixed(2)}%` : data.jpy_overnight_rate + '%'}</span>
-          <span>USD Rate: {data.usd_overnight_rate}%</span>
+          <span>BoJ Rate: {data?.jpy_overnight_rate ? `${data.jpy_overnight_rate}%` : 'N/A'}</span>
+          <span>USD Rate: {data?.usd_overnight_rate ? `${data.usd_overnight_rate}%` : 'N/A'}</span>
         </div>
         <div className="h-2 bg-gray-900 rounded-none overflow-hidden">
           <div 
@@ -180,10 +180,13 @@ export const JapanMacroWidget = memo(function JapanMacroWidget() {
   const [view, setView] = useState<JapanView>('overview');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Use live BoJ rate from FRED via macroDataService
+  // Use live BoJ rate from FRED via macroDataService — declare BEFORE using in JSX
   const bojRateLive = values?.bojRate ?? null;
   const bojRateDisplay = display.bojRate;
   const bojStatus = configError ? 'CONFIG_ERROR' : (metricStatus?.bojRate ?? 'FALLBACK');
+
+  // Extract carry data early to ensure it's available in YenCarryMonitor
+  const yenCarryData = japan?.yenCarry ?? null;
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
