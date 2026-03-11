@@ -174,6 +174,10 @@ export const EuropeWidget = memo(function EuropeWidget() {
             index={sovereignIndex} 
             getTrendIcon={getTrendIcon}
             getIndexColor={getIndexColor}
+            dgs10Live={dgs10Live}
+            dgs2Live={dgs2Live}
+            ecbRateLive={ecbRateLive}
+            ecbStatus={ecbStatus}
           />
         ) : view === 'DEBT_STRESS' ? (
           <DebtStressView signals={debtSignals} />
@@ -215,11 +219,19 @@ const OverviewView = memo(function OverviewView({
   index,
   getTrendIcon,
   getIndexColor,
+  dgs10Live,
+  dgs2Live,
+  ecbRateLive,
+  ecbStatus,
 }: {
   data: EurozoneMacroData | null;
   index: EuropeSovereignIndex | null;
   getTrendIcon: (trend: string) => React.ReactNode;
   getIndexColor: (value: number) => string;
+  dgs10Live: number | null;
+  dgs2Live: number | null;
+  ecbRateLive: number | null;
+  ecbStatus: string;
 }) {
   if (!data || !index) return null;
 
